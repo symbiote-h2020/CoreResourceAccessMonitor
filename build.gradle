@@ -45,9 +45,11 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+    compile('com.googlecode.json-simple:json-simple:1.1.1')
+    compile('com.google.code.gson:gson:2.7')
+
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
-
 
     // Use JUnit4
     testCompile 'junit:junit:4.12'

@@ -9,6 +9,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 
+import eu.h2020.symbiote.messaging.MessagingSubscriptions;
+
 
 /**
  * Created by mateuszl on 22.09.2016.
@@ -23,7 +25,7 @@ public class CoreResourceAccessMonitorApplication {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
 
         try {
-            // Subscribe to RabbitMQ messages
+            MessagingSubscriptions.subscribeForCRAM();
         } catch (Exception e) {
             log.error("Error occured during subscribing from Core Resource Access Monitor", e);
         }

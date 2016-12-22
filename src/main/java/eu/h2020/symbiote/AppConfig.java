@@ -2,8 +2,6 @@ package eu.h2020.symbiote;
 
 /**
  * Created by mateuszl on 30.09.2016.
- *
- * Note: to be used by components with MongoDB
  */
 
 import com.mongodb.Mongo;
@@ -17,7 +15,7 @@ class AppConfig extends AbstractMongoConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return "symbiote-core-database";
+        return "symbiote-core-cram-database";
     }
 
     @Override
