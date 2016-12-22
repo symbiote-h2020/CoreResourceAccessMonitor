@@ -31,9 +31,9 @@ public class ResourceDeletedConsumer extends SymbioteMessageConsumer<Sensor> {
      * @param deliveredObject
      */
     @Override
-    protected void handleEventObject(Sensor deliveredObject) {
-        log.info("CRAM received message about created resource with id: " + deliveredObject.getId());
-        // save (deliveredObject) in database
-        RepositoryManager.deleteSensor(deliveredObject);   
+    protected void handleEventObject(String sensorId) {
+        log.info("CRAM received message about created resource with id: " + sensorId);
+
+        RepositoryManager.deleteSensor(sensorId);   
     }
 }

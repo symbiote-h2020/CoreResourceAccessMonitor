@@ -43,9 +43,9 @@ public class RepositoryManager {
         log.info("Platform updated to database!");
     }
 
-    public static void deletePlatform(Platform deliveredObject) {
+    public static void deletePlatform(String platformId) {
 
-        platformRepository.delete(deliveredObject.getId());
+        platformRepository.delete(platformId);
         log.info("Platform deleted from database!");
     }
 
@@ -61,9 +61,9 @@ public class RepositoryManager {
         log.info("Sensor updated to database!");
     }
 
-    public static void deleteSensor(Sensor deliveredObject) {
+    public static void deleteSensor(String sensorId) {
 
-        sensorRepository.delete(deliveredObject.getId());
+        sensorRepository.delete(sensorId);
         log.info("Sensor deleted from database!");
     }
 }

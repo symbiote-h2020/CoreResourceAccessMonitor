@@ -32,8 +32,8 @@ public class ResourceUpdatedConsumer extends SymbioteMessageConsumer<Sensor> {
      */
     @Override
     protected void handleEventObject(Sensor deliveredObject) {
-        log.info("CRAM received message about created resource with id: " + deliveredObject.getId());
-        // save (deliveredObject) in database
+        log.info("CRAM received message about updated resource with id: " + deliveredObject.getId());
+
         RepositoryManager.updateSensor(deliveredObject);   
     }
 }

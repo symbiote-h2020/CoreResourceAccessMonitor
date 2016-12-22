@@ -30,9 +30,9 @@ public class PlatformDeletedConsumer extends SymbioteMessageConsumer<Platform> {
      * * @param deliveredObject
      */
     @Override
-    protected void handleEventObject(Platform deliveredObject) {
-        log.info("CRAM received message about created platform with id: " + deliveredObject.getId());
+    protected void handleEventObject(String platformId) {
+        log.info("CRAM received message about deleted platform with id: " + platformId);
         
-        RepositoryManager.deletePlatform(deliveredObject);   
+        RepositoryManager.deletePlatform(platformId);   
     }
 }

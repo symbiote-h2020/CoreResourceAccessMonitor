@@ -31,7 +31,7 @@ public class PlatformUpdatedConsumer extends SymbioteMessageConsumer<Platform> {
      */
     @Override
     protected void handleEventObject(Platform deliveredObject) {
-        log.info("CRAM received message about created platform with id: " + deliveredObject.getId());
+        log.info("CRAM received message about updated platform with id: " + deliveredObject.getId());
         
         RepositoryManager.updatePlatform(deliveredObject);   
     }

@@ -142,7 +142,7 @@ public class MessageQueuesTests {
 		platformRepo.save(platform);
 
         Gson gson = new Gson();
-		String objectInJson = gson.toJson(platform);
+		String objectInJson = gson.toJson(platform.getId());
 
 	    Channel channel = MessagingSubscriptions.getChannel();
 
@@ -276,7 +276,7 @@ public class MessageQueuesTests {
 		sensorRepo.save(sensor);
 
         Gson gson = new Gson();
-		String objectInJson = gson.toJson(sensor);
+		String objectInJson = gson.toJson(sensor.getId());
 
 	    Channel channel = MessagingSubscriptions.getChannel();
 
