@@ -10,7 +10,7 @@ import eu.h2020.symbiote.repository.RepositoryManager;
 /**
  * Created by Mael on 07/09/2016.
  */
-public class PlatformDeletedConsumer extends SymbioteMessageConsumer<Platform> {
+public class PlatformDeletedConsumer extends SymbioteMessageConsumer<String> {
 
     private static Log log = LogFactory.getLog(PlatformDeletedConsumer.class);
 

@@ -10,7 +10,7 @@ import eu.h2020.symbiote.repository.RepositoryManager;
 /**
  * Created by Mael on 08/09/2016.
  */
-public class ResourceDeletedConsumer extends SymbioteMessageConsumer<Sensor> {
+public class ResourceDeletedConsumer extends SymbioteMessageConsumer<String> {
 
     private static Log log = LogFactory.getLog(ResourceDeletedConsumer.class);
     
