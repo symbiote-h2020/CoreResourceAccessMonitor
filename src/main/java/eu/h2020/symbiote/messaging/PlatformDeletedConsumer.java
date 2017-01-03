@@ -27,7 +27,7 @@ public class PlatformDeletedConsumer extends SymbioteMessageConsumer<String> {
     /**
      * Method implementation used for actions with object passed in delivered message (Platform in JSON in this case)
      *
-     * * @param deliveredObject
+     * * @param platformId
      */
     @Override
     protected void handleEventObject(String platformId) {

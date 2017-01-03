@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 /**
-* <h1>Subscribe to message queues./h1>
+* <h1>Subscribe to message queues.</h1>
 * The MessagingSubscription class declares the platform and resource exchanges
 * and binds event-specific queues (CREATED, DELETED, UPDATED) 
 * to the respective exchange.
@@ -112,7 +112,7 @@ public class MessagingSubscriptions {
     /**
      * Declares a consumer for platform events.
      *
-     * @param Channel The name of the channel
+     * @param channel The name of the channel
      * @param event The name of the event (i.e. CREATED, DELETED, UPDATED)
      * @param queueName The name of the queue
      * @throws IOException
@@ -140,7 +140,7 @@ public class MessagingSubscriptions {
     /**
      * Declares a consumer for resource events.
      *
-     * @param Channel The name of the channel
+     * @param channel The name of the channel
      * @param event The name of the event (i.e. CREATED, DELETED, UPDATED)
      * @param queueName The name of the queue
      * @throws IOException

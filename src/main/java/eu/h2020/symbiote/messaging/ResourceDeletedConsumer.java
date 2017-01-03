@@ -28,7 +28,7 @@ public class ResourceDeletedConsumer extends SymbioteMessageConsumer<String> {
     /**
      * Method implementation used for actions with object passed in delivered message (Sensor in JSON in this case)
      *
-     * @param deliveredObject
+     * @param sensorId
      */
     @Override
     protected void handleEventObject(String sensorId) {
