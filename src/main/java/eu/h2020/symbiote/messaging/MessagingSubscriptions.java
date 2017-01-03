@@ -12,8 +12,16 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by Mael on 07/09/2016.
- */
+* <h1>Subscribe to message queues./h1>
+* The MessagingSubscription class declares the platform and resource exchanges
+* and binds event-specific queues (CREATED, DELETED, UPDATED) 
+* to the respective exchange.
+*
+* @author  Vasilis Glykantzis, Tilemachos Pechlivanoglou
+* @version 1.0
+* @since   2016-12-22 
+*/
+
 public class MessagingSubscriptions {
 
         private enum Exchange {
@@ -35,6 +43,7 @@ public class MessagingSubscriptions {
         }      
     }
 
+
     //Value("${spring.application.name}")
     //private String component; // Consider a workaround to make it static. Spring does not support @Value to static fields
     private static String COMPONENT = "CoreResourceAccessMonitor"; // FIX ME: Take the value from the bootstrap proporties
@@ -50,7 +59,7 @@ public class MessagingSubscriptions {
     private static boolean AUTO_DELETE = false; // Make the message durable
 
     /**
-     * Use that method if you want to subscribe to receive messages
+     * Use that method if you want to subscribe to receive messages.
      *
      * @throws IOException
      * @throws TimeoutException
@@ -66,10 +75,12 @@ public class MessagingSubscriptions {
 
     }
 
+
     /**
-     * Basic consumer of messages thrown into queue named queueName, related to Platform object.
+     * Creates a queue for a platform/resource event and binds it to an exchange.
      *
-     * @param queueName
+     * @param exchange The name of the exchange (i.e symbIoTe.platform or symbIoTe.resource)
+     * @param event The name of the event (i.e. CREATED, DELETED, UPDATED)
      * @throws IOException
      * @throws TimeoutException
      */
@@ -97,6 +108,15 @@ public class MessagingSubscriptions {
 
     }
     
+
+    /**
+     * Declares a consumer for platform events.
+     *
+     * @param Channel The name of the channel
+     * @param event The name of the event (i.e. CREATED, DELETED, UPDATED)
+     * @param queueName The name of the queue
+     * @throws IOException
+     */
     public static void platformEventConsumer (Channel channel, Event event, String queueName) throws IOException {
 
 
@@ -116,6 +136,15 @@ public class MessagingSubscriptions {
         }
     }
 
+
+    /**
+     * Declares a consumer for resource events.
+     *
+     * @param Channel The name of the channel
+     * @param event The name of the event (i.e. CREATED, DELETED, UPDATED)
+     * @param queueName The name of the queue
+     * @throws IOException
+     */
     public static void resourceEventConsumer (Channel channel, Event event, String queueName) throws IOException {
 
         switch (event) {
@@ -134,24 +163,11 @@ public class MessagingSubscriptions {
         }
     }
 
-    /**
-     * Basic consumer of messages thrown into queue named queueName, related to Resource (Sensor) object.
-     *
-     * @param queueName
-     * @throws IOException
-     * @throws TimeoutException
-     */
-    // public static void subscribeResourceCreated(String queueName ) throws IOException, TimeoutException {
-    //     Channel channel = getChannel(queueName);
-    //     ResourceCreatedConsumer consumer = new ResourceCreatedConsumer(channel);
-    //     channel.basicConsume(queueName, true, consumer);
-    // }
 
     /**
-     * Returns channel for rabbit messaging
+     * Returns channel for rabbit messaging.
      *
-     * @param queueName
-     * @return
+     * @return Channel
      * @throws IOException
      * @throws TimeoutException
      */
