@@ -8,14 +8,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
-import eu.h2020.symbiote.messaging.MessagingSubscriptions;
 
 
 /**
  * Created by mateuszl on 22.09.2016.
  */
 @EnableDiscoveryClient
+@EnableRabbit
 @SpringBootApplication
 public class CoreResourceAccessMonitorApplication {
 
@@ -24,11 +30,6 @@ public class CoreResourceAccessMonitorApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
 
-        try {
-            MessagingSubscriptions.subscribeForCRAM();
-        } catch (Exception e) {
-            log.error("Error occured during subscribing from Core Resource Access Monitor", e);
-        }
     }
 
     @Bean
@@ -36,4 +37,26 @@ public class CoreResourceAccessMonitorApplication {
         return new AlwaysSampler();
     }
 
+    public ConnectionFactory connectionFactory() {
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+        // connectionFactory.setUsername("guest");
+        // connectionFactory.setPassword("guest");
+        return connectionFactory;
+}
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory());
+        factory.setConcurrentConsumers(3);
+        factory.setMaxConcurrentConsumers(10);
+        factory.setMessageConverter(new Jackson2JsonMessageConverter());
+        return factory;
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate() {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory());
+        return template;
+}
 }

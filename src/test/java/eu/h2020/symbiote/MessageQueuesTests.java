@@ -20,7 +20,13 @@ import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.MessagePropertiesBuilder;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageDeliveryMode;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -32,7 +38,6 @@ import java.util.Arrays;
 import eu.h2020.symbiote.repository.SensorRepository;
 import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.model.*;
-import eu.h2020.symbiote.messaging.MessagingSubscriptions;
 
 import static org.junit.Assert.assertEquals;
 
@@ -55,18 +60,15 @@ public class MessageQueuesTests {
 	@Autowired
 	private PlatformRepository platformRepo;
 
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
+
 	private Random rand;
 
 	@Before
 	public void setup() throws IOException, TimeoutException {
 
         rand = new Random();
-
-		try {
-            MessagingSubscriptions.subscribeForCRAM();
-        } catch (Exception e) {
-            log.error("Error occured during subscribing from Core Resource Access Monitor", e);
-        }
 
 	}
 
@@ -84,12 +86,18 @@ public class MessageQueuesTests {
         Gson gson = new Gson();
 		String objectInJson = gson.toJson(platform);
 
-	    Channel channel = MessagingSubscriptions.getChannel();
-
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".created";
 
-		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
+		MessageProperties props = MessagePropertiesBuilder.newInstance()
+			.setContentType("application/json")
+			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+    		.build();
+		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+		    .andProperties(props)
+		    .build();
+
+        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -112,8 +120,6 @@ public class MessageQueuesTests {
 
         Gson gson = new Gson();
 
-	    Channel channel = MessagingSubscriptions.getChannel();
-
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".updated";
 
@@ -121,7 +127,15 @@ public class MessageQueuesTests {
         platform.setName(newName);
 		String objectInJson = gson.toJson(platform);
 
-		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
+		MessageProperties props = MessagePropertiesBuilder.newInstance()
+			.setContentType("application/json")
+			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+    		.build();
+		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+		    .andProperties(props)
+		    .build();
+
+        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -145,13 +159,19 @@ public class MessageQueuesTests {
         Gson gson = new Gson();
 		String objectInJson = gson.toJson(platform.getId());
 
-	    Channel channel = MessagingSubscriptions.getChannel();
-
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".deleted";
 
 
-		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
+		MessageProperties props = MessagePropertiesBuilder.newInstance()
+			.setContentType("application/json")
+			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+    		.build();
+		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+		    .andProperties(props)
+		    .build();
+
+        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -188,12 +208,18 @@ public class MessageQueuesTests {
         Gson gson = new Gson();
 		String objectInJson = gson.toJson(sensor);
 
-	    Channel channel = MessagingSubscriptions.getChannel();
-
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".created";
 
-		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
+		MessageProperties props = MessagePropertiesBuilder.newInstance()
+			.setContentType("application/json")
+			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+    		.build();
+		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+		    .andProperties(props)
+		    .build();
+
+        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -231,8 +257,6 @@ public class MessageQueuesTests {
 
         Gson gson = new Gson();
 
-	    Channel channel = MessagingSubscriptions.getChannel();
-
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".updated";
 
@@ -240,7 +264,15 @@ public class MessageQueuesTests {
         sensor.setName(sensorNewName);
 		String objectInJson = gson.toJson(sensor);
 
-		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
+		MessageProperties props = MessagePropertiesBuilder.newInstance()
+			.setContentType("application/json")
+			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+    		.build();
+		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+		    .andProperties(props)
+		    .build();
+
+        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -279,12 +311,18 @@ public class MessageQueuesTests {
         Gson gson = new Gson();
 		String objectInJson = gson.toJson(sensor.getId());
 
-	    Channel channel = MessagingSubscriptions.getChannel();
-
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".deleted";
 
-		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
+		MessageProperties props = MessagePropertiesBuilder.newInstance()
+			.setContentType("application/json")
+			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+    		.build();
+		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+		    .andProperties(props)
+		    .build();
+
+        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
