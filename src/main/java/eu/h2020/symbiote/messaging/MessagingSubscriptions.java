@@ -41,6 +41,14 @@ public class MessagingSubscriptions {
 
     private static Log log = LogFactory.getLog(MessagingSubscriptions.class);
 
+    private static boolean AUTO_ACK = false; // Enable Message acknowledgments
+
+    private static boolean DURABLE = true; // Make the message durable
+
+    private static boolean EXCLUSIVE = false; // Make the message durable
+
+    private static boolean AUTO_DELETE = false; // Make the message durable
+
     /**
      * Use that method if you want to subscribe to receive messages
      *
@@ -71,7 +79,7 @@ public class MessagingSubscriptions {
         String queueName = "symbIoTe-" + COMPONENT + "-" + exchange.toLowerCase() + "-" + event.toLowerCase();
         String bindingKey = exchangeName + "." + event.toLowerCase();
         channel.exchangeDeclare(exchangeName, "topic");
-        channel.queueDeclare(queueName, false, false, false, null);
+        channel.queueDeclare(queueName, DURABLE, EXCLUSIVE, AUTO_DELETE, null);
 
         channel.queueBind(queueName, exchangeName, bindingKey);
 
@@ -91,18 +99,19 @@ public class MessagingSubscriptions {
     
     public static void platformEventConsumer (Channel channel, Event event, String queueName) throws IOException {
 
+
         switch (event) {
             case CREATED:  
                 PlatformCreatedConsumer platformCreatedConsumer = new PlatformCreatedConsumer(channel);
-                channel.basicConsume(queueName, true, platformCreatedConsumer);
+                channel.basicConsume(queueName, AUTO_ACK, platformCreatedConsumer);
                 break;
             case DELETED:  
                 PlatformDeletedConsumer platformDeletedConsumer = new PlatformDeletedConsumer(channel);
-                channel.basicConsume(queueName, true, platformDeletedConsumer);
+                channel.basicConsume(queueName, AUTO_ACK, platformDeletedConsumer);
                 break;
             case UPDATED:  
                 PlatformUpdatedConsumer platformUpdatedConsumer = new PlatformUpdatedConsumer(channel);
-                channel.basicConsume(queueName, true, platformUpdatedConsumer);
+                channel.basicConsume(queueName, AUTO_ACK, platformUpdatedConsumer);
                 break;
         }
     }
@@ -112,15 +121,15 @@ public class MessagingSubscriptions {
         switch (event) {
             case CREATED:  
                 ResourceCreatedConsumer resourceCreatedConsumer = new ResourceCreatedConsumer(channel);
-                channel.basicConsume(queueName, true, resourceCreatedConsumer);
+                channel.basicConsume(queueName, AUTO_ACK, resourceCreatedConsumer);
                 break;
             case DELETED:  
                 ResourceDeletedConsumer resourceDeletedConsumer = new ResourceDeletedConsumer(channel);
-                channel.basicConsume(queueName, true, resourceDeletedConsumer);
+                channel.basicConsume(queueName, AUTO_ACK, resourceDeletedConsumer);
                 break;
             case UPDATED:  
                 ResourceUpdatedConsumer resourceUpdatedConsumer = new ResourceUpdatedConsumer(channel);
-                channel.basicConsume(queueName, true, resourceUpdatedConsumer);
+                channel.basicConsume(queueName, AUTO_ACK, resourceUpdatedConsumer);
                 break;
         }
     }

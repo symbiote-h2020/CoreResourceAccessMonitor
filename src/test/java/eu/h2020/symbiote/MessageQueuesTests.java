@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -88,7 +89,7 @@ public class MessageQueuesTests {
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".created";
 
-		channel.basicPublish(exchangeName, routingKey, null, objectInJson.getBytes("UTF-8"));
+		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -120,7 +121,7 @@ public class MessageQueuesTests {
         platform.setName(newName);
 		String objectInJson = gson.toJson(platform);
 
-		channel.basicPublish(exchangeName, routingKey, null, objectInJson.getBytes("UTF-8"));
+		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -150,7 +151,7 @@ public class MessageQueuesTests {
         String routingKey = exchangeName + ".deleted";
 
 
-		channel.basicPublish(exchangeName, routingKey, null, objectInJson.getBytes("UTF-8"));
+		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -192,7 +193,7 @@ public class MessageQueuesTests {
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".created";
 
-		channel.basicPublish(exchangeName, routingKey, null, objectInJson.getBytes("UTF-8"));
+		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -239,7 +240,7 @@ public class MessageQueuesTests {
         sensor.setName(sensorNewName);
 		String objectInJson = gson.toJson(sensor);
 
-		channel.basicPublish(exchangeName, routingKey, null, objectInJson.getBytes("UTF-8"));
+		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
@@ -283,7 +284,7 @@ public class MessageQueuesTests {
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".deleted";
 
-		channel.basicPublish(exchangeName, routingKey, null, objectInJson.getBytes("UTF-8"));
+		channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, objectInJson.getBytes("UTF-8"));
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
