@@ -52,11 +52,11 @@ public class MessagingSubscriptions {
 
     private static boolean AUTO_ACK = false; // Enable Message acknowledgments
 
-    private static boolean DURABLE = true; // Make the message durable
+    private static boolean DURABLE = true; // Make the messages durable
 
-    private static boolean EXCLUSIVE = false; // Make the message durable
+    private static boolean EXCLUSIVE = false; // Make the queue non-exclusive
 
-    private static boolean AUTO_DELETE = false; // Make the message durable
+    private static boolean AUTO_DELETE = false; // Make the queue non-autoDelete
 
     /**
      * Use that method if you want to subscribe to receive messages.
