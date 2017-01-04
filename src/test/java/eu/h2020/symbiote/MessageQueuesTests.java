@@ -268,6 +268,9 @@ public class MessageQueuesTests {
 			.setContentType("application/json")
 			.setDeliveryMode(MessageDeliveryMode.PERSISTENT)
     		.build();
+
+    	props.setInferredArgumentType(Sensor.class);
+
 		Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
 		    .andProperties(props)
 		    .build();

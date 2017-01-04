@@ -15,6 +15,9 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.core.ExchangeTypes;
 
+import com.google.gson.Gson;
+import java.io.UnsupportedEncodingException;
+
 /**
  * Created by tipech on 04/10/2016.
  */
@@ -38,7 +41,7 @@ public class RepositoryManager {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-created", durable = "true"),
+        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-created", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.created")
     )
@@ -51,7 +54,7 @@ public class RepositoryManager {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-updated", durable = "true"),
+        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-updated", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.updated")
     )
@@ -63,7 +66,7 @@ public class RepositoryManager {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-deleted", durable = "true"),
+        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.deleted")
     )
@@ -76,7 +79,7 @@ public class RepositoryManager {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-created", durable = "true"),
+        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-created", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.created")
     )
@@ -89,7 +92,7 @@ public class RepositoryManager {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-updated", durable = "true"),
+        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-updated", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.updated")
     )
@@ -102,7 +105,7 @@ public class RepositoryManager {
     }
 
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true"),
+        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.deleted")
     )

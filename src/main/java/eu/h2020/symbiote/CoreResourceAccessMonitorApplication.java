@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
+
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -15,6 +16,8 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
+import org.springframework.data.mongodb.core.geo.GeoJsonModule;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 /**
@@ -50,10 +53,23 @@ public class CoreResourceAccessMonitorApplication {
         factory.setConnectionFactory(connectionFactory());
         factory.setConcurrentConsumers(3);
         factory.setMaxConcurrentConsumers(10);
-        factory.setMessageConverter(new Jackson2JsonMessageConverter());
+        factory.setMessageConverter(jackson2JsonMessageConverter());
         return factory;
     }
 
+    @Bean Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
+        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
+
+        /**
+         * It is necessary to register the GeoJsonModule, otherwise the GeoJsonPoint cannot
+         * be deserialized by Jackson2JsonMessageConverter.
+         */
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new GeoJsonModule());
+        converter.setJsonObjectMapper(mapper);
+        return converter;
+    }
     @Bean
     public RabbitTemplate rabbitTemplate() {
         RabbitTemplate template = new RabbitTemplate(connectionFactory());
