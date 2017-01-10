@@ -15,11 +15,23 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate.RabbitConverterFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.nio.charset.Charset;
 import java.net.URL;
 import java.util.List;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.io.IOException;
+
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
 
 import eu.h2020.symbiote.repository.RepositoryManager;
 import eu.h2020.symbiote.model.*;
@@ -29,14 +41,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest({"webEnvironment=WebEnvironment.RANDOM_PORT", "eureka.client.enabled=false"})
 public class CoreResourceAccessMonitorApplicationTests {
 
 
-	private static final Logger LOG = LoggerFactory
+	private static final Logger log = LoggerFactory
 						.getLogger(CoreResourceAccessMonitorApplicationTests.class);
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -44,6 +57,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+
+	@Autowired
+	private AsyncRabbitTemplate asyncRabbitTemplate;
 
     private MockMvc mockMvc;
 
@@ -70,28 +86,60 @@ public class CoreResourceAccessMonitorApplicationTests {
 	}
 
 	@Test
-	// @DisplayName("Testing Access Controller's GET method")
-	public void testGet() throws Exception {
+	public void testGetResourcesUrl() throws Exception {
 
-        mockMvc.perform(get("/cram_api/resource_urls/sensor_id,sensor_id2"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(contentType))
-                .andExpect(jsonPath("$.sensor_id", is("http://www.symbIoTe.com/sensor1")))
-                .andExpect(jsonPath("$.sensor_id2", is("http://www.symbIoTe.com/sensor2")));
+		JSONObject query = new JSONObject();
+		JSONArray idList = new JSONArray();
+		final AtomicReference<JSONObject> resultRef = new AtomicReference<JSONObject>();
 
-	}
+		idList.add("sensor_id");
+		idList.add("sensor_id2");
+		query.put("idList", idList);
 
-	@Test
-	// @DisplayName("Testing Access Controller's GET method")
-	public void testPost() throws Exception {
+        String exchangeName = "symbIoTe.CoreResourceAccessMonitor";
+        String routingKey = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls";
 
-        mockMvc.perform(post("/cram_api/resource_urls")
-        		.content("{ \"idList\" : [\"sensor_id\", \"sensor_id2\" ]}")
-        		.contentType(contentType))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(contentType))
-                .andExpect(jsonPath("$.sensor_id", is("http://www.symbIoTe.com/sensor1")))
-                .andExpect(jsonPath("$.sensor_id2", is("http://www.symbIoTe.com/sensor2")));
+        log.info("Before sending the message");
+
+        RabbitConverterFuture<JSONObject> future = asyncRabbitTemplate.convertSendAndReceive(exchangeName, routingKey, query);
+
+        log.info("After sending the message");
+
+	    future.addCallback(new ListenableFutureCallback<JSONObject>() {
+
+	        @Override
+	        public void onSuccess(JSONObject result) {
+
+	        	log.info("Successully received resource urls: " + result);
+	        	resultRef.set(result);
+
+		    }
+
+	        @Override
+	        public void onFailure(Throwable ex) {
+	        	fail("Accessed the element which does not exist");
+	        }
+
+		});
+
+        TimeUnit.SECONDS.sleep(3);
+		assertEquals(resultRef.get().get("sensor_id"), "http://www.symbIoTe.com/sensor1");
+		assertEquals(resultRef.get().get("sensor_id2"), "http://www.symbIoTe.com/sensor2");
+
+		// JSONObject result = null;
+	 //    try {
+	 //        result = future.get();
+	 //        log.info("Successully received resource urls: " + result);
+
+
+		// 	assertEquals(result.get("sensor_id"), "http://www.symbIoTe.com/sensor1");
+		// 	assertEquals(result.get("sensor_id2"), "http://www.symbIoTe.com/sensor2");
+    
+		// }
+	 //    catch (ExecutionException e) {
+	 //        log.info("The following exception was captured: " + e);
+	 //        fail();
+	 //    }
 
 	}
 }

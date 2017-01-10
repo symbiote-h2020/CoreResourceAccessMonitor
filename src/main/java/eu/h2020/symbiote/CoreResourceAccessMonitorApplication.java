@@ -15,10 +15,13 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.amqp.core.Queue;
 
 /**
  * Created by mateuszl on 22.09.2016.
@@ -40,17 +43,11 @@ public class CoreResourceAccessMonitorApplication {
         return new AlwaysSampler();
     }
 
-    public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
-        // connectionFactory.setUsername("guest");
-        // connectionFactory.setPassword("guest");
-        return connectionFactory;
-}
 
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory());
+        factory.setConnectionFactory(connectionFactory);
         factory.setConcurrentConsumers(3);
         factory.setMaxConcurrentConsumers(10);
         factory.setMessageConverter(jackson2JsonMessageConverter());
@@ -64,15 +61,56 @@ public class CoreResourceAccessMonitorApplication {
          * It is necessary to register the GeoJsonModule, otherwise the GeoJsonPoint cannot
          * be deserialized by Jackson2JsonMessageConverter.
          */
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new GeoJsonModule());
         converter.setJsonObjectMapper(mapper);
         return converter;
     }
+
     @Bean
-    public RabbitTemplate rabbitTemplate() {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory());
-        return template;
-}
+    public Queue requests() {
+        return new Queue("spring-boot.requests");
+    }
+
+    @Bean
+    public Queue replies() {
+        return new Queue("spring-boot.replies");
+    }
+
+    @Bean
+    public SimpleMessageListenerContainer simpleMessageListenerContainer(ConnectionFactory factory) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(factory);
+        container.setQueueNames(replies().getName());
+        return container;
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory() throws Exception {
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+        // connectionFactory.setPublisherConfirms(true);
+        // connectionFactory.setPublisherReturns(true);
+        // connectionFactory.setUsername("guest");
+        // connectionFactory.setPassword("guest");
+        return connectionFactory;
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter);
+        // rabbitTemplate.setRoutingKey(requests().getName());
+        return rabbitTemplate;
+    }
+
+    @Bean
+    public AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate, SimpleMessageListenerContainer simpleMessageListenerContainer) {
+
+       /**
+         * The following AsyncRabbitTemplate constructor uses "Direct replyTo" for replies.
+         */
+        AsyncRabbitTemplate asyncRabbitTemplate = new AsyncRabbitTemplate(rabbitTemplate, simpleMessageListenerContainer);
+        asyncRabbitTemplate.setReceiveTimeout(5000);
+
+        return asyncRabbitTemplate;
+    }
 }
