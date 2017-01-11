@@ -80,7 +80,7 @@ public class CoreResourceAccessMonitorApplication {
     @Bean
     public SimpleMessageListenerContainer simpleMessageListenerContainer(ConnectionFactory factory) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(factory);
-        container.setQueueNames(replies().getName());
+        // container.setQueueNames(replies().getName());
         return container;
     }
 
@@ -108,7 +108,7 @@ public class CoreResourceAccessMonitorApplication {
        /**
          * The following AsyncRabbitTemplate constructor uses "Direct replyTo" for replies.
          */
-        AsyncRabbitTemplate asyncRabbitTemplate = new AsyncRabbitTemplate(rabbitTemplate, simpleMessageListenerContainer);
+        AsyncRabbitTemplate asyncRabbitTemplate = new AsyncRabbitTemplate(rabbitTemplate);
         asyncRabbitTemplate.setReceiveTimeout(5000);
 
         return asyncRabbitTemplate;
