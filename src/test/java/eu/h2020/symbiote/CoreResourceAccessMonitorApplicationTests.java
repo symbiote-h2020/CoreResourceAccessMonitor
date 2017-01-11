@@ -64,7 +64,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 	}
 
 	@Test
-	public void testGetResourcesUrl() throws Exception {
+	public void testGetResourcesUrls() throws Exception {
 
 		JSONObject query = new JSONObject();
 		JSONArray idList = new JSONArray();
