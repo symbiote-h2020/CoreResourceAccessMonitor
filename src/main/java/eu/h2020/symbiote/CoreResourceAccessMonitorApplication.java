@@ -68,16 +68,6 @@ public class CoreResourceAccessMonitorApplication {
     }
 
     @Bean
-    public Queue requests() {
-        return new Queue("spring-boot.requests");
-    }
-
-    @Bean
-    public Queue replies() {
-        return new Queue("spring-boot.replies");
-    }
-
-    @Bean
     public SimpleMessageListenerContainer simpleMessageListenerContainer(ConnectionFactory factory) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(factory);
         // container.setQueueNames(replies().getName());
@@ -103,7 +93,7 @@ public class CoreResourceAccessMonitorApplication {
     }
 
     @Bean
-    public AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate, SimpleMessageListenerContainer simpleMessageListenerContainer) {
+    public AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate) {
 
        /**
          * The following AsyncRabbitTemplate constructor uses "Direct replyTo" for replies.
