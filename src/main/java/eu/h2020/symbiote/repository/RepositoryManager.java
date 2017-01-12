@@ -47,10 +47,8 @@ public class RepositoryManager {
     )
     public static void savePlatform(Platform deliveredObject) {
 
-        log.info("CRAM received platform: " + deliveredObject);
-
-		platformRepository.save(deliveredObject);
-        log.info("Platform saved to database!");
+        platformRepository.save(deliveredObject);
+        log.info("CRAM saved platform: " + deliveredObject);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -60,9 +58,8 @@ public class RepositoryManager {
     )
     public static void updatePlatform(Platform deliveredObject) {
 
-        log.info("CRAM updated platform: " + deliveredObject);
         platformRepository.save(deliveredObject);
-        log.info("Platform updated to database!");
+        log.info("CRAM updated platform: " + deliveredObject);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -72,10 +69,8 @@ public class RepositoryManager {
     )
     public static void deletePlatform(String platformId) {
 
-        log.info("CRAM deleted platform: " + platformId);
-
         platformRepository.delete(platformId);
-        log.info("Platform deleted from database!");
+        log.info("CRAM deleted platform: " + platformId);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -85,10 +80,8 @@ public class RepositoryManager {
     )
     public static void saveSensor(Sensor deliveredObject) {
 
-        log.info("CRAM received resource: " + deliveredObject);
-
-		sensorRepository.save(deliveredObject);
-        log.info("Sensor saved to database!");
+        sensorRepository.save(deliveredObject);
+        log.info("CRAM saved resource: " + deliveredObject);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -98,10 +91,8 @@ public class RepositoryManager {
     )
     public static void updateSensor(Sensor deliveredObject) {
 
-        log.info("CRAM updated resource: " + deliveredObject);
-
         sensorRepository.save(deliveredObject);
-        log.info("Sensor updated to database!");
+        log.info("CRAM updated resource: " + deliveredObject);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -111,9 +102,7 @@ public class RepositoryManager {
     )
     public static void deleteSensor(String sensorId) {
 
-        log.info("CRAM deleted resource: " + sensorId);
-
         sensorRepository.delete(sensorId);
-        log.info("Sensor deleted from database!");
+        log.info("CRAM deleted resource: " + sensorId);
     }
 }

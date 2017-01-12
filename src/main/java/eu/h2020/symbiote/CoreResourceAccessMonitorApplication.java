@@ -55,6 +55,7 @@ public class CoreResourceAccessMonitorApplication {
     }
 
     @Bean Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
+
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
 
         /**
@@ -67,12 +68,6 @@ public class CoreResourceAccessMonitorApplication {
         return converter;
     }
 
-    @Bean
-    public SimpleMessageListenerContainer simpleMessageListenerContainer(ConnectionFactory factory) {
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(factory);
-        // container.setQueueNames(replies().getName());
-        return container;
-    }
 
     @Bean
     public ConnectionFactory connectionFactory() throws Exception {
@@ -88,7 +83,6 @@ public class CoreResourceAccessMonitorApplication {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter);
-        // rabbitTemplate.setRoutingKey(requests().getName());
         return rabbitTemplate;
     }
 
