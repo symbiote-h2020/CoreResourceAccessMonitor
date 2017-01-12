@@ -48,7 +48,7 @@ public class RpcServer {
         exchange = @Exchange(value = "symbIoTe.CoreResourceAccessMonitor", ignoreDeclarationExceptions = "true", type = ExchangeTypes.DIRECT),
         key = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls")
     )
-    public JSONObject getResourceUrls(JSONObject resourceIdList) {
+    public JSONObject getResourcesUrls(JSONObject resourceIdList) {
 
         log.info("CRAM received a request for the following ids: " + resourceIdList);
 
