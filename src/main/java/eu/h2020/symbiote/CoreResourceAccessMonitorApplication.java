@@ -21,11 +21,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.springframework.amqp.core.Queue;
 
-/**
- * Created by mateuszl on 22.09.2016.
- */
 @EnableDiscoveryClient
 @EnableRabbit
 @SpringBootApplication

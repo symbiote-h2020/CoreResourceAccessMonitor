@@ -100,7 +100,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         });
 
         TimeUnit.SECONDS.sleep(3);
-        assertEquals(resultRef.get().get("sensor_id"), "http://www.symbIoTe.com/sensor1");
-        assertEquals(resultRef.get().get("sensor_id2"), "http://www.symbIoTe.com/sensor2");
+        assertEquals("http://www.symbIoTe.com/sensor1", resultRef.get().get("sensor_id"));
+        assertEquals("http://www.symbIoTe.com/sensor2", resultRef.get().get("sensor_id2"));
     }
 }
