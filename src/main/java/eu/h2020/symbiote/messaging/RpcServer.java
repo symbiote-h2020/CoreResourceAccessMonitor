@@ -14,14 +14,13 @@ import org.springframework.amqp.core.ExchangeTypes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.net.URL;
 import java.net.MalformedURLException;
 
 import org.json.simple.JSONObject;
 
 import eu.h2020.symbiote.repository.PlatformRepository;
-import eu.h2020.symbiote.repository.SensorRepository;
-import eu.h2020.symbiote.model.Sensor;
+import eu.h2020.symbiote.repository.ResourceRepository;
+import eu.h2020.symbiote.model.Resource;
 import eu.h2020.symbiote.model.Platform;
 
 @Component
@@ -31,16 +30,16 @@ public class RpcServer {
 
     private static PlatformRepository platformRepository;
 
-    private static SensorRepository sensorRepository;
+    private static ResourceRepository resourceRepository;
 
     @Autowired
-    public RpcServer(PlatformRepository platformRepository, SensorRepository sensorRepository) {
+    public RpcServer(PlatformRepository platformRepository, ResourceRepository resourceRepository) {
     	
     	Assert.notNull(platformRepository,"Platform repository can not be null!");
     	this.platformRepository = platformRepository;
     	
-    	Assert.notNull(sensorRepository,"Sensor repository can not be null!");
-    	this.sensorRepository = sensorRepository;
+    	Assert.notNull(resourceRepository,"Sensor repository can not be null!");
+    	this.resourceRepository = resourceRepository;
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -57,16 +56,16 @@ public class RpcServer {
         JSONObject ids = new JSONObject();
 
         while (iterator.hasNext()) {
-            Sensor sensor = sensorRepository.findOne(iterator.next());
-            if (sensor != null){
+            Resource resource = resourceRepository.findOne(iterator.next());
+            if (resource != null){
 
-                URL url = sensor.getResourceURL();
-                ids.put(sensor.getId(), url.toString());
-                log.info("AccessController found a resource with id " + sensor.getId() +
+                String url = resource.getResourceURL();
+                ids.put(resource.getId(), url.toString());
+                log.info("AccessController found a resource with id " + resource.getId() +
                      " and url " + url.toString());
             }
             else {
-                log.info("The resource with id " + sensor.getId() +
+                log.info("The resource with id " + resource.getId() +
                      " was not found");
             }
         }

@@ -1,36 +1,21 @@
 package eu.h2020.symbiote.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 /**
- * Created by jawora on 22.09.16.
+ * Created by jawora on 21.12.16.
  */
 public class Location {
-
     @Id
     private String id;
     private String name;
     private String description;
-    private GeoJsonPoint point;
-    private Double altitude;
+    private double latitude;
+    private double longitude;
+    private double altitude;
 
     public Location() {
-    }
 
-    public Location(String name, String description,GeoJsonPoint point, Double altitude) {
-        this.name = name;
-        this.description = description;
-        this.altitude = altitude;
-        this.point = point;
-    }
-
-    public Location(String id, String name, String description,  GeoJsonPoint point, Double altitude) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.altitude = altitude;
-        this.point = point;
     }
 
     public String getId() {
@@ -57,19 +42,27 @@ public class Location {
         this.description = description;
     }
 
-    public GeoJsonPoint getPoint() {
-        return point;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setPoint(GeoJsonPoint point) {
-        this.point = point;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
-    public Double getAltitude() {
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(Double altitude) {
+    public void setAltitude(double altitude) {
         this.altitude = altitude;
     }
 }

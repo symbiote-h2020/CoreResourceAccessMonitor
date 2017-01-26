@@ -35,14 +35,14 @@ import java.util.Random;
 import java.util.List;
 import java.util.Arrays;
 
-import eu.h2020.symbiote.repository.SensorRepository;
+import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.model.*;
 
 import static org.junit.Assert.assertEquals;
 
 /** 
- * This file tests the PlatformRepository and SensorRepository
+ * This file tests the PlatformRepository and ResourceRepository
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -55,7 +55,7 @@ public class MessageQueuesTests {
                           .getLogger(MessageQueuesTests.class);
     
     @Autowired
-    private SensorRepository sensorRepo;
+    private ResourceRepository resourceRepo;
     
     @Autowired    
     private PlatformRepository platformRepo;
@@ -74,13 +74,17 @@ public class MessageQueuesTests {
 
     @Test
     public void PlatformCreatedTest() throws Exception {
-        
-        String platformId = Integer.toString(rand.nextInt(50));        
-        String owner = "mock_owner";
+
+        Platform platform = new Platform ();
+        String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
-        String type = "mock_type";
-        URL plarformUrl = new URL("http://www.symbIoTe.com");
-        Platform platform = new Platform(platformId, owner, name, type, plarformUrl);
+
+        platform.setPlatformId(platformId);
+        platform.setName(name);
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
+
 
         Gson gson = new Gson();
         String objectInJson = gson.toJson(platform);
@@ -108,12 +112,15 @@ public class MessageQueuesTests {
     @Test
     public void PlatformUpdatedTest() throws Exception {
         
-        String platformId = Integer.toString(rand.nextInt(50000));
-        String owner = "mock_owner";
+        Platform platform = new Platform ();
+        String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
-        String type = "mock_type";
-        URL plarformUrl = new URL("http://www.symbIoTe.com");
-        Platform platform = new Platform(platformId, owner, name, type, plarformUrl);
+
+        platform.setPlatformId(platformId);
+        platform.setName(name);
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
 
         platformRepo.save(platform);
 
@@ -146,17 +153,20 @@ public class MessageQueuesTests {
     @Test
     public void PlatformDeletedTest() throws Exception {
 
-        String platformId = Integer.toString(rand.nextInt(50000));
-        String owner = "mock_owner";
+        Platform platform = new Platform ();
+        String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
-        String type = "mock_type";
-        URL plarformUrl = new URL("http://www.symbIoTe.com");
-        Platform platform = new Platform(platformId, owner, name, type, plarformUrl);
+
+        platform.setPlatformId(platformId);
+        platform.setName(name);
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
 
         platformRepo.save(platform);
 
         Gson gson = new Gson();
-        String objectInJson = gson.toJson(platform.getId());
+        String objectInJson = gson.toJson(platform.getPlatformId());
 
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".deleted";
@@ -182,30 +192,40 @@ public class MessageQueuesTests {
     @Test
     public void SensorCreatedTest() throws Exception {
 
-        String platformId = Integer.toString(rand.nextInt(50000));
-        String platformOwner = "mock_owner";        
-        String platformName = "platform" + rand.nextInt(50000);
-        String platformType = "mock_type";
-        URL plarformUrl = new URL("http://www.symbIoTe.com");
-        Platform platform = new Platform(platformId, platformOwner, platformName, platformType, plarformUrl);
+        Platform platform = new Platform ();
+        String platformId = Integer.toString(rand.nextInt(50));
+        String name = "platform" + rand.nextInt(50000);
+        platform.setPlatformId(platformId);
+        platform.setName(name);
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
 
+        Location location = new Location();
         String locationId = Integer.toString(rand.nextInt(50000));
-        String locationName = "Paris";
-        String locationDescription = "mock_description";
-        GeoJsonPoint locationPoint = new GeoJsonPoint(0.1, 0.1);
-        Double locationAltitude = 0.1;
-        Location location = new Location(locationId, locationName, locationDescription, locationPoint, locationAltitude);
+        location.setId(locationId);
+        location.setName("location_name");
+        location.setDescription("location_description");
+        location.setLatitude(0.1);
+        location.setLongitude(0.2);
+        location.setAltitude(0.3);
 
-        String sensorId = Integer.toString(rand.nextInt(50000));
-        String sensorName = "sensor" + rand.nextInt(50000);
-        String sensorOwner = "mock_sensor_owner";
-        String sensorDescription = "mock_description";
-        List<String> sensorObservedProperties = Arrays.asList("air", "temp");
-        URL sensorUrl = new URL("http://www.symbIoTe.com/" + sensorName);
-        Sensor sensor = new Sensor(sensorId, sensorName, sensorOwner, sensorDescription, location, sensorObservedProperties, platform, sensorUrl);
+        Resource resource = new Resource();
+        String resourceId = Integer.toString(rand.nextInt(50000));
+        String resourceName = "sensor" + rand.nextInt(50000);
+        List<String> observedProperties = Arrays.asList("air", "temp");
+        resource.setId(resourceId);
+        resource.setName(resourceName);
+        resource.setOwner("OpenIoT");
+        resource.setDescription("Temperature Sensor");
+        resource.setObservedProperties(observedProperties);
+        resource.setResourceURL("http://www.symbIoTe.com/sensor1");
+        resource.setLocation(location);
+        resource.setFeatureOfInterest("Nothing");
+        resource.setPlatformId("platform_id");
 
         Gson gson = new Gson();        
-        String objectInJson = gson.toJson(sensor);
+        String objectInJson = gson.toJson(resource);
 
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".created";
@@ -223,52 +243,62 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Sensor result = sensorRepo.findOne(sensorId);
-        assertEquals(result.getName(), sensorName);    
+        Resource result = resourceRepo.findOne(resourceId);
+        assertEquals(result.getName(), resourceName);    
 	}
 
     @Test
     public void SensorUpdatedTest() throws Exception {
 
-        String platformId = Integer.toString(rand.nextInt(50000));
-        String platformOwner = "mock_owner";
-        String platformName = "platform" + rand.nextInt(50000);        
-        String platformType = "mock_type";        
-        URL plarformUrl = new URL("http://www.symbIoTe.com");        
-        Platform platform = new Platform(platformId, platformOwner, platformName, platformType, plarformUrl);
+        Platform platform = new Platform ();
+        String platformId = Integer.toString(rand.nextInt(50));
+        String name = "platform" + rand.nextInt(50000);
+        platform.setPlatformId(platformId);
+        platform.setName(name);
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
 
+        Location location = new Location();
         String locationId = Integer.toString(rand.nextInt(50000));
-        String locationName = "Paris";
-        String locationDescription = "mock_description";
-        GeoJsonPoint locationPoint = new GeoJsonPoint(0.1, 0.1);        
-        Double locationAltitude = 0.1;        
-        Location location = new Location(locationId, locationName, locationDescription, locationPoint, locationAltitude);
+        location.setId(locationId);
+        location.setName("location_name");
+        location.setDescription("location_description");
+        location.setLatitude(0.1);
+        location.setLongitude(0.2);
+        location.setAltitude(0.3);
 
-        String sensorId = Integer.toString(rand.nextInt(50000));
-        String sensorName = "sensor" + rand.nextInt(50000);
-        String sensorOwner = "mock_sensor_owner";
-        String sensorDescription = "mock_description";
-        List<String> sensorObservedProperties = Arrays.asList("air", "temp");        
-        URL sensorUrl = new URL("http://www.symbIoTe.com/" + sensorName);        
-        Sensor sensor = new Sensor(sensorId, sensorName, sensorOwner, sensorDescription, location, sensorObservedProperties, platform, sensorUrl);
+        Resource resource = new Resource();
+        String resourceId = Integer.toString(rand.nextInt(50000));
+        String resourceName = "sensor" + rand.nextInt(50000);
+        List<String> observedProperties = Arrays.asList("air", "temp");
+        resource.setId(resourceId);
+        resource.setName(resourceName);
+        resource.setOwner("OpenIoT");
+        resource.setDescription("Temperature Sensor");
+        resource.setObservedProperties(observedProperties);
+        resource.setResourceURL("http://www.symbIoTe.com/sensor1");
+        resource.setLocation(location);
+        resource.setFeatureOfInterest("Nothing");
+        resource.setPlatformId("platform_id");
 
-        sensorRepo.save(sensor);
+        resourceRepo.save(resource);
 
         Gson gson = new Gson();
 
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".updated";
 
-        String sensorNewName = "sensor" + rand.nextInt(50000);
-        sensor.setName(sensorNewName);        
-        String objectInJson = gson.toJson(sensor);
+        String resourceNewName = "resource" + rand.nextInt(50000);
+        resource.setName(resourceNewName);        
+        String objectInJson = gson.toJson(resource);
         
         MessageProperties props = MessagePropertiesBuilder.newInstance()
             .setContentType("application/json")
             .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
             .build();
 
-        props.setInferredArgumentType(Sensor.class);
+        props.setInferredArgumentType(Resource.class);
 
         Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
             .andProperties(props)
@@ -279,39 +309,49 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Sensor result = sensorRepo.findOne(sensorId);
-        assertEquals(result.getName(), sensorNewName);    
+        Resource result = resourceRepo.findOne(resourceId);
+        assertEquals(result.getName(), resourceNewName);    
 	}
 
     @Test
     public void SensorDeletedTest() throws Exception {
 
-        String platformId = Integer.toString(rand.nextInt(50000));
-        String platformOwner = "mock_owner";
-        String platformName = "platform" + rand.nextInt(50000);
-        String platformType = "mock_type";
-        URL plarformUrl = new URL("http://www.symbIoTe.com");
-        Platform platform = new Platform(platformId, platformOwner, platformName, platformType, plarformUrl);
+        Platform platform = new Platform ();
+        String platformId = Integer.toString(rand.nextInt(50));
+        String name = "platform" + rand.nextInt(50000);
+        platform.setPlatformId(platformId);
+        platform.setName(name);
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
 
+        Location location = new Location();
         String locationId = Integer.toString(rand.nextInt(50000));
-        String locationName = "Paris";
-        String locationDescription = "mock_description";
-        GeoJsonPoint locationPoint = new GeoJsonPoint(0.1, 0.1);
-        Double locationAltitude = 0.1;
-        Location location = new Location(locationId, locationName, locationDescription, locationPoint, locationAltitude);
+        location.setId(locationId);
+        location.setName("location_name");
+        location.setDescription("location_description");
+        location.setLatitude(0.1);
+        location.setLongitude(0.2);
+        location.setAltitude(0.3);
 
-        String sensorId = Integer.toString(rand.nextInt(50000));
-        String sensorName = "sensor" + rand.nextInt(50000);
-        String sensorOwner = "mock_sensor_owner";
-        String sensorDescription = "mock_description";
-        List<String> sensorObservedProperties = Arrays.asList("air", "temp");
-        URL sensorUrl = new URL("http://www.symbIoTe.com/" + sensorName);
-        Sensor sensor = new Sensor(sensorId, sensorName, sensorOwner, sensorDescription, location, sensorObservedProperties, platform, sensorUrl);
+        Resource resource = new Resource();
+        String resourceId = Integer.toString(rand.nextInt(50000));
+        String resourceName = "sensor" + rand.nextInt(50000);
+        List<String> observedProperties = Arrays.asList("air", "temp");
+        resource.setId(resourceId);
+        resource.setName(resourceName);
+        resource.setOwner("OpenIoT");
+        resource.setDescription("Temperature Sensor");
+        resource.setObservedProperties(observedProperties);
+        resource.setResourceURL("http://www.symbIoTe.com/sensor1");
+        resource.setLocation(location);
+        resource.setFeatureOfInterest("Nothing");
+        resource.setPlatformId("platform_id");
 
-        sensorRepo.save(sensor);
+        resourceRepo.save(resource);
 
         Gson gson = new Gson();
-        String objectInJson = gson.toJson(sensor.getId());
+        String objectInJson = gson.toJson(resource.getId());
 
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".deleted";
@@ -329,7 +369,7 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Sensor result = sensorRepo.findOne(sensorId);
+        Resource result = resourceRepo.findOne(resourceId);
         assertEquals(result, null);
     }
 

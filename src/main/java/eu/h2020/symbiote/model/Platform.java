@@ -1,56 +1,31 @@
 package eu.h2020.symbiote.model;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.net.URL;
 
 /**
- * Created by jawora on 22.09.16.
+ * Created by mateuszl on 09.01.2017.
  */
-@Document
 public class Platform {
 
     @Id
-    private String id;
-    private String owner;
+    private String platformId;
     private String name;
-    private String type;
-    private URL resourceAccessProxyUrl;
+    private String description;
+    private String url;
+    private String informationModelId;
 
     public Platform() {
 
     }
 
-    public Platform(String owner, String name, String type, URL resourceAccessProxyUrl) {
-        this.owner = owner;
-        this.name = name;
-        this.type = type;
-        this.resourceAccessProxyUrl = resourceAccessProxyUrl;
+    public String getPlatformId() {
+        return platformId;
     }
 
-    public Platform(String id, String owner, String name, String type, URL resourceAccessProxyUrl) {
-        this.id = id;
-        this.owner = owner;
-        this.name = name;
-        this.type = type;
-        this.resourceAccessProxyUrl = resourceAccessProxyUrl;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setPlatformId(String platformId) {
+        this.platformId = platformId;
     }
 
     public String getName() {
@@ -61,19 +36,38 @@ public class Platform {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public String getDescription() {
+        return description;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public URL getResourceAccessProxyUrl() {
-        return resourceAccessProxyUrl;
+    public String getUrl() {
+        return url;
     }
 
-    public void setResourceAccessProxyUrl(URL resourceAccessProxyUrl) {
-        this.resourceAccessProxyUrl = resourceAccessProxyUrl;
+    public void setUrl(String url) {
+        this.url = url;
     }
+
+    public String getInformationModelId() {
+        return informationModelId;
+    }
+
+    public void setInformationModelId(String informationModelId) {
+        this.informationModelId = informationModelId;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
 }

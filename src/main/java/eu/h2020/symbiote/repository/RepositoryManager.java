@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.model.Platform;
-import eu.h2020.symbiote.model.Sensor;
+import eu.h2020.symbiote.model.Resource;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -28,16 +28,16 @@ public class RepositoryManager {
 
     private static PlatformRepository platformRepository;
 
-    private static SensorRepository sensorRepository;
+    private static ResourceRepository resourceRepository;
 
     @Autowired
-    public RepositoryManager(PlatformRepository platformRepository, SensorRepository sensorRepository){
+    public RepositoryManager(PlatformRepository platformRepository, ResourceRepository resourceRepository){
     	
     	Assert.notNull(platformRepository,"Platform repository can not be null!");
     	this.platformRepository = platformRepository;
     	
-    	Assert.notNull(sensorRepository,"Sensor repository can not be null!");
-    	this.sensorRepository = sensorRepository;
+    	Assert.notNull(resourceRepository,"Sensor repository can not be null!");
+    	this.resourceRepository = resourceRepository;
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -78,9 +78,9 @@ public class RepositoryManager {
         exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.created")
     )
-    public static void saveSensor(Sensor deliveredObject) {
+    public static void saveResource(Resource deliveredObject) {
 
-        sensorRepository.save(deliveredObject);
+        resourceRepository.save(deliveredObject);
         log.info("CRAM saved resource: " + deliveredObject);
     }
 
@@ -89,9 +89,9 @@ public class RepositoryManager {
         exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.updated")
     )
-    public static void updateSensor(Sensor deliveredObject) {
+    public static void updateResource(Resource deliveredObject) {
 
-        sensorRepository.save(deliveredObject);
+        resourceRepository.save(deliveredObject);
         log.info("CRAM updated resource: " + deliveredObject);
     }
 
@@ -100,9 +100,9 @@ public class RepositoryManager {
         exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.deleted")
     )
-    public static void deleteSensor(String sensorId) {
+    public static void deleteResource(String resourceId) {
 
-        sensorRepository.delete(sensorId);
-        log.info("CRAM deleted resource: " + sensorId);
+        resourceRepository.delete(resourceId);
+        log.info("CRAM deleted resource: " + resourceId);
     }
 }

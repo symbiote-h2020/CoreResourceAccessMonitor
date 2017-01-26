@@ -11,12 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate.RabbitConverterFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -47,19 +45,51 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Before    
     public void setUp() throws Exception {
 
-        GeoJsonPoint point = new GeoJsonPoint(0.1, 0.1);
-        Location location = new Location("location_id", "location_name", "location_description", point, 0.1);
-        URL plarformUrl = new URL("http://www.symbIoTe.com");
-        URL sensor1Url = new URL("http://www.symbIoTe.com/sensor1");
-        URL sensor2Url = new URL("http://www.symbIoTe.com/sensor2");
+        String sensor1Url = "http://www.symbIoTe.com/sensor1";
+        String sensor2Url = "http://www.symbIoTe.com/sensor2";
         List<String> observedProperties = Arrays.asList("temp", "air");
-        Platform platform = new Platform ("platform_id", "platform_owner", "platform_name", "platform_type", plarformUrl);
-        Sensor sensor = new Sensor("sensor_id", "Sensor1", "OpenIoT", "Temperature Sensor", location, observedProperties, platform, sensor1Url);
-        Sensor sensor2 = new Sensor("sensor_id2", "Sensor2", "OpenIoT", "Temperature Sensor", location, observedProperties, platform, sensor2Url);
+        
+        Location location = new Location();
+        location.setId("location_id");
+        location.setName("location_name");
+        location.setDescription("location_description");
+        location.setLatitude(0.1);
+        location.setLongitude(0.2);
+        location.setAltitude(0.3);
+
+        Platform platform = new Platform ();
+        platform.setPlatformId("platform_id");
+        platform.setName("platform_name");
+        platform.setDescription("platform_description");
+        platform.setUrl("http://www.symbIoTe.com");
+        platform.setInformationModelId("platform_info_model");
+
+        Resource resource1 = new Resource();
+        resource1.setId("sensor_id");
+        resource1.setName("Sensor1");
+        resource1.setOwner("OpenIoT");
+        resource1.setDescription("Temperature Sensor");
+        resource1.setObservedProperties(observedProperties);
+        resource1.setResourceURL("http://www.symbIoTe.com/sensor1");
+        resource1.setLocation(location);
+        resource1.setFeatureOfInterest("Nothing");
+        resource1.setPlatformId("platform_id");
+
+
+        Resource resource2 = new Resource();
+        resource2.setId("sensor_id2");
+        resource2.setName("Sensor2");
+        resource2.setOwner("OpenIoT");
+        resource2.setDescription("Temperature Sensor");
+        resource2.setObservedProperties(observedProperties);
+        resource2.setResourceURL("http://www.symbIoTe.com/sensor2");
+        resource2.setLocation(location);
+        resource2.setFeatureOfInterest("Nothing");
+        resource2.setPlatformId("platform_id");
 
         RepositoryManager.savePlatform(platform);
-        RepositoryManager.saveSensor(sensor);
-        RepositoryManager.saveSensor(sensor2);
+        RepositoryManager.saveResource(resource1);
+        RepositoryManager.saveResource(resource2);
     }
     
     @Test    
@@ -99,7 +129,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         });
 
-        TimeUnit.SECONDS.sleep(3);
+        while(!future.isDone())
+            TimeUnit.SECONDS.sleep(1);
+
         assertEquals("http://www.symbIoTe.com/sensor1", resultRef.get().get("sensor_id"));
         assertEquals("http://www.symbIoTe.com/sensor2", resultRef.get().get("sensor_id2"));
     }
