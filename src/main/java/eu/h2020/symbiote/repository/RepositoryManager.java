@@ -42,7 +42,9 @@ public class RepositoryManager {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-created", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
+        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
+                             durable = "true", autoDelete  = "false", internal = "false", 
+                             type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.created")
     )
     public static void savePlatform(Platform deliveredObject) {
@@ -53,7 +55,9 @@ public class RepositoryManager {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-updated", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
+        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
+                             durable = "true", autoDelete  = "false", internal = "false", 
+                             type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.updated")
     )
     public static void updatePlatform(Platform deliveredObject) {
@@ -64,7 +68,9 @@ public class RepositoryManager {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
+        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
+                             durable = "true", autoDelete  = "false", internal = "false", 
+                             type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.deleted")
     )
     public static void deletePlatform(String platformId) {
@@ -75,7 +81,9 @@ public class RepositoryManager {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-created", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
+        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", 
+                             durable = "true", autoDelete  = "false", internal = "false", 
+                             type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.created")
     )
     public static void saveResource(Resource deliveredObject) {
@@ -86,7 +94,9 @@ public class RepositoryManager {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-updated", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
+        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", 
+                             durable = "true", autoDelete  = "false", internal = "false", 
+                             type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.updated")
     )
     public static void updateResource(Resource deliveredObject) {
@@ -97,7 +107,9 @@ public class RepositoryManager {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", type = ExchangeTypes.TOPIC),
+        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", 
+                             durable = "true", autoDelete  = "false", internal = "false", 
+                             type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.deleted")
     )
     public static void deleteResource(String resourceId) {
