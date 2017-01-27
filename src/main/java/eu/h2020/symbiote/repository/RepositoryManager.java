@@ -73,10 +73,10 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.deleted")
     )
-    public static void deletePlatform(String platformId) {
+    public static void deletePlatform(Platform deliveredObject) {
 
-        platformRepository.delete(platformId);
-        log.info("CRAM deleted platform: " + platformId);
+        platformRepository.delete(deliveredObject.getPlatformId());
+        log.info("CRAM deleted platform: " + deliveredObject.getPlatformId());
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -112,9 +112,9 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.deleted")
     )
-    public static void deleteResource(String resourceId) {
+    public static void deleteResource(Resource deliveredObject) {
 
-        resourceRepository.delete(resourceId);
-        log.info("CRAM deleted resource: " + resourceId);
+        resourceRepository.delete(deliveredObject.getId());
+        log.info("CRAM deleted resource: " + deliveredObject.getId());
     }
 }

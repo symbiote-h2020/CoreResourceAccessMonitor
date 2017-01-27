@@ -166,7 +166,7 @@ public class MessageQueuesTests {
         platformRepo.save(platform);
 
         Gson gson = new Gson();
-        String objectInJson = gson.toJson(platform.getPlatformId());
+        String objectInJson = gson.toJson(platform);
 
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".deleted";
@@ -351,7 +351,7 @@ public class MessageQueuesTests {
         resourceRepo.save(resource);
 
         Gson gson = new Gson();
-        String objectInJson = gson.toJson(resource.getId());
+        String objectInJson = gson.toJson(resource);
 
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".deleted";
