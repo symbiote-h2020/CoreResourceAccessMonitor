@@ -110,7 +110,7 @@ public class RepositoryManager {
         resourceRepository.save(deliveredObject);
         Gson gson = new Gson();
         String objectInJson = gson.toJson(deliveredObject);
-        log.info("CRAM saved resource: " + objectInJson);    }
+        log.info("CRAM updated resource: " + objectInJson);    }
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -124,5 +124,6 @@ public class RepositoryManager {
         resourceRepository.delete(deliveredObject.getId());
         Gson gson = new Gson();
         String objectInJson = gson.toJson(deliveredObject);
-        log.info("CRAM saved resource: " + objectInJson);    }
+        log.info("CRAM deleted resource: " + deliveredObject.getPlatformId());
+    }
 }
