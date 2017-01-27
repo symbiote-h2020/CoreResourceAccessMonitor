@@ -50,7 +50,9 @@ public class RepositoryManager {
     public static void savePlatform(Platform deliveredObject) {
 
         platformRepository.save(deliveredObject);
-        log.info("CRAM saved platform: " + deliveredObject);
+        Gson gson = new Gson();
+        String objectInJson = gson.toJson(deliveredObject);
+        log.info("CRAM saved platform: " + objectInJson);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -63,7 +65,9 @@ public class RepositoryManager {
     public static void updatePlatform(Platform deliveredObject) {
 
         platformRepository.save(deliveredObject);
-        log.info("CRAM updated platform: " + deliveredObject);
+        Gson gson = new Gson();
+        String objectInJson = gson.toJson(deliveredObject);
+        log.info("CRAM saved platform: " + objectInJson);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -89,7 +93,9 @@ public class RepositoryManager {
     public static void saveResource(Resource deliveredObject) {
 
         resourceRepository.save(deliveredObject);
-        log.info("CRAM saved resource: " + deliveredObject);
+        Gson gson = new Gson();
+        String objectInJson = gson.toJson(deliveredObject);
+        log.info("CRAM saved resource: " + objectInJson);
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -102,8 +108,9 @@ public class RepositoryManager {
     public static void updateResource(Resource deliveredObject) {
 
         resourceRepository.save(deliveredObject);
-        log.info("CRAM updated resource: " + deliveredObject);
-    }
+        Gson gson = new Gson();
+        String objectInJson = gson.toJson(deliveredObject);
+        log.info("CRAM saved resource: " + objectInJson);    }
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -115,6 +122,7 @@ public class RepositoryManager {
     public static void deleteResource(Resource deliveredObject) {
 
         resourceRepository.delete(deliveredObject.getId());
-        log.info("CRAM deleted resource: " + deliveredObject.getId());
-    }
+        Gson gson = new Gson();
+        String objectInJson = gson.toJson(deliveredObject);
+        log.info("CRAM saved resource: " + objectInJson);    }
 }

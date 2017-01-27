@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -29,9 +30,17 @@ public class CoreResourceAccessMonitorApplication {
 
 	private static Log log = LogFactory.getLog(CoreResourceAccessMonitorApplication.class);
 
+    @Value("${rabbit.host}") 
+    private String rabbitHost;
+
+    @Value("${rabbit.username}") 
+    private String rabbitUsername;
+
+    @Value("${rabbit.password}") 
+    private String rabbitPassword;
+
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
-
     }
 
     @Bean
@@ -67,11 +76,12 @@ public class CoreResourceAccessMonitorApplication {
 
     @Bean
     public ConnectionFactory connectionFactory() throws Exception {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHost);
         // connectionFactory.setPublisherConfirms(true);
         // connectionFactory.setPublisherReturns(true);
-        // connectionFactory.setUsername("guest");
-        // connectionFactory.setPassword("guest");
+        log.info("Rabbit Host!!!!! " + rabbitHost);
+        connectionFactory.setUsername(rabbitUsername);
+        connectionFactory.setPassword(rabbitPassword);
         return connectionFactory;
     }
 
