@@ -67,8 +67,7 @@ public class RpcServer {
                      " and url " + url.toString());
             }
             else {
-                log.info("The resource with id " + resource.getId() +
-                     " was not found");
+                log.info("The resource with specified id was not found");
             }
         }
 
