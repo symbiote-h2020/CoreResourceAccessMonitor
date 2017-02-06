@@ -106,7 +106,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Platform result = platformRepo.findOne(platformId);
-        assertEquals(result.getName(), name);
+        assertEquals(name, result.getName());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Platform result = platformRepo.findOne(platformId);
-        assertEquals(result.getName(), newName);
+        assertEquals(newName, result.getName());
     }
 
     @Test
@@ -186,7 +186,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Platform result = platformRepo.findOne(platformId);
-        assertEquals(result, null);    
+        assertEquals(null, result);    
 	}
 
     @Test
@@ -246,8 +246,8 @@ public class MessageQueuesTests {
 
         Resource result = resourceRepo.findOne(resourceId);
 
-        assertEquals(result.getResourceURL(), "http://www.symbIoTe.com/rap/Sensor(\"" + resourceId
-               + "\")/observations");    
+        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resourceId
+               + "')/observation", result.getResourceURL());    
 	}
 
     @Test
@@ -314,8 +314,8 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Resource result = resourceRepo.findOne(resourceId);
-        assertEquals(result.getResourceURL(), "http://www.symbIoTe.com/rap/Sensor(\"" + resourceId
-               + "\")/observations");     
+        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resourceId
+               + "')/observation", result.getResourceURL());     
 	}
 
     @Test
@@ -375,7 +375,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Resource result = resourceRepo.findOne(resourceId);
-        assertEquals(result, null);
+        assertEquals(null, result);
     }
 
 }

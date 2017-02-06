@@ -140,7 +140,7 @@ public class RepositoryManager {
 
         Platform platform = platformRepository.findOne(resource.getPlatformId());
 
-        return platform.getUrl() + "/rap/Sensor(\"" + resource.getId()
-               + "\")/observations";
+        return platform.getUrl() + "/rap/Sensor('" + resource.getId()
+               + "')/observation";
     }
 }
