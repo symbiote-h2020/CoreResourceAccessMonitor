@@ -25,6 +25,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
 import eu.h2020.symbiote.repository.RepositoryManager;
+import eu.h2020.symbiote.repository.ResourceRepository;
+import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.model.*;
 
 import static org.junit.Assert.assertEquals;
@@ -40,7 +42,13 @@ public class CoreResourceAccessMonitorApplicationTests {
     
     @Autowired    
     private AsyncRabbitTemplate asyncRabbitTemplate;
+
+    @Autowired
+    private ResourceRepository resourceRepo;
     
+    @Autowired    
+    private PlatformRepository platformRepo;
+
     // Execute the Setup method before the test.    
     @Before    
     public void setUp() throws Exception {
@@ -87,9 +95,9 @@ public class CoreResourceAccessMonitorApplicationTests {
         resource2.setFeatureOfInterest("Nothing");
         resource2.setPlatformId("platform_id");
 
-        RepositoryManager.savePlatform(platform);
-        RepositoryManager.saveResource(resource1);
-        RepositoryManager.saveResource(resource2);
+        platformRepo.save(platform);
+        resourceRepo.save(resource1);
+        resourceRepo.save(resource2);
     }
     
     @Test    

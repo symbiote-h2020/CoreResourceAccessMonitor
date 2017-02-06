@@ -91,10 +91,14 @@ public class RepositoryManager {
         key = "symbIoTe.resource.created")
     )
     public static void saveResource(Resource deliveredObject) {
-
-        resourceRepository.save(deliveredObject);
         Gson gson = new Gson();
         String objectInJson = gson.toJson(deliveredObject);
+        log.info("CRAM received resource registration: " + objectInJson);
+
+        deliveredObject.setResourceURL(generateResourceURL(deliveredObject));
+        resourceRepository.save(deliveredObject);
+
+        objectInJson = gson.toJson(deliveredObject);
         log.info("CRAM saved resource: " + objectInJson);
     }
 
@@ -107,7 +111,9 @@ public class RepositoryManager {
     )
     public static void updateResource(Resource deliveredObject) {
 
+        deliveredObject.setResourceURL(generateResourceURL(deliveredObject));
         resourceRepository.save(deliveredObject);
+
         Gson gson = new Gson();
         String objectInJson = gson.toJson(deliveredObject);
         log.info("CRAM updated resource: " + objectInJson);    }
@@ -122,8 +128,19 @@ public class RepositoryManager {
     public static void deleteResource(Resource deliveredObject) {
 
         resourceRepository.delete(deliveredObject.getId());
+    
         Gson gson = new Gson();
         String objectInJson = gson.toJson(deliveredObject);
-        log.info("CRAM deleted resource: " + deliveredObject.getPlatformId());
+        log.info("CRAM deleted resource: " + deliveredObject.getId());
+    }
+
+
+    private static String generateResourceURL (Resource resource) {
+
+
+        Platform platform = platformRepository.findOne(resource.getPlatformId());
+
+        return platform.getUrl() + "/rap/Sensor(\"" + resource.getId()
+               + "\")/observations";
     }
 }

@@ -200,6 +200,7 @@ public class MessageQueuesTests {
         platform.setDescription("platform_description");
         platform.setUrl("http://www.symbIoTe.com");
         platform.setInformationModelId("platform_info_model");
+        platformRepo.save(platform);
 
         Location location = new Location();
         String locationId = Integer.toString(rand.nextInt(50000));
@@ -222,7 +223,7 @@ public class MessageQueuesTests {
         resource.setResourceURL("http://www.symbIoTe.com/sensor1");
         resource.setLocation(location);
         resource.setFeatureOfInterest("Nothing");
-        resource.setPlatformId("platform_id");
+        resource.setPlatformId(platformId);
 
         Gson gson = new Gson();        
         String objectInJson = gson.toJson(resource);
@@ -244,7 +245,9 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Resource result = resourceRepo.findOne(resourceId);
-        assertEquals(result.getName(), resourceName);    
+
+        assertEquals(result.getResourceURL(), "http://www.symbIoTe.com/rap/Sensor(\"" + resourceId
+               + "\")/observations");    
 	}
 
     @Test
@@ -258,6 +261,7 @@ public class MessageQueuesTests {
         platform.setDescription("platform_description");
         platform.setUrl("http://www.symbIoTe.com");
         platform.setInformationModelId("platform_info_model");
+        platformRepo.save(platform);
 
         Location location = new Location();
         String locationId = Integer.toString(rand.nextInt(50000));
@@ -280,7 +284,7 @@ public class MessageQueuesTests {
         resource.setResourceURL("http://www.symbIoTe.com/sensor1");
         resource.setLocation(location);
         resource.setFeatureOfInterest("Nothing");
-        resource.setPlatformId("platform_id");
+        resource.setPlatformId(platformId);
 
         resourceRepo.save(resource);
 
@@ -310,7 +314,8 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Resource result = resourceRepo.findOne(resourceId);
-        assertEquals(result.getName(), resourceNewName);    
+        assertEquals(result.getResourceURL(), "http://www.symbIoTe.com/rap/Sensor(\"" + resourceId
+               + "\")/observations");     
 	}
 
     @Test
