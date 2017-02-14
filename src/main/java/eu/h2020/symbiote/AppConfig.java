@@ -1,9 +1,5 @@
 package eu.h2020.symbiote;
 
-/**
- * Created by mateuszl on 30.09.2016.
- */
-
 import com.mongodb.Mongo;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;

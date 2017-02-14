@@ -96,8 +96,8 @@ public class CoreResourceAccessMonitorApplication {
     public AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate) {
 
        /**
-         * The following AsyncRabbitTemplate constructor uses "Direct replyTo" for replies.
-         */
+        * The following AsyncRabbitTemplate constructor uses "Direct replyTo" for replies.
+        */
         AsyncRabbitTemplate asyncRabbitTemplate = new AsyncRabbitTemplate(rabbitTemplate);
         asyncRabbitTemplate.setReceiveTimeout(5000);
 

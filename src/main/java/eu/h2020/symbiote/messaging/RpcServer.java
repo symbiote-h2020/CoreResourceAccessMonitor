@@ -23,6 +23,17 @@ import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.model.Resource;
 import eu.h2020.symbiote.model.Platform;
 
+
+/**
+* <h1>RPC Server</h1>
+* 
+* It listens to RPCs from other symbIoTe Core Components via message queues.
+*
+* @author  Vasileios Glykantzis
+* @version 1.0
+* @since   2017-01-26
+*/
+
 @Component
 public class RpcServer {
 
@@ -31,6 +42,7 @@ public class RpcServer {
     private static PlatformRepository platformRepository;
 
     private static ResourceRepository resourceRepository;
+
 
     @Autowired
     public RpcServer(PlatformRepository platformRepository, ResourceRepository resourceRepository) {
@@ -42,6 +54,17 @@ public class RpcServer {
     	this.resourceRepository = resourceRepository;
     }
 
+   /**
+   * Spring AMQP Listener for providing resource urls. This method is invoked when a
+   * request for access to resources is made by an aplication/enabler. CoreInterface
+   * forwards a list of resource ids to CoreResourceAccessMonitor coming from the 
+   * application/enabler and CoreResourceAccessMonitor responds with the urls of 
+   * the specified resources.
+   *
+   * 
+   * @param resourceIdList The list of resource ids
+   * @return The urls of the resources specified in the resourceIdList
+   */
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-coreAPI-get_resource_urls", durable = "true", autoDelete = "false", exclusive = "false"),
         exchange = @Exchange(value = "symbIoTe.CoreResourceAccessMonitor", ignoreDeclarationExceptions = "true", 
