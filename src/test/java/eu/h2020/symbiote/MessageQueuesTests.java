@@ -41,6 +41,8 @@ import eu.h2020.symbiote.model.*;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.rules.ExpectedException;
+
 /** 
  * This file tests the PlatformRepository and ResourceRepository
  */
@@ -75,260 +77,166 @@ public class MessageQueuesTests {
     @Test
     public void PlatformCreatedTest() throws Exception {
 
-        Platform platform = new Platform ();
-        String platformId = Integer.toString(rand.nextInt(50));
-        String name = "platform" + rand.nextInt(50000);
-
-        platform.setPlatformId(platformId);
-        platform.setName(name);
-        platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com");
-        platform.setInformationModelId("platform_info_model");
-
-
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(platform);
+        Platform platform = createPlatform();
 
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".created";
 
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchangeName, routingKey, message);
+        sendPlatformMessage(exchangeName, routingKey, platform);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Platform result = platformRepo.findOne(platformId);
-        assertEquals(name, result.getName());
+        Platform result = platformRepo.findOne(platform.getPlatformId());
+        assertEquals(platform.getName(), result.getName());
+
+        platformRepo.delete(platform.getPlatformId());
     }
 
     @Test
     public void PlatformUpdatedTest() throws Exception {
         
-        Platform platform = new Platform ();
-        String platformId = Integer.toString(rand.nextInt(50));
-        String name = "platform" + rand.nextInt(50000);
-
-        platform.setPlatformId(platformId);
-        platform.setName(name);
-        platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com");
-        platform.setInformationModelId("platform_info_model");
+        Platform platform = createPlatform();
 
         platformRepo.save(platform);
-
-        Gson gson = new Gson();
 
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".updated";
 
         String newName = "platform" + rand.nextInt(50000);
         platform.setName(newName);
-        String objectInJson = gson.toJson(platform);
 
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchangeName, routingKey, message);
+        sendPlatformMessage(exchangeName, routingKey, platform);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Platform result = platformRepo.findOne(platformId);
+        Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(newName, result.getName());
+
+        platformRepo.delete(platform.getPlatformId());
+
     }
 
     @Test
     public void PlatformDeletedTest() throws Exception {
 
-        Platform platform = new Platform ();
-        String platformId = Integer.toString(rand.nextInt(50));
-        String name = "platform" + rand.nextInt(50000);
-
-        platform.setPlatformId(platformId);
-        platform.setName(name);
-        platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com");
-        platform.setInformationModelId("platform_info_model");
+        Platform platform = createPlatform();
 
         platformRepo.save(platform);
-
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(platform);
 
         String exchangeName = "symbIoTe.platform";
         String routingKey = exchangeName + ".deleted";
 
-
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchangeName, routingKey, message);
+        sendPlatformMessage(exchangeName, routingKey, platform);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Platform result = platformRepo.findOne(platformId);
+        Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(null, result);    
 	}
 
     @Test
     public void SensorCreatedTest() throws Exception {
 
-        Platform platform = new Platform ();
-        String platformId = Integer.toString(rand.nextInt(50));
-        String name = "platform" + rand.nextInt(50000);
-        platform.setPlatformId(platformId);
-        platform.setName(name);
-        platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com");
-        platform.setInformationModelId("platform_info_model");
+        Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Location location = new Location();
-        String locationId = Integer.toString(rand.nextInt(50000));
-        location.setId(locationId);
-        location.setName("location_name");
-        location.setDescription("location_description");
-        location.setLatitude(0.1);
-        location.setLongitude(0.2);
-        location.setAltitude(0.3);
+        Location location = createLocation();
 
-        Resource resource = new Resource();
-        String resourceId = Integer.toString(rand.nextInt(50000));
-        String resourceName = "sensor" + rand.nextInt(50000);
-        List<String> observedProperties = Arrays.asList("air", "temp");
-        resource.setId(resourceId);
-        resource.setName(resourceName);
-        resource.setOwner("OpenIoT");
-        resource.setDescription("Temperature Sensor");
-        resource.setObservedProperties(observedProperties);
-        resource.setResourceURL("http://www.symbIoTe.com/sensor1");
-        resource.setLocation(location);
-        resource.setFeatureOfInterest("Nothing");
-        resource.setPlatformId(platformId);
-
-        Gson gson = new Gson();        
-        String objectInJson = gson.toJson(resource);
+        Resource resource = createResource(platform, location);
 
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".created";
 
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchangeName, routingKey, message);
+        sendResourceMessage(exchangeName, routingKey, resource);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resourceId);
+        Resource result = resourceRepo.findOne(resource.getId());
 
-        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resourceId
-               + "')/observation", result.getResourceURL());    
+        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
+               + "')/observation", result.getResourceURL());   
+
+        platformRepo.delete(platform.getPlatformId());
+        resourceRepo.delete(resource.getId());
+
 	}
 
     @Test
     public void SensorUpdatedTest() throws Exception {
 
-        Platform platform = new Platform ();
-        String platformId = Integer.toString(rand.nextInt(50));
-        String name = "platform" + rand.nextInt(50000);
-        platform.setPlatformId(platformId);
-        platform.setName(name);
-        platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com");
-        platform.setInformationModelId("platform_info_model");
+        Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Location location = new Location();
-        String locationId = Integer.toString(rand.nextInt(50000));
-        location.setId(locationId);
-        location.setName("location_name");
-        location.setDescription("location_description");
-        location.setLatitude(0.1);
-        location.setLongitude(0.2);
-        location.setAltitude(0.3);
+        Location location = createLocation();
 
-        Resource resource = new Resource();
-        String resourceId = Integer.toString(rand.nextInt(50000));
-        String resourceName = "sensor" + rand.nextInt(50000);
-        List<String> observedProperties = Arrays.asList("air", "temp");
-        resource.setId(resourceId);
-        resource.setName(resourceName);
-        resource.setOwner("OpenIoT");
-        resource.setDescription("Temperature Sensor");
-        resource.setObservedProperties(observedProperties);
-        resource.setResourceURL("http://www.symbIoTe.com/sensor1");
-        resource.setLocation(location);
-        resource.setFeatureOfInterest("Nothing");
-        resource.setPlatformId(platformId);
-
+        Resource resource = createResource(platform, location);
         resourceRepo.save(resource);
-
-        Gson gson = new Gson();
 
         String exchangeName = "symbIoTe.resource";
         String routingKey = exchangeName + ".updated";
 
         String resourceNewName = "resource" + rand.nextInt(50000);
         resource.setName(resourceNewName);        
-        String objectInJson = gson.toJson(resource);
-        
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
+        sendResourceMessage(exchangeName, routingKey, resource);
 
-        props.setInferredArgumentType(Resource.class);
-
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchangeName, routingKey, message);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resourceId);
-        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resourceId
-               + "')/observation", result.getResourceURL());     
+        Resource result = resourceRepo.findOne(resource.getId());
+        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
+               + "')/observation", result.getResourceURL()); 
+
+        platformRepo.delete(platform.getPlatformId());
+        resourceRepo.delete(resource.getId());
 	}
 
     @Test
     public void SensorDeletedTest() throws Exception {
 
+        Platform platform = createPlatform();
+        platformRepo.save(platform);
+
+        Location location = createLocation();
+
+        Resource resource = createResource(platform, location);
+        resourceRepo.save(resource);
+
+        String exchangeName = "symbIoTe.resource";
+        String routingKey = exchangeName + ".deleted";
+
+        sendResourceMessage(exchangeName, routingKey, resource);
+
+        // Sleep to make sure that the platform has been saved to the repo before querying
+        TimeUnit.SECONDS.sleep(3);
+
+        Resource result = resourceRepo.findOne(resource.getId());
+        assertEquals(null, result);
+
+        platformRepo.delete(platform.getPlatformId());
+    }
+
+
+    Platform createPlatform() {
+
         Platform platform = new Platform ();
         String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
+
         platform.setPlatformId(platformId);
         platform.setName(name);
         platform.setDescription("platform_description");
         platform.setUrl("http://www.symbIoTe.com");
         platform.setInformationModelId("platform_info_model");
+
+        return platform;
+    }
+
+    Location createLocation() {
 
         Location location = new Location();
         String locationId = Integer.toString(rand.nextInt(50000));
@@ -338,6 +246,11 @@ public class MessageQueuesTests {
         location.setLatitude(0.1);
         location.setLongitude(0.2);
         location.setAltitude(0.3);
+
+        return location;
+    }
+
+    Resource createResource(Platform platform, Location location) {
 
         Resource resource = new Resource();
         String resourceId = Integer.toString(rand.nextInt(50000));
@@ -351,16 +264,16 @@ public class MessageQueuesTests {
         resource.setResourceURL("http://www.symbIoTe.com/sensor1");
         resource.setLocation(location);
         resource.setFeatureOfInterest("Nothing");
-        resource.setPlatformId("platform_id");
+        resource.setPlatformId(platform.getPlatformId());
 
-        resourceRepo.save(resource);
+        return resource;
+    }
+
+    void sendPlatformMessage (String exchange, String key, Platform object) throws Exception {
 
         Gson gson = new Gson();
-        String objectInJson = gson.toJson(resource);
+        String objectInJson = gson.toJson(object);
 
-        String exchangeName = "symbIoTe.resource";
-        String routingKey = exchangeName + ".deleted";
-        
         MessageProperties props = MessagePropertiesBuilder.newInstance()
             .setContentType("application/json")
             .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
@@ -369,13 +282,22 @@ public class MessageQueuesTests {
             .andProperties(props)
             .build();
 
-        rabbitTemplate.send(exchangeName, routingKey, message);
-
-        // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
-
-        Resource result = resourceRepo.findOne(resourceId);
-        assertEquals(null, result);
+        rabbitTemplate.send(exchange, key, message);
     }
 
+    void sendResourceMessage (String exchange, String key, Resource object) throws Exception {
+
+        Gson gson = new Gson();
+        String objectInJson = gson.toJson(object);
+
+        MessageProperties props = MessagePropertiesBuilder.newInstance()
+            .setContentType("application/json")
+            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+            .build();
+        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
+            .andProperties(props)
+            .build();
+
+        rabbitTemplate.send(exchange, key, message);
+    }
 }

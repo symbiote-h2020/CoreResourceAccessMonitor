@@ -27,9 +27,9 @@ import eu.h2020.symbiote.model.Platform;
 /**
 * <h1>RPC Server</h1>
 * 
-* It listens to RPCs from other symbIoTe Core Components via message queues.
+* This listens to RPCs from other symbIoTe Core Components via message queues.
 *
-* @author  Vasileios Glykantzis
+* @author  Vasileios Glykantzis <vasgl@intracom-telecom.com>
 * @version 1.0
 * @since   2017-01-26
 */

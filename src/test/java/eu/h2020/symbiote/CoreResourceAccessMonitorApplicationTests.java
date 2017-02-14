@@ -142,5 +142,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         assertEquals("http://www.symbIoTe.com/sensor1", resultRef.get().get("sensor_id"));
         assertEquals("http://www.symbIoTe.com/sensor2", resultRef.get().get("sensor_id2"));
+
+        platformRepo.delete("platform_id");
+        resourceRepo.delete("sensor_id");
+        resourceRepo.delete("sensor_id2");
     }
 }

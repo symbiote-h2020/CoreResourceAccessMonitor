@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.model.Platform;
 import eu.h2020.symbiote.model.Resource;
+import eu.h2020.symbiote.exception.EntityNotFoundException;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -21,11 +22,11 @@ import java.io.UnsupportedEncodingException;
 /**
 * <h1>Repository Manager for saving platform and resource information</h1>
 * 
-* It listens to platform and resource events advertised by registry and saves
+* This listens to platform and resource events advertised by registry and saves
 * them to the local Mongo database.
 * 
-* @author  Tilemachos Pechlivanoglou
-* @author  Vasileios Glykantzis
+* @author  Tilemachos Pechlivanoglou <tipech@intracom-telecom.com>
+* @author  Vasileios Glykantzis <vasgl@intracom-telecom.com>
 * @version 1.0
 * @since   2017-01-26
 */
@@ -76,6 +77,7 @@ public class RepositoryManager {
    * updated in the CoreResourceAccessMonitor local Mongo database.
    * 
    * @param platform The platform object of the updated platform
+   * @exception EntityNotFoundException If the platform does not exist
    */
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-updated", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -84,7 +86,11 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.updated")
     )
-    public static void updatePlatform(Platform platform) {
+    public static void updatePlatform(Platform platform) throws EntityNotFoundException {
+
+        if (platformRepository.findOne(platform.getPlatformId()) == null) 
+            throw new EntityNotFoundException ("Received an update message for "
+                + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
         platformRepository.save(platform);
         Gson gson = new Gson();
@@ -98,6 +104,7 @@ public class RepositoryManager {
    * deleted from the CoreResourceAccessMonitor local Mongo database.
    * 
    * @param platform The platform object of the platform to be deleted
+   * @exception EntityNotFoundException If the platform does not exist
    */
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -106,7 +113,11 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.platform.deleted")
     )
-    public static void deletePlatform(Platform platform) {
+    public static void deletePlatform(Platform platform) throws EntityNotFoundException {
+
+        if (platformRepository.findOne(platform.getPlatformId()) == null) 
+            throw new EntityNotFoundException ("Received an uregistration message for "
+                + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
         platformRepository.delete(platform.getPlatformId());
         log.info("CRAM deleted platform: " + platform.getPlatformId());
@@ -118,6 +129,7 @@ public class RepositoryManager {
    * saved to the CoreResourceAccessMonitor local Mongo database.
    * 
    * @param resource The resource object of the newly registered resource
+   * @exception EntityNotFoundException If the platform which owns the resource does not exist
    */
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-created", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -126,7 +138,14 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.created")
     )
-    public static void saveResource(Resource resource) {
+    public static void saveResource(Resource resource) throws EntityNotFoundException {
+        
+        if (platformRepository.findOne(resource.getPlatformId()) == null)
+            throw new EntityNotFoundException ("Received a registration message for "
+                + "resource with id = " + resource.getId() + ", but the platform "
+                + "with id = " + resource.getPlatformId() + " which owns the resource "
+                + "does not exist.");
+
         Gson gson = new Gson();
         String objectInJson = gson.toJson(resource);
         log.info("CRAM received resource registration: " + objectInJson);
@@ -144,6 +163,7 @@ public class RepositoryManager {
    * updated in the CoreResourceAccessMonitor local Mongo database.
    * 
    * @param resource The resource object of the updated resource
+   * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-updated", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -152,7 +172,18 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.updated")
     )
-    public static void updateResource(Resource resource) {
+    public static void updateResource(Resource resource) throws EntityNotFoundException {
+
+        if (resourceRepository.findOne(resource.getId()) == null) 
+            throw new EntityNotFoundException ("Received an update message for "
+                + "resource with id = " + resource.getId() + ", but the resource does "
+                + "not exist");
+
+        if (platformRepository.findOne(resource.getPlatformId()) == null) 
+            throw new EntityNotFoundException ("Received an update message for " 
+                + "resource with id = " + resource.getId() + ", but the platform "
+                + "with id = " + resource.getPlatformId() + " which owns the resource " 
+                + "does not exist.");
 
         resource.setResourceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
@@ -168,6 +199,7 @@ public class RepositoryManager {
    * deleted from the CoreResourceAccessMonitor local Mongo database.
    * 
    * @param resource The resource object of the resource to be deleted
+   * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
@@ -176,7 +208,18 @@ public class RepositoryManager {
                              type = ExchangeTypes.TOPIC),
         key = "symbIoTe.resource.deleted")
     )
-    public static void deleteResource(Resource resource) {
+    public static void deleteResource(Resource resource) throws EntityNotFoundException {
+
+        if (resourceRepository.findOne(resource.getId()) == null) 
+            throw new EntityNotFoundException ("Received an unregistration message for " 
+                + "resource with id = " + resource.getId() + ", but the resource does "
+                + "not exist");
+
+        if (platformRepository.findOne(resource.getPlatformId()) == null) 
+            throw new EntityNotFoundException ("Received an unregistration message for " 
+                + "resource with id = " + resource.getId() + ", but the platform "
+                + "with id = " + resource.getPlatformId() + " which owns the resource " 
+                + "does not exist.");
 
         resourceRepository.delete(resource.getId());
     
