@@ -158,7 +158,7 @@ public class MessageQueuesTests {
         Resource result = resourceRepo.findOne(resource.getId());
 
         assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
-               + "')/observation", result.getResourceURL());   
+               + "')", result.getResourceURL());   
 
         platformRepo.delete(platform.getPlatformId());
         resourceRepo.delete(resource.getId());
@@ -189,7 +189,7 @@ public class MessageQueuesTests {
 
         Resource result = resourceRepo.findOne(resource.getId());
         assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
-               + "')/observation", result.getResourceURL()); 
+               + "')", result.getResourceURL()); 
 
         platformRepo.delete(platform.getPlatformId());
         resourceRepo.delete(resource.getId());
@@ -230,7 +230,7 @@ public class MessageQueuesTests {
         platform.setPlatformId(platformId);
         platform.setName(name);
         platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com");
+        platform.setUrl("http://www.symbIoTe.com/rap");
         platform.setInformationModelId("platform_info_model");
 
         return platform;
