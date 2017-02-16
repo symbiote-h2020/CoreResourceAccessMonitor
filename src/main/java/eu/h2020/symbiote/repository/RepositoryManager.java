@@ -234,7 +234,8 @@ public class RepositoryManager {
 
         Platform platform = platformRepository.findOne(resource.getPlatformId());
 
-        return platform.getUrl().replaceAll("/+$", "") +  "/Sensor('" + resource.getId()
+        // strip "/rap" and any trailing slashes if there are any and provide the resource url
+        return platform.getUrl().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
                + "')";
     }
 }

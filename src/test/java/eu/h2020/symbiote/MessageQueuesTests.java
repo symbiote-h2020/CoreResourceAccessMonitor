@@ -230,7 +230,7 @@ public class MessageQueuesTests {
         platform.setPlatformId(platformId);
         platform.setName(name);
         platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com/rap/");
+        platform.setUrl("http://www.symbIoTe.com/");
         platform.setInformationModelId("platform_info_model");
 
         return platform;
