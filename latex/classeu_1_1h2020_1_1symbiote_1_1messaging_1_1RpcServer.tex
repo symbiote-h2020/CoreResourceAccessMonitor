@@ -1,0 +1,60 @@
+\hypertarget{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer}{}\section{eu.\+h2020.\+symbiote.\+messaging.\+Rpc\+Server Class Reference}
+\label{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer}\index{eu.\+h2020.\+symbiote.\+messaging.\+Rpc\+Server@{eu.\+h2020.\+symbiote.\+messaging.\+Rpc\+Server}}
+
+
+Collaboration diagram for eu.\+h2020.\+symbiote.\+messaging.\+Rpc\+Server\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=232pt]{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer_a575b7ffdc6def407b2e701f00449bc5a}\label{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer_a575b7ffdc6def407b2e701f00449bc5a}} 
+{\bfseries Rpc\+Server} (\hyperlink{interfaceeu_1_1h2020_1_1symbiote_1_1repository_1_1PlatformRepository}{Platform\+Repository} platform\+Repository, \hyperlink{interfaceeu_1_1h2020_1_1symbiote_1_1repository_1_1ResourceRepository}{Resource\+Repository} resource\+Repository)
+\item 
+J\+S\+O\+N\+Object \hyperlink{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer_a3f4dbd0b54f371c2375215b3c13dff81}{get\+Resources\+Urls} (J\+S\+O\+N\+Object resource\+Id\+List)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsection*{R\+PC Server}
+
+This listens to R\+P\+Cs from other symb\+Io\+Te Core Components via message queues.
+
+\begin{DoxyAuthor}{Author}
+Vasileios Glykantzis \href{mailto:vasgl@intracom-telecom.com}{\tt vasgl@intracom-\/telecom.\+com} 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxySince}{Since}
+2017-\/01-\/26 
+\end{DoxySince}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer_a3f4dbd0b54f371c2375215b3c13dff81}\label{classeu_1_1h2020_1_1symbiote_1_1messaging_1_1RpcServer_a3f4dbd0b54f371c2375215b3c13dff81}} 
+\index{eu\+::h2020\+::symbiote\+::messaging\+::\+Rpc\+Server@{eu\+::h2020\+::symbiote\+::messaging\+::\+Rpc\+Server}!get\+Resources\+Urls@{get\+Resources\+Urls}}
+\index{get\+Resources\+Urls@{get\+Resources\+Urls}!eu\+::h2020\+::symbiote\+::messaging\+::\+Rpc\+Server@{eu\+::h2020\+::symbiote\+::messaging\+::\+Rpc\+Server}}
+\subsubsection{\texorpdfstring{get\+Resources\+Urls()}{getResourcesUrls()}}
+{\footnotesize\ttfamily J\+S\+O\+N\+Object eu.\+h2020.\+symbiote.\+messaging.\+Rpc\+Server.\+get\+Resources\+Urls (\begin{DoxyParamCaption}\item[{J\+S\+O\+N\+Object}]{resource\+Id\+List }\end{DoxyParamCaption})}
+
+Spring A\+M\+QP Listener for providing resource urls. This method is invoked when a request for access to resources is made by an aplication/enabler. Core\+Interface forwards a list of resource ids to Core\+Resource\+Access\+Monitor coming from the application/enabler and Core\+Resource\+Access\+Monitor responds with the urls of the specified resources.
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource\+Id\+List} & The list of resource ids \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The urls of the resources specified in the resource\+Id\+List 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/main/java/eu/h2020/symbiote/messaging/Rpc\+Server.\+java\end{DoxyCompactItemize}

@@ -1,0 +1,162 @@
+\hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager}{}\section{eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager Class Reference}
+\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager}\index{eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager@{eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager}}
+
+
+Collaboration diagram for eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=228pt]{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a75d70aebe267b3b304ef708547996e5a}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a75d70aebe267b3b304ef708547996e5a}} 
+{\bfseries Repository\+Manager} (\hyperlink{interfaceeu_1_1h2020_1_1symbiote_1_1repository_1_1PlatformRepository}{Platform\+Repository} platform\+Repository, \hyperlink{interfaceeu_1_1h2020_1_1symbiote_1_1repository_1_1ResourceRepository}{Resource\+Repository} resource\+Repository)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \hyperlink{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a496929533495f38ece4f1c5c8bee4bb4}{save\+Platform} (\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Platform}{Platform} platform)
+\item 
+static void \hyperlink{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_ab40bbdbdd46c6db2eaa59a615c38cfd0}{update\+Platform} (\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Platform}{Platform} platform)  throws Entity\+Not\+Found\+Exception 
+\item 
+static void \hyperlink{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_ab7f93e37749010ead2699037d54c4b0d}{delete\+Platform} (\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Platform}{Platform} platform)  throws Entity\+Not\+Found\+Exception 
+\item 
+static void \hyperlink{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a82eb799665755be27795dafdfe90e0b3}{save\+Resource} (\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Resource}{Resource} resource)  throws Entity\+Not\+Found\+Exception 
+\item 
+static void \hyperlink{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a49626e0b688780c44cac19cf9e3f1a51}{update\+Resource} (\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Resource}{Resource} resource)  throws Entity\+Not\+Found\+Exception 
+\item 
+static void \hyperlink{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_aa943334bc33d9e5b9a81978558caba89}{delete\+Resource} (\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Resource}{Resource} resource)  throws Entity\+Not\+Found\+Exception 
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsection*{Repository Manager for saving platform and resource information}
+
+This listens to platform and resource events advertised by registry and saves them to the local Mongo database.
+
+\begin{DoxyAuthor}{Author}
+Tilemachos Pechlivanoglou \href{mailto:tipech@intracom-telecom.com}{\tt tipech@intracom-\/telecom.\+com} 
+
+Vasileios Glykantzis \href{mailto:vasgl@intracom-telecom.com}{\tt vasgl@intracom-\/telecom.\+com} 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxySince}{Since}
+2017-\/01-\/26 
+\end{DoxySince}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_ab7f93e37749010ead2699037d54c4b0d}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_ab7f93e37749010ead2699037d54c4b0d}} 
+\index{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}!delete\+Platform@{delete\+Platform}}
+\index{delete\+Platform@{delete\+Platform}!eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}}
+\subsubsection{\texorpdfstring{delete\+Platform()}{deletePlatform()}}
+{\footnotesize\ttfamily static void eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager.\+delete\+Platform (\begin{DoxyParamCaption}\item[{\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Platform}{Platform}}]{platform }\end{DoxyParamCaption}) throws \hyperlink{classeu_1_1h2020_1_1symbiote_1_1exception_1_1EntityNotFoundException}{Entity\+Not\+Found\+Exception}\hspace{0.3cm}{\ttfamily [static]}}
+
+Spring A\+M\+QP Listener for platform unregistration requests. This method is invoked when a platform unregistration request is verified and advertised by the Registry. The platform object is then deleted from the Core\+Resource\+Access\+Monitor local Mongo database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em platform} & The platform object of the platform to be deleted \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Entity\+Not\+Found\+Exception} & If the platform does not exist \\
+\hline
+\end{DoxyExceptions}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_aa943334bc33d9e5b9a81978558caba89}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_aa943334bc33d9e5b9a81978558caba89}} 
+\index{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}!delete\+Resource@{delete\+Resource}}
+\index{delete\+Resource@{delete\+Resource}!eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}}
+\subsubsection{\texorpdfstring{delete\+Resource()}{deleteResource()}}
+{\footnotesize\ttfamily static void eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager.\+delete\+Resource (\begin{DoxyParamCaption}\item[{\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Resource}{Resource}}]{resource }\end{DoxyParamCaption}) throws \hyperlink{classeu_1_1h2020_1_1symbiote_1_1exception_1_1EntityNotFoundException}{Entity\+Not\+Found\+Exception}\hspace{0.3cm}{\ttfamily [static]}}
+
+Spring A\+M\+QP Listener for resource unregistration requests. This method is invoked when a resource unregistration request is verified and advertised by the Registry. The resource object is then deleted from the Core\+Resource\+Access\+Monitor local Mongo database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource} & The resource object of the resource to be deleted \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Entity\+Not\+Found\+Exception} & If the resource or the platform which owns the resource does not exist \\
+\hline
+\end{DoxyExceptions}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a496929533495f38ece4f1c5c8bee4bb4}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a496929533495f38ece4f1c5c8bee4bb4}} 
+\index{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}!save\+Platform@{save\+Platform}}
+\index{save\+Platform@{save\+Platform}!eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}}
+\subsubsection{\texorpdfstring{save\+Platform()}{savePlatform()}}
+{\footnotesize\ttfamily static void eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager.\+save\+Platform (\begin{DoxyParamCaption}\item[{\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Platform}{Platform}}]{platform }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+Spring A\+M\+QP Listener for platform registration requests. This method is invoked when a platform registration is verified and advertised by the Registry. The platform object is then saved to the Core\+Resource\+Access\+Monitor local Mongo database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em platform} & The platform object of the newly registered platform \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a82eb799665755be27795dafdfe90e0b3}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a82eb799665755be27795dafdfe90e0b3}} 
+\index{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}!save\+Resource@{save\+Resource}}
+\index{save\+Resource@{save\+Resource}!eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}}
+\subsubsection{\texorpdfstring{save\+Resource()}{saveResource()}}
+{\footnotesize\ttfamily static void eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager.\+save\+Resource (\begin{DoxyParamCaption}\item[{\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Resource}{Resource}}]{resource }\end{DoxyParamCaption}) throws \hyperlink{classeu_1_1h2020_1_1symbiote_1_1exception_1_1EntityNotFoundException}{Entity\+Not\+Found\+Exception}\hspace{0.3cm}{\ttfamily [static]}}
+
+Spring A\+M\+QP Listener for resource registration requests. This method is invoked when a resource registration is verified and advertised by the Registry. The resource object is then saved to the Core\+Resource\+Access\+Monitor local Mongo database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource} & The resource object of the newly registered resource \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Entity\+Not\+Found\+Exception} & If the platform which owns the resource does not exist \\
+\hline
+\end{DoxyExceptions}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_ab40bbdbdd46c6db2eaa59a615c38cfd0}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_ab40bbdbdd46c6db2eaa59a615c38cfd0}} 
+\index{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}!update\+Platform@{update\+Platform}}
+\index{update\+Platform@{update\+Platform}!eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}}
+\subsubsection{\texorpdfstring{update\+Platform()}{updatePlatform()}}
+{\footnotesize\ttfamily static void eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager.\+update\+Platform (\begin{DoxyParamCaption}\item[{\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Platform}{Platform}}]{platform }\end{DoxyParamCaption}) throws \hyperlink{classeu_1_1h2020_1_1symbiote_1_1exception_1_1EntityNotFoundException}{Entity\+Not\+Found\+Exception}\hspace{0.3cm}{\ttfamily [static]}}
+
+Spring A\+M\+QP Listener for platform update requests. This method is invoked when a platform update request is verified and advertised by the Registry. The platform object is then updated in the Core\+Resource\+Access\+Monitor local Mongo database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em platform} & The platform object of the updated platform \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Entity\+Not\+Found\+Exception} & If the platform does not exist \\
+\hline
+\end{DoxyExceptions}
+\mbox{\Hypertarget{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a49626e0b688780c44cac19cf9e3f1a51}\label{classeu_1_1h2020_1_1symbiote_1_1repository_1_1RepositoryManager_a49626e0b688780c44cac19cf9e3f1a51}} 
+\index{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}!update\+Resource@{update\+Resource}}
+\index{update\+Resource@{update\+Resource}!eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager@{eu\+::h2020\+::symbiote\+::repository\+::\+Repository\+Manager}}
+\subsubsection{\texorpdfstring{update\+Resource()}{updateResource()}}
+{\footnotesize\ttfamily static void eu.\+h2020.\+symbiote.\+repository.\+Repository\+Manager.\+update\+Resource (\begin{DoxyParamCaption}\item[{\hyperlink{classeu_1_1h2020_1_1symbiote_1_1model_1_1Resource}{Resource}}]{resource }\end{DoxyParamCaption}) throws \hyperlink{classeu_1_1h2020_1_1symbiote_1_1exception_1_1EntityNotFoundException}{Entity\+Not\+Found\+Exception}\hspace{0.3cm}{\ttfamily [static]}}
+
+Spring A\+M\+QP Listener for resource update requests. This method is invoked when a resource update request is verified and advertised by the Registry. The resource object is then updated in the Core\+Resource\+Access\+Monitor local Mongo database.
+
+
+\begin{DoxyParams}{Parameters}
+{\em resource} & The resource object of the updated resource \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em Entity\+Not\+Found\+Exception} & If the resource or the platform which owns the resource does not exist \\
+\hline
+\end{DoxyExceptions}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/main/java/eu/h2020/symbiote/repository/Repository\+Manager.\+java\end{DoxyCompactItemize}
