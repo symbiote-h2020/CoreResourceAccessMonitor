@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import eu.h2020.symbiote.model.Platform;
-import eu.h2020.symbiote.model.Resource;
+import eu.h2020.symbiote.core.model.Platform;
+import eu.h2020.symbiote.core.model.Resource;
 import eu.h2020.symbiote.exception.EntityNotFoundException;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

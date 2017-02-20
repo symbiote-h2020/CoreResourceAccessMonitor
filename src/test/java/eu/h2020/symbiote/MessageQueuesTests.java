@@ -37,7 +37,7 @@ import java.util.Arrays;
 
 import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.repository.PlatformRepository;
-import eu.h2020.symbiote.model.*;
+import eu.h2020.symbiote.core.model.*;
 
 import static org.junit.Assert.assertEquals;
 

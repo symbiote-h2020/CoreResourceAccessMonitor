@@ -20,8 +20,8 @@ import org.json.simple.JSONObject;
 
 import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.repository.ResourceRepository;
-import eu.h2020.symbiote.model.Resource;
-import eu.h2020.symbiote.model.Platform;
+import eu.h2020.symbiote.core.model.Resource;
+import eu.h2020.symbiote.core.model.Platform;
 
 
 /**
