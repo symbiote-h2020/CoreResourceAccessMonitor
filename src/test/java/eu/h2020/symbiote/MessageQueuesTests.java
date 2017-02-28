@@ -77,6 +77,7 @@ public class MessageQueuesTests {
     @Test
     public void PlatformCreatedTest() throws Exception {
 
+        log.info("PlatformCreatedTest started!!!");
         Platform platform = createPlatform();
 
         String exchangeName = "symbIoTe.platform";

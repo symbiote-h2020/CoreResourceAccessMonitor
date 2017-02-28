@@ -30,6 +30,8 @@ import java.io.UnsupportedEncodingException;
 * @version 1.0
 * @since   2017-01-26
 */
+
+
 @Component
 public class RepositoryManager {
 
@@ -56,19 +58,21 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the newly registered platform
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-created", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.TOPIC),
-        key = "symbIoTe.platform.created")
-    )
-    public static void savePlatform(Platform platform) {
+    // @RabbitListener(bindings = @QueueBinding(
+    //     value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-created", durable = "true", autoDelete = "false", exclusive = "false"),
+    //     exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
+    //                          durable = "true", autoDelete  = "false", internal = "false", 
+    //                          type = ExchangeTypes.TOPIC),
+    //     key = "symbIoTe.platform.created")
+    // )
+    public static void savePlatform(byte[] bytes) throws Exception {
 
-        platformRepository.save(platform);
         Gson gson = new Gson();
-        String objectInJson = gson.toJson(platform);
-        log.info("CRAM saved platform: " + objectInJson);
+        String message = new String(bytes, "UTF-8");
+        Platform platform = gson.fromJson(message, Platform.class);
+        platformRepository.save(platform);
+        // String objectInJson = gson.toJson(platform);
+        log.info("CRAM saved platform: " + message);
     }
 
    /**
