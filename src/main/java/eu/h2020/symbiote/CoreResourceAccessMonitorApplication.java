@@ -59,7 +59,8 @@ public class CoreResourceAccessMonitorApplication {
         return factory;
     }
 
-    @Bean Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
+    @Bean 
+    Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
 
@@ -79,7 +80,6 @@ public class CoreResourceAccessMonitorApplication {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHost);
         // connectionFactory.setPublisherConfirms(true);
         // connectionFactory.setPublisherReturns(true);
-        log.info("Rabbit Host!!!!! " + rabbitHost);
         connectionFactory.setUsername(rabbitUsername);
         connectionFactory.setPassword(rabbitPassword);
         return connectionFactory;
@@ -103,4 +103,6 @@ public class CoreResourceAccessMonitorApplication {
 
         return asyncRabbitTemplate;
     }
+
+
 }
