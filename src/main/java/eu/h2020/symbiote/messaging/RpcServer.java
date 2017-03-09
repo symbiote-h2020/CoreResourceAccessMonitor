@@ -11,6 +11,8 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.core.ExchangeTypes;
+import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.AMQP;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,6 +25,8 @@ import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.core.model.Resource;
 import eu.h2020.symbiote.core.model.Platform;
 
+import com.google.gson.Gson;
+import java.io.UnsupportedEncodingException;
 
 /**
 * <h1>RPC Server</h1>
@@ -65,14 +69,18 @@ public class RpcServer {
    * @param resourceIdList The list of resource ids
    * @return The urls of the resources specified in the resourceIdList
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-coreAPI-get_resource_urls", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.CoreResourceAccessMonitor", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.DIRECT),
-        key = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls")
-    )
-    public JSONObject getResourcesUrls(JSONObject resourceIdList) {
+    // @RabbitListener(bindings = @QueueBinding(
+    //     value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-coreAPI-get_resource_urls", durable = "true", autoDelete = "false", exclusive = "false"),
+    //     exchange = @Exchange(value = "symbIoTe.CoreResourceAccessMonitor", ignoreDeclarationExceptions = "true", 
+    //                          durable = "true", autoDelete  = "false", internal = "false", 
+    //                          type = ExchangeTypes.DIRECT),
+    //     key = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls")
+    // )
+    public JSONObject getResourcesUrls(byte[] bytes) throws Exception {
+
+        Gson gson = new Gson();
+        String message = new String(bytes, "UTF-8");
+        JSONObject resourceIdList = gson.fromJson(message, JSONObject.class);
 
         log.info("CRAM received a request for the following ids: " + resourceIdList);
 

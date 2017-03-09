@@ -8,6 +8,7 @@ import org.junit.Before;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -48,6 +49,12 @@ public class CoreResourceAccessMonitorApplicationTests {
     
     @Autowired    
     private PlatformRepository platformRepo;
+
+    @Value("${rabbit.exchange.cram.name}")
+    private String cramExchangeName;
+
+    @Value("${rabbit.routingKey.cram.getResourceUrls}")
+    private String cramGetResourceUrlsRoutingKey;
 
     // Execute the Setup method before the test.    
     @Before    
@@ -111,12 +118,9 @@ public class CoreResourceAccessMonitorApplicationTests {
         idList.add("sensor_id2");
         query.put("idList", idList);
 
-        String exchangeName = "symbIoTe.CoreResourceAccessMonitor";
-        String routingKey = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls";
-
         log.info("Before sending the message");
 
-        RabbitConverterFuture<JSONObject> future = asyncRabbitTemplate.convertSendAndReceive(exchangeName, routingKey, query);
+        RabbitConverterFuture<JSONObject> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
         log.info("After sending the message");
 

@@ -58,20 +58,12 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the newly registered platform
    */
-    // @RabbitListener(bindings = @QueueBinding(
-    //     value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-created", durable = "true", autoDelete = "false", exclusive = "false"),
-    //     exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
-    //                          durable = "true", autoDelete  = "false", internal = "false", 
-    //                          type = ExchangeTypes.TOPIC),
-    //     key = "symbIoTe.platform.created")
-    // )
     public static void savePlatform(byte[] bytes) throws Exception {
 
         Gson gson = new Gson();
         String message = new String(bytes, "UTF-8");
         Platform platform = gson.fromJson(message, Platform.class);
         platformRepository.save(platform);
-        // String objectInJson = gson.toJson(platform);
         log.info("CRAM saved platform: " + message);
     }
 
@@ -83,23 +75,18 @@ public class RepositoryManager {
    * @param platform The platform object of the updated platform
    * @exception EntityNotFoundException If the platform does not exist
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-updated", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.TOPIC),
-        key = "symbIoTe.platform.updated")
-    )
-    public static void updatePlatform(Platform platform) throws EntityNotFoundException {
+    public static void updatePlatform(byte[] bytes) throws Exception, EntityNotFoundException {
+        
+        Gson gson = new Gson();
+        String message = new String(bytes, "UTF-8");
+        Platform platform = gson.fromJson(message, Platform.class);
 
         if (platformRepository.findOne(platform.getPlatformId()) == null) 
             throw new EntityNotFoundException ("Received an update message for "
                 + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
         platformRepository.save(platform);
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(platform);
-        log.info("CRAM saved platform: " + objectInJson);
+        log.info("CRAM updated platform: " + message);
     }
 
    /**
@@ -110,16 +97,13 @@ public class RepositoryManager {
    * @param platform The platform object of the platform to be deleted
    * @exception EntityNotFoundException If the platform does not exist
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-platform-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.platform", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.TOPIC),
-        key = "symbIoTe.platform.deleted")
-    )
-    public static void deletePlatform(Platform platform) throws EntityNotFoundException {
-
+    public static void deletePlatform(byte[] bytes) throws Exception, EntityNotFoundException {
+        
+        Gson gson = new Gson();
+        String message = new String(bytes, "UTF-8");
+        Platform platform = gson.fromJson(message, Platform.class);
         if (platformRepository.findOne(platform.getPlatformId()) == null) 
+
             throw new EntityNotFoundException ("Received an uregistration message for "
                 + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
@@ -135,29 +119,24 @@ public class RepositoryManager {
    * @param resource The resource object of the newly registered resource
    * @exception EntityNotFoundException If the platform which owns the resource does not exist
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-created", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.TOPIC),
-        key = "symbIoTe.resource.created")
-    )
-    public static void saveResource(Resource resource) throws EntityNotFoundException {
+    public static void saveResource(byte[] bytes) throws Exception, EntityNotFoundException {
         
+        Gson gson = new Gson();
+        String message = new String(bytes, "UTF-8");
+        Resource resource = gson.fromJson(message, Resource.class);
+
         if (platformRepository.findOne(resource.getPlatformId()) == null)
             throw new EntityNotFoundException ("Received a registration message for "
                 + "resource with id = " + resource.getId() + ", but the platform "
                 + "with id = " + resource.getPlatformId() + " which owns the resource "
                 + "does not exist.");
 
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(resource);
-        log.info("CRAM received resource registration: " + objectInJson);
+        log.info("CRAM received resource registration: " + message);
 
         resource.setResourceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
 
-        objectInJson = gson.toJson(resource);
+        String objectInJson = gson.toJson(resource);
         log.info("CRAM saved resource: " + objectInJson);
     }
 
@@ -169,14 +148,11 @@ public class RepositoryManager {
    * @param resource The resource object of the updated resource
    * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-updated", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.TOPIC),
-        key = "symbIoTe.resource.updated")
-    )
-    public static void updateResource(Resource resource) throws EntityNotFoundException {
+    public static void updateResource(byte[] bytes) throws Exception, EntityNotFoundException {
+        
+        Gson gson = new Gson();
+        String message = new String(bytes, "UTF-8");
+        Resource resource = gson.fromJson(message, Resource.class);
 
         if (resourceRepository.findOne(resource.getId()) == null) 
             throw new EntityNotFoundException ("Received an update message for "
@@ -192,7 +168,6 @@ public class RepositoryManager {
         resource.setResourceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
 
-        Gson gson = new Gson();
         String objectInJson = gson.toJson(resource);
         log.info("CRAM updated resource: " + objectInJson);
     }
@@ -205,14 +180,11 @@ public class RepositoryManager {
    * @param resource The resource object of the resource to be deleted
    * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-resource-deleted", durable = "true", autoDelete = "false", exclusive = "false"),
-        exchange = @Exchange(value = "symbIoTe.resource", ignoreDeclarationExceptions = "true", 
-                             durable = "true", autoDelete  = "false", internal = "false", 
-                             type = ExchangeTypes.TOPIC),
-        key = "symbIoTe.resource.deleted")
-    )
-    public static void deleteResource(Resource resource) throws EntityNotFoundException {
+    public static void deleteResource(byte[] bytes) throws Exception, EntityNotFoundException {
+        
+        Gson gson = new Gson();
+        String message = new String(bytes, "UTF-8");
+        Resource resource = gson.fromJson(message, Resource.class);
 
         if (resourceRepository.findOne(resource.getId()) == null) 
             throw new EntityNotFoundException ("Received an unregistration message for " 
@@ -227,8 +199,6 @@ public class RepositoryManager {
 
         resourceRepository.delete(resource.getId());
     
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(resource);
         log.info("CRAM deleted resource: " + resource.getId());
     }
 
