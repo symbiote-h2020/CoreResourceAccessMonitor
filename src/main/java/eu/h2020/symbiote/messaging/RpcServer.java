@@ -11,8 +11,10 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.AMQP;
+import org.springframework.amqp.core.Message;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,6 +49,8 @@ public class RpcServer {
 
     private static ResourceRepository resourceRepository;
 
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Autowired
     public RpcServer(PlatformRepository platformRepository, ResourceRepository resourceRepository) {
@@ -76,11 +80,11 @@ public class RpcServer {
     //                          type = ExchangeTypes.DIRECT),
     //     key = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls")
     // )
-    public JSONObject getResourcesUrls(byte[] bytes) throws Exception {
+    public JSONObject getResourcesUrls(JSONObject resourceIdList) throws Exception {
 
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        JSONObject resourceIdList = gson.fromJson(message, JSONObject.class);
+        // Gson gson = new Gson();
+        // String message = new String(bytes, "UTF-8");
+        // JSONObject resourceIdList = gson.fromJson(message, JSONObject.class);
 
         log.info("CRAM received a request for the following ids: " + resourceIdList);
 
@@ -102,6 +106,8 @@ public class RpcServer {
             }
         }
 
+        // return ids.toString().getBytes();
         return ids;
     }
+
 }

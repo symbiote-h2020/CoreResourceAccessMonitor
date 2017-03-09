@@ -387,7 +387,7 @@ public class QueueConfig {
     MessageListenerAdapter cramGetResourceUrlsListenerAdapter(RpcServer rpcServer) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(rpcServer, "getResourcesUrls");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 
