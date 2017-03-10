@@ -73,13 +73,6 @@ public class RpcServer {
    * @param resourceIdList The list of resource ids
    * @return The urls of the resources specified in the resourceIdList
    */
-    // @RabbitListener(bindings = @QueueBinding(
-    //     value = @Queue(value = "symbIoTe-CoreResourceAccessMonitor-coreAPI-get_resource_urls", durable = "true", autoDelete = "false", exclusive = "false"),
-    //     exchange = @Exchange(value = "symbIoTe.CoreResourceAccessMonitor", ignoreDeclarationExceptions = "true", 
-    //                          durable = "true", autoDelete  = "false", internal = "false", 
-    //                          type = ExchangeTypes.DIRECT),
-    //     key = "symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls")
-    // )
     public JSONObject getResourcesUrls(JSONObject resourceIdList) throws Exception {
 
         // Gson gson = new Gson();
