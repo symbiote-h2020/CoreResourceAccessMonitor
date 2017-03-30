@@ -22,6 +22,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import eu.h2020.symbiote.commons.security.SecurityHandler;
 
 @EnableDiscoveryClient
 @EnableRabbit
@@ -38,6 +39,9 @@ public class CoreResourceAccessMonitorApplication {
 
     @Value("${rabbit.password}") 
     private String rabbitPassword;
+
+    @Value("${symbiote.coreaam.url}") 
+    private String coreAAMUrl;
 
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
@@ -102,6 +106,12 @@ public class CoreResourceAccessMonitorApplication {
         asyncRabbitTemplate.setReceiveTimeout(5000);
 
         return asyncRabbitTemplate;
+    }
+
+    @Bean
+    public SecurityHandler securityHandler() {
+        SecurityHandler securityHandler = new SecurityHandler(coreAAMUrl, rabbitHost);
+        return securityHandler;
     }
 
 

@@ -21,11 +21,15 @@ import java.util.Iterator;
 import java.net.MalformedURLException;
 
 import org.json.simple.JSONObject;
+import io.jsonwebtoken.MalformedJwtException;
 
 import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.model.Platform;
+import eu.h2020.symbiote.commons.security.SecurityHandler;
+import eu.h2020.symbiote.commons.security.token.SymbIoTeToken;
+import eu.h2020.symbiote.commons.security.token.TokenVerificationException;
 
 import com.google.gson.Gson;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +55,10 @@ public class RpcServer {
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    SecurityHandler securityHandler;
+
 
     @Autowired
     public RpcServer(PlatformRepository platformRepository, ResourceRepository resourceRepository) {
@@ -80,6 +88,30 @@ public class RpcServer {
         // JSONObject resourceIdList = gson.fromJson(message, JSONObject.class);
 
         log.info("CRAM received a request for the following ids: " + resourceIdList);
+        try {
+            String tokenString = resourceIdList.get("token").toString();
+            SymbIoTeToken token = securityHandler.verifyCoreToken(tokenString);
+            log.info("Token " + token + " was verified");
+        }
+        catch (TokenVerificationException e) { 
+            log.error("Token could not be verified");
+            JSONObject error = new JSONObject();
+            error.put("error", "Token could not be verified");
+            return error;
+        }
+        catch (MalformedJwtException e) { 
+            log.error("Token was malformed");
+            JSONObject error = new JSONObject();
+            error.put("error", "Token was malformed");
+            return error;
+        }
+        catch (Exception e) { 
+            log.error("An exception was thrown");
+            JSONObject error = new JSONObject();
+            error.put("error", e);
+            return error;
+        }
+        
 
         ArrayList<String> array = (ArrayList<String>)resourceIdList.get("idList");
         Iterator<String> iterator = array.iterator();

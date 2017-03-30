@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.net.URL;
@@ -52,7 +53,10 @@ import org.junit.rules.ExpectedException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
-@SpringBootTest({"eureka.client.enabled=false"})
+@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
+                properties = {"eureka.client.enabled=false", 
+                              "spring.sleuth.enabled=false",
+                              "symbiote.coreaam.url=http://localhost:8033"})
 public class MessageQueuesTests {
 
 
