@@ -1,4 +1,0 @@
-server.port=8033
-symbiote.coreaam.url=http://localhost:8033
-#local.server.port=8033
-#symbiote.rabbitmq.host.ip = localhost
