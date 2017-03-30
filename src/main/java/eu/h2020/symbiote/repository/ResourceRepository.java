@@ -1,6 +1,6 @@
 package eu.h2020.symbiote.repository;
 
-import eu.h2020.symbiote.core.model.Resource;
+import eu.h2020.symbiote.core.model.resources.Resource;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 

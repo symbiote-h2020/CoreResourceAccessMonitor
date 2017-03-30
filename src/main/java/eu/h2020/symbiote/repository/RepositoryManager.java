@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.Resource;
+import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.exception.EntityNotFoundException;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -125,15 +125,15 @@ public class RepositoryManager {
         String message = new String(bytes, "UTF-8");
         Resource resource = gson.fromJson(message, Resource.class);
 
-        if (platformRepository.findOne(resource.getPlatformId()) == null)
-            throw new EntityNotFoundException ("Received a registration message for "
-                + "resource with id = " + resource.getId() + ", but the platform "
-                + "with id = " + resource.getPlatformId() + " which owns the resource "
-                + "does not exist.");
+        // if (platformRepository.findOne(resource.getPlatformId()) == null)
+        //     throw new EntityNotFoundException ("Received a registration message for "
+        //         + "resource with id = " + resource.getId() + ", but the platform "
+        //         + "with id = " + resource.getPlatformId() + " which owns the resource "
+        //         + "does not exist.");
 
         log.info("CRAM received resource registration: " + message);
 
-        resource.setResourceURL(generateResourceURL(resource));
+        resource.setHasInterworkingServiceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
 
         String objectInJson = gson.toJson(resource);
@@ -159,13 +159,13 @@ public class RepositoryManager {
                 + "resource with id = " + resource.getId() + ", but the resource does "
                 + "not exist");
 
-        if (platformRepository.findOne(resource.getPlatformId()) == null) 
-            throw new EntityNotFoundException ("Received an update message for " 
-                + "resource with id = " + resource.getId() + ", but the platform "
-                + "with id = " + resource.getPlatformId() + " which owns the resource " 
-                + "does not exist.");
+        // if (platformRepository.findOne(resource.getPlatformId()) == null) 
+        //     throw new EntityNotFoundException ("Received an update message for " 
+        //         + "resource with id = " + resource.getId() + ", but the platform "
+        //         + "with id = " + resource.getPlatformId() + " which owns the resource " 
+        //         + "does not exist.");
 
-        resource.setResourceURL(generateResourceURL(resource));
+        resource.setHasInterworkingServiceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
 
         String objectInJson = gson.toJson(resource);
@@ -191,11 +191,11 @@ public class RepositoryManager {
                 + "resource with id = " + resource.getId() + ", but the resource does "
                 + "not exist");
 
-        if (platformRepository.findOne(resource.getPlatformId()) == null) 
-            throw new EntityNotFoundException ("Received an unregistration message for " 
-                + "resource with id = " + resource.getId() + ", but the platform "
-                + "with id = " + resource.getPlatformId() + " which owns the resource " 
-                + "does not exist.");
+        // if (platformRepository.findOne(resource.getPlatformId()) == null) 
+        //     throw new EntityNotFoundException ("Received an unregistration message for " 
+        //         + "resource with id = " + resource.getId() + ", but the platform "
+        //         + "with id = " + resource.getPlatformId() + " which owns the resource " 
+        //         + "does not exist.");
 
         resourceRepository.delete(resource.getId());
     
@@ -203,13 +203,20 @@ public class RepositoryManager {
     }
 
 
+    // private static String generateResourceURL (Resource resource) {
+
+
+    //     Platform platform = platformRepository.findOne(resource.getPlatformId());
+
+    //     // strip "/rap" and any trailing slashes if there are any and provide the resource url
+    //     return platform.getUrl().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
+    //            + "')";
+    // }
+
     private static String generateResourceURL (Resource resource) {
 
-
-        Platform platform = platformRepository.findOne(resource.getPlatformId());
-
         // strip "/rap" and any trailing slashes if there are any and provide the resource url
-        return platform.getUrl().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
+        return resource.getHasInterworkingServiceURL().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
                + "')";
     }
 }

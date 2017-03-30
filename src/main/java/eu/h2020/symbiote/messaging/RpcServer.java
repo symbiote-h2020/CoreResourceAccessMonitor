@@ -24,7 +24,7 @@ import org.json.simple.JSONObject;
 
 import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.repository.ResourceRepository;
-import eu.h2020.symbiote.core.model.Resource;
+import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.model.Platform;
 
 import com.google.gson.Gson;
@@ -89,7 +89,7 @@ public class RpcServer {
             Resource resource = resourceRepository.findOne(iterator.next());
             if (resource != null){
 
-                String url = resource.getResourceURL();
+                String url = resource.getHasInterworkingServiceURL();
                 ids.put(resource.getId(), url.toString());
                 log.info("AccessController found a resource with id " + resource.getId() +
                      " and url " + url.toString());

@@ -38,7 +38,9 @@ import java.util.Arrays;
 
 import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.repository.PlatformRepository;
-import eu.h2020.symbiote.core.model.*;
+import eu.h2020.symbiote.core.model.Platform;
+import eu.h2020.symbiote.core.model.Location;
+import eu.h2020.symbiote.core.model.resources.Resource;
 
 import static org.junit.Assert.assertEquals;
 
@@ -167,7 +169,7 @@ public class MessageQueuesTests {
         Resource result = resourceRepo.findOne(resource.getId());
 
         assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
-               + "')", result.getResourceURL());   
+               + "')", result.getHasInterworkingServiceURL());   
 
         platformRepo.delete(platform.getPlatformId());
         resourceRepo.delete(resource.getId());
@@ -186,8 +188,10 @@ public class MessageQueuesTests {
         resourceRepo.save(resource);
 
 
-        String resourceNewName = "resource" + rand.nextInt(50000);
-        resource.setName(resourceNewName);        
+        String resourceNewLabel = "label3";
+        List<String> labels = Arrays.asList("label1", "label2", resourceNewLabel);
+
+        resource.setLabels(labels);        
         sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, resource);
 
 
@@ -195,8 +199,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Resource result = resourceRepo.findOne(resource.getId());
-        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
-               + "')", result.getResourceURL()); 
+        assertEquals(resourceNewLabel, result.getLabels().get(2)); 
 
         platformRepo.delete(platform.getPlatformId());
         resourceRepo.delete(resource.getId());
@@ -258,18 +261,23 @@ public class MessageQueuesTests {
 
         Resource resource = new Resource();
         String resourceId = Integer.toString(rand.nextInt(50000));
-        String resourceName = "sensor" + rand.nextInt(50000);
-        List<String> observedProperties = Arrays.asList("air", "temp");
+        // String resourceName = "sensor" + rand.nextInt(50000);
+        // List<String> observedProperties = Arrays.asList("air", "temp");
         resource.setId(resourceId);
-        resource.setName(resourceName);
-        resource.setOwner("OpenIoT");
-        resource.setDescription("Temperature Sensor");
-        resource.setObservedProperties(observedProperties);
-        resource.setResourceURL("http://www.symbIoTe.com/sensor1");
-        resource.setLocation(location);
-        resource.setFeatureOfInterest("Nothing");
-        resource.setPlatformId(platform.getPlatformId());
+        // resource.setName(resourceName);
+        // resource.setOwner("OpenIoT");
+        // resource.setDescription("Temperature Sensor");
+        // resource.setObservedProperties(observedProperties);
+        // resource.setResourceURL("http://www.symbIoTe.com/sensor1");
+        // resource.setLocation(location);
+        // resource.setFeatureOfInterest("Nothing");
+        // resource.setPlatformId(platform.getPlatformId());
 
+        List<String> labels = Arrays.asList("label1", "label2");
+        List<String> comments = Arrays.asList("comment1", "comment2");
+        resource.setLabels(labels);
+        resource.setComments(comments);
+        resource.setHasInterworkingServiceURL("http://www.symbIoTe.com/");
         return resource;
     }
 
