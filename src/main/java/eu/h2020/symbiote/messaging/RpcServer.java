@@ -121,7 +121,7 @@ public class RpcServer {
             Resource resource = resourceRepository.findOne(iterator.next());
             if (resource != null){
 
-                String url = resource.getHasInterworkingServiceURL();
+                String url = resource.getInterworkingServiceURL();
                 ids.put(resource.getId(), url.toString());
                 log.info("AccessController found a resource with id " + resource.getId() +
                      " and url " + url.toString());

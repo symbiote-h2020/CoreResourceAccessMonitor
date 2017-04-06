@@ -173,7 +173,7 @@ public class MessageQueuesTests {
         Resource result = resourceRepo.findOne(resource.getId());
 
         assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
-               + "')", result.getHasInterworkingServiceURL());   
+               + "')", result.getInterworkingServiceURL());   
 
         platformRepo.delete(platform.getPlatformId());
         resourceRepo.delete(resource.getId());
@@ -281,7 +281,7 @@ public class MessageQueuesTests {
         List<String> comments = Arrays.asList("comment1", "comment2");
         resource.setLabels(labels);
         resource.setComments(comments);
-        resource.setHasInterworkingServiceURL("http://www.symbIoTe.com/");
+        resource.setInterworkingServiceURL("http://www.symbIoTe.com/");
         return resource;
     }
 

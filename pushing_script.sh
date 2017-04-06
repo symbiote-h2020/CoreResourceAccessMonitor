@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 
-: "${BRANCHES_TO_MERGE_REGEX?}" "${BRANCH_TO_MERGE?}"
+: "${BRANCHES_TO_MERGE_REGEX?}" "${BRANCH_TO_MERGE_INTO?}"
 : "${GITHUB_SECRET_TOKEN?}" "${GITHUB_REPO?}" "${REPO_TEMP?}"
 
 export GIT_COMMITTER_EMAIL='travis@travis'
@@ -13,16 +13,12 @@ if ! grep -q "$BRANCHES_TO_MERGE_REGEX" <<< "$TRAVIS_BRANCH"; then
     exit 0
 fi
 
-# Since Travis does a partial checkout, we need to get the whole thing
-git clone "https://github.com/$GITHUB_REPO" "$REPO_TEMP"
-
 # shellcheck disable=SC2164
-printf 'cd %s\n' "$REPO_TEMP" >&2
 cd "$REPO_TEMP"
+printf 'Pushing to %s\n' "$GITHUB_REPO" >&2
 
-printf 'Checking out %s\n' "$BRANCHES_TO_MERGE_REGEX" >&2
-git checkout "$BRANCHES_TO_MERGE_REGEX"
+push_uri="https://$GITHUB_SECRET_TOKEN@github.com/$GITHUB_REPO"
 
-printf 'Merging %s\n' "$BRANCH_TO_MERGE" >&2
-git pull origin "$BRANCH_TO_MERGE"
-
+# Redirect to /dev/null to avoid secret leakage
+printf 'git push %s %s:%s >/dev/null 2>&1\n' "$GITHUB_REPO" "$BRANCH_TO_MERGE_INTO"
+git push "$push_uri" "$BRANCHES_TO_MERGE_REGEX":"$BRANCH_TO_MERGE_INTO" >/dev/null 2>&1

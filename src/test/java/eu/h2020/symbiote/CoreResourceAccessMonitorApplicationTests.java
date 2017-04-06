@@ -119,7 +119,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         // resource1.setLocation(location);
         // resource1.setFeatureOfInterest("Nothing");
         // resource1.setPlatformId("platform_id");
-        resource1.setHasInterworkingServiceURL("http://www.symbIoTe.com/sensor1");
+        resource1.setInterworkingServiceURL("http://www.symbIoTe.com/sensor1");
 
 
         Resource resource2 = new Resource();
@@ -132,7 +132,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         // resource2.setLocation(location);
         // resource2.setFeatureOfInterest("Nothing");
         // resource2.setPlatformId("platform_id");
-        resource2.setHasInterworkingServiceURL("http://www.symbIoTe.com/sensor2");
+        resource2.setInterworkingServiceURL("http://www.symbIoTe.com/sensor2");
 
         platformRepo.save(platform);
         resourceRepo.save(resource1);
@@ -206,72 +206,8 @@ public class CoreResourceAccessMonitorApplicationTests {
         resourceRepo.delete("sensor_id2");
     }
 
-
-    // @Test    
-    // public void testGetResourcesUrlsWithInvalidToken() throws Exception {
-
-    //     JSONObject query = new JSONObject();
-    //     JSONArray idList = new JSONArray();
-    //     final AtomicReference<JSONObject> resultRef = new AtomicReference<JSONObject>();
-    //     final String ALIAS = "mytest2";
-
-    //     idList.add("sensor_id");
-    //     idList.add("sensor_id2");
-    //     query.put("idList", idList);
-
-    //     try{
-    //         KeyStore ks = KeyStore.getInstance("JKS");
-    //         InputStream readStream = new FileInputStream("./src/test/resources/certificates/mytest.jks");// Use file stream to load from file system or class.getResourceAsStream to load from classpath
-    //         ks.load(readStream, "password".toCharArray());
-    //         Key key = ks.getKey(ALIAS, "password".toCharArray());
-    //         readStream.close();
-
-    //         String tokenString=  Jwts.builder()
-    //             .setSubject("test1")
-    //             .setExpiration(DateUtil.addDays(new Date(), 1))
-    //             .claim("name", "test2")
-    //             .signWith(SignatureAlgorithm.RS512, key)
-    //             .compact();
-    //         query.put("token", tokenString);
-
-    //     } 
-    //     catch(Exception e){
-    //         log.info("Exception thrown");
-    //     }
-
-    //     log.info("Before sending the message");
-
-    //     RabbitConverterFuture<JSONObject> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
-
-    //     log.info("After sending the message");
-
-    //     future.addCallback(new ListenableFutureCallback<JSONObject>() {
-
-    //         @Override
-    //         public void onSuccess(JSONObject result) {
-
-    //             log.info("Successully received resource urls: " + result);
-    //             resultRef.set(result);
-
-    //         }
-
-    //         @Override
-    //         public void onFailure(Throwable ex) {
-    //             fail("Accessed the element which does not exist");
-    //         }
-
-    //     });
-
-    //     while(!future.isDone())
-    //         TimeUnit.SECONDS.sleep(1);
-
-    //     assertEquals("Token could not be verified", resultRef.get().get("error"));
-
-    // }
-
-
     @Test    
-    public void testGetResourcesUrlsWithMalformedToken() throws Exception {
+    public void testGetResourcesUrlsWithInvalidToken() throws Exception {
 
         JSONObject query = new JSONObject();
         final AtomicReference<JSONObject> resultRef = new AtomicReference<JSONObject>();
@@ -304,7 +240,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         while(!future.isDone())
             TimeUnit.SECONDS.sleep(1);
 
-        assertEquals("Token was malformed", resultRef.get().get("error"));
+        assertEquals("Token could not be verified", resultRef.get().get("error"));
 
     }
 

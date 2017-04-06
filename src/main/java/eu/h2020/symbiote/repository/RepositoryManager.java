@@ -133,7 +133,7 @@ public class RepositoryManager {
 
         log.info("CRAM received resource registration: " + message);
 
-        resource.setHasInterworkingServiceURL(generateResourceURL(resource));
+        resource.setInterworkingServiceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
 
         String objectInJson = gson.toJson(resource);
@@ -165,7 +165,7 @@ public class RepositoryManager {
         //         + "with id = " + resource.getPlatformId() + " which owns the resource " 
         //         + "does not exist.");
 
-        resource.setHasInterworkingServiceURL(generateResourceURL(resource));
+        resource.setInterworkingServiceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
 
         String objectInJson = gson.toJson(resource);
@@ -216,7 +216,7 @@ public class RepositoryManager {
     private static String generateResourceURL (Resource resource) {
 
         // strip "/rap" and any trailing slashes if there are any and provide the resource url
-        return resource.getHasInterworkingServiceURL().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
+        return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
                + "')";
     }
 }
