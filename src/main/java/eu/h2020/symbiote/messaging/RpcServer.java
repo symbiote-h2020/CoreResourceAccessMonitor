@@ -54,11 +54,12 @@ public class RpcServer {
     private static ResourceRepository resourceRepository;
 
     @Autowired
-    RabbitTemplate rabbitTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
-    SecurityHandler securityHandler;
+    private SecurityHandler securityHandler;
 
+    private String platformAAMUrlPath = "";
 
     @Autowired
     public RpcServer(PlatformRepository platformRepository, ResourceRepository resourceRepository) {
@@ -83,14 +84,20 @@ public class RpcServer {
    */
     public JSONObject getResourcesUrls(JSONObject resourceIdList) throws Exception {
 
-        // Gson gson = new Gson();
-        // String message = new String(bytes, "UTF-8");
-        // JSONObject resourceIdList = gson.fromJson(message, JSONObject.class);
+        ArrayList<String> array = (ArrayList<String>)resourceIdList.get("idList");
+        Resource firstResource = resourceRepository.findOne(array.get(0));
+        if (firstResource != null) {
+            log.info("firstResource = " + firstResource);
+        }
+        else {
+            log.info("The resource with specified id was not found");
+        }
 
+        String aamUrl = firstResource.getInterworkingServiceURL() + platformAAMUrlPath;
         log.info("CRAM received a request for the following ids: " + resourceIdList);
         try {
             String tokenString = resourceIdList.get("token").toString();
-            SymbIoTeToken token = securityHandler.verifyCoreToken(tokenString);
+            SymbIoTeToken token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
             log.info("Token " + token + " was verified");
         }
         catch (TokenVerificationException e) { 
@@ -113,7 +120,6 @@ public class RpcServer {
         }
         
 
-        ArrayList<String> array = (ArrayList<String>)resourceIdList.get("idList");
         Iterator<String> iterator = array.iterator();
         JSONObject ids = new JSONObject();
 
@@ -131,7 +137,6 @@ public class RpcServer {
             }
         }
 
-        // return ids.toString().getBytes();
         return ids;
     }
 

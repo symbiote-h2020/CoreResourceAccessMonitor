@@ -52,7 +52,7 @@ import static org.junit.Assert.fail;
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
                 properties = {"eureka.client.enabled=false", 
                               "spring.sleuth.enabled=false",
-                              "symbiote.coreaam.url=http://localhost:8033"})
+                              "platform.aam.url=http://localhost:8033"})
 @ContextConfiguration(locations = {"classpath:test-properties.xml" })
 @Configuration
 @ComponentScan
@@ -81,6 +81,9 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Value("${rabbit.routingKey.cram.getResourceUrls}")
     private String cramGetResourceUrlsRoutingKey;
 
+    @Value("${platform.aam.url}")
+    private String platformAAMUrl;
+
     // Execute the Setup method before the test.    
     @Before    
     public void setUp() throws Exception {
@@ -90,8 +93,6 @@ public class CoreResourceAccessMonitorApplicationTests {
         else
             log.info("coreAndPlatformAAMDummyServer created");
 
-        String sensor1Url = "http://www.symbIoTe.com/sensor1";
-        String sensor2Url = "http://www.symbIoTe.com/sensor2";
         List<String> observedProperties = Arrays.asList("temp", "air");
         
         Location location = new Location();
@@ -119,7 +120,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         // resource1.setLocation(location);
         // resource1.setFeatureOfInterest("Nothing");
         // resource1.setPlatformId("platform_id");
-        resource1.setInterworkingServiceURL("http://www.symbIoTe.com/sensor1");
+        resource1.setInterworkingServiceURL(platformAAMUrl);
 
 
         Resource resource2 = new Resource();
@@ -132,7 +133,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         // resource2.setLocation(location);
         // resource2.setFeatureOfInterest("Nothing");
         // resource2.setPlatformId("platform_id");
-        resource2.setInterworkingServiceURL("http://www.symbIoTe.com/sensor2");
+        resource2.setInterworkingServiceURL(platformAAMUrl);
 
         platformRepo.save(platform);
         resourceRepo.save(resource1);
@@ -198,8 +199,8 @@ public class CoreResourceAccessMonitorApplicationTests {
         while(!future.isDone())
             TimeUnit.SECONDS.sleep(1);
 
-        assertEquals("http://www.symbIoTe.com/sensor1", resultRef.get().get("sensor_id"));
-        assertEquals("http://www.symbIoTe.com/sensor2", resultRef.get().get("sensor_id2"));
+        assertEquals(platformAAMUrl, resultRef.get().get("sensor_id"));
+        assertEquals(platformAAMUrl, resultRef.get().get("sensor_id2"));
 
         platformRepo.delete("platform_id");
         resourceRepo.delete("sensor_id");
@@ -210,9 +211,13 @@ public class CoreResourceAccessMonitorApplicationTests {
     public void testGetResourcesUrlsWithInvalidToken() throws Exception {
 
         JSONObject query = new JSONObject();
+        JSONArray idList = new JSONArray();
         final AtomicReference<JSONObject> resultRef = new AtomicReference<JSONObject>();
             
         query.put("token", "invalidToken");
+        idList.add("sensor_id");
+        idList.add("sensor_id2");
+        query.put("idList", idList);
 
         log.info("Before sending the message");
 
