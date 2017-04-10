@@ -13,12 +13,12 @@ if ! grep -q "$BRANCHES_TO_MERGE_REGEX" <<< "$TRAVIS_BRANCH"; then
     exit 0
 fi
 
-# shellcheck disable=SC2164
-cd "$REPO_TEMP"
-printf 'Pushing to %s\n' "$GITHUB_REPO" >&2
+## shellcheck disable=SC2164
+#cd "$REPO_TEMP"
+#printf 'Pushing to %s\n' "$GITHUB_REPO" >&2
 
 push_uri="https://$GITHUB_SECRET_TOKEN@github.com/$GITHUB_REPO"
 
 # Redirect to /dev/null to avoid secret leakage
-printf 'git push %s %s:%s >/dev/null 2>&1\n' "$GITHUB_REPO" "$BRANCH_TO_MERGE_INTO"
-git push "$push_uri" "$BRANCHES_TO_MERGE_REGEX":"$BRANCH_TO_MERGE_INTO" >/dev/null 2>&1
+printf 'git push %s staging:develop >/dev/null 2>&1\n' "$GITHUB_REPO"
+git push "$push_uri" staging:develop >/dev/null 2>&1
