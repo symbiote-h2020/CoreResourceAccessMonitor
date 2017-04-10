@@ -25,4 +25,4 @@ git config user.name "$GIT_COMMITTER_NAME"
 
 printf 'Pulling develop\n' >&2
 git fetch origin +develop:develop
-git merge develo --no-edit
+git merge develop --no-edit
