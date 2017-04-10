@@ -14,8 +14,6 @@ if ! grep -q "$BRANCHES_TO_MERGE_REGEX" <<< "$TRAVIS_BRANCH"; then
 fi
 
 ## shellcheck disable=SC2164
-#cd "$REPO_TEMP"
-#printf 'Pushing to %s\n' "$GITHUB_REPO" >&2
 
 push_uri="https://$GITHUB_SECRET_TOKEN@github.com/$GITHUB_REPO"
 
