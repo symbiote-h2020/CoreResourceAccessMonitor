@@ -1,8 +1,8 @@
 language: java
 env:
   global:
-    - GITHUB_REPO=symbiote-h2020/CoreResourceAccessMonitor
-    - secure: hdk7sDs0dRbmix1lDWm6R0wUhd7wwDxlf2Awpce7IkaGJt4rmeOPFU0RJBNZrZqmcFZkHMgoFeGu/4TXZ2K02hvn46Lnx+9AgNRr8tHX1OWmem5y49R7Sa5I+G17av2QB/NM+JUfrtHraT+5g7fsl3clX0s/aoBWjXLDUOHUjfzQbcArKAR/Lev4EApjNgyGMPwK6FN/cHca3qi9o3Mf0I6N0aerPgql8apaLUpQmPyKlyrPQC040Wqr3gjFThXrz/VNnkKC5RHGhew5FuW6th81Y8dvMUmOe+4AOaXMHTRoPhjKhyJznTawqgbMqV2x9RjrI57h8mREMNATUp6wqONV+W2pxE0mpOGT5tabTFuiHuC3IwRlHDHEARRQ2C1DdOXKn808OyR3NUrHb1wESS1HtUBgUcDAEGGLCEXBMGZaG3ayoom0lLLc3pC51fDV2dlw759ptK+uj3LaZIGYHChs9e82+JVX512oNRWjcXlrfGB+1o5LTrhleTAvcgpMLzbuW/1SmXtLgAeVXomk5lwZSoLu4U4H8q9Dqm39ejoFkBneIht1j8y+pRfB8vkMd4K3UpMCjdOJ+M0sBSgM2CjVDm+HC1s/spA+JRfX2QXxuZE/wY9LpN6HKwC/gSurfN7Nj5dtp2Ro5aUba/wipXeFYENV7W1E5AwzSH+5SeY=
+  - GITHUB_REPO=symbiote-h2020/CoreResourceAccessMonitor
+  - secure: mcujpGYyIulXAjNIFLvItSwjwuJ1krI8FDoiJ8xSJp0ZbSzkuDteZP0/Y5AuycsJUzZBpV6TXyzO1y6faxIS73d4QEwIOfgnuv89nOcNswMEJYxkdpTS6OQvpt2oBtWqCu8jIHU15BVe6w1mh7gRlaMnhCiv7bncASWE8OVN3RWjXKMCXoPNJQObRHS2670Dbq/nh+nyaFTebYopD2vNByG3Hfo1d5zQYIHWJ7O0153JYw7O4KB4341vYB8N7f+siv+x8sXXlgKBfrnRWrccjyO7blrJFOExMKu00b9NooLpFSXrbjkQ0QzWcBjv8cMXtA1cjyHmZvy8p6NX2njaWEOQLSmhB9bVk9O2e3ybkPnHlCLf2j7zGdIqtviASMMf4ru2k+b0LxBRYHZk/Nld3Gj2wL5nlFfHJL7U+jpyiICLd6sMfhYg8zH0OJfvmLkeSsOxIWvsHtQIeoRbIc6/Ixh8Aec/QNJYJ7s9fiJcl8dxPdNCznCy5LYbsV8mdXGyOQwtzrP6iBzbtWRVxckQyr/JUT+la1J1IFCIE/xEpZIoQ+wvDasdX31ukHHFIq2ViCHJ8tgpawy4LvkFunj3XYfVzEMva3WSIM9+j2l66G4hny19RB5n1vY1Sz7JipebrFSHePrl0M63PhZ01JFhf1fVbA+BRVzJLWJv9xi8qZ0=
 jdk:
 - oraclejdk8
 services:
@@ -22,12 +22,12 @@ cache:
   - "$HOME/.gradle/wrapper/"
 before_script:
 - chmod a+x merge_script.sh
-- ./merge_script.sh
+- "./merge_script.sh"
 after_success:
 - chmod a+x pushing_script.sh
-- ./pushing_script.sh
+- "./pushing_script.sh"
 - bash <(curl -s https://codecov.io/bash)
 notifications:
   email:
-    on_success: never # default: change
-    on_failure: always # default: always
+    on_success: never
+    on_failure: always
