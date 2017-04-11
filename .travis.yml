@@ -1,7 +1,7 @@
 language: java
 env:
   global:
-    - REPO_TEMP=$(mktemp -d)
+    - GITHUB_REPO=symbiote-h2020/CoreResourceAccessMonitor
     - secure: hdk7sDs0dRbmix1lDWm6R0wUhd7wwDxlf2Awpce7IkaGJt4rmeOPFU0RJBNZrZqmcFZkHMgoFeGu/4TXZ2K02hvn46Lnx+9AgNRr8tHX1OWmem5y49R7Sa5I+G17av2QB/NM+JUfrtHraT+5g7fsl3clX0s/aoBWjXLDUOHUjfzQbcArKAR/Lev4EApjNgyGMPwK6FN/cHca3qi9o3Mf0I6N0aerPgql8apaLUpQmPyKlyrPQC040Wqr3gjFThXrz/VNnkKC5RHGhew5FuW6th81Y8dvMUmOe+4AOaXMHTRoPhjKhyJznTawqgbMqV2x9RjrI57h8mREMNATUp6wqONV+W2pxE0mpOGT5tabTFuiHuC3IwRlHDHEARRQ2C1DdOXKn808OyR3NUrHb1wESS1HtUBgUcDAEGGLCEXBMGZaG3ayoom0lLLc3pC51fDV2dlw759ptK+uj3LaZIGYHChs9e82+JVX512oNRWjcXlrfGB+1o5LTrhleTAvcgpMLzbuW/1SmXtLgAeVXomk5lwZSoLu4U4H8q9Dqm39ejoFkBneIht1j8y+pRfB8vkMd4K3UpMCjdOJ+M0sBSgM2CjVDm+HC1s/spA+JRfX2QXxuZE/wY9LpN6HKwC/gSurfN7Nj5dtp2Ro5aUba/wipXeFYENV7W1E5AwzSH+5SeY=
 jdk:
 - oraclejdk8
@@ -22,14 +22,12 @@ cache:
   - "$HOME/.gradle/wrapper/"
 before_script:
 - chmod a+x merge_script.sh
-- BRANCHES_TO_MERGE_REGEX='staging' BRANCH_TO_MERGE=develop GITHUB_REPO=symbiote-h2020/CoreResourceAccessMonitor
-  ./merge_script.sh
+- ./merge_script.sh
 after_success:
 - chmod a+x pushing_script.sh
-- BRANCHES_TO_MERGE_REGEX='staging' BRANCH_TO_MERGE_INTO=develop GITHUB_REPO=symbiote-h2020/CoreResourceAccessMonitor
-  ./pushing_script.sh
+- ./pushing_script.sh
 - bash <(curl -s https://codecov.io/bash)
 notifications:
   email:
     on_success: never # default: change
-on_failure: always # default: always
+    on_failure: always # default: always
