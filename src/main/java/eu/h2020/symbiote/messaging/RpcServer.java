@@ -31,7 +31,6 @@ import eu.h2020.symbiote.commons.security.SecurityHandler;
 import eu.h2020.symbiote.commons.security.token.SymbIoTeToken;
 import eu.h2020.symbiote.commons.security.token.TokenVerificationException;
 
-import com.google.gson.Gson;
 import java.io.UnsupportedEncodingException;
 
 /**

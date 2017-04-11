@@ -265,7 +265,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-platform-created");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -276,7 +276,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-platform-updated");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -287,7 +287,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-platform-deleted");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -298,7 +298,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-resource-created");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -309,7 +309,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-resource-updated");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -320,7 +320,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-resource-deleted");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -331,7 +331,7 @@ public class QueueConfig {
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames("symbIoTe-CoreResourceAccessMonitor-coreAPI-get_resource_urls");
         container.setMessageListener(listenerAdapter);
-        // container.setMessageConverter(jackson2JsonMessageConverter);
+        container.setMessageConverter(jackson2JsonMessageConverter);
         return container;
     }
 
@@ -339,7 +339,7 @@ public class QueueConfig {
     MessageListenerAdapter platformRegistrationListenerAdapter(RepositoryManager repositoryManager) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(repositoryManager, "savePlatform");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 
@@ -347,7 +347,7 @@ public class QueueConfig {
     MessageListenerAdapter platformUpdateListenerAdapter(RepositoryManager repositoryManager) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(repositoryManager, "updatePlatform");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 
@@ -355,7 +355,7 @@ public class QueueConfig {
     MessageListenerAdapter platformUnregistrationListenerAdapter(RepositoryManager repositoryManager) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(repositoryManager, "deletePlatform");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 
@@ -363,7 +363,7 @@ public class QueueConfig {
     MessageListenerAdapter resourceRegistrationListenerAdapter(RepositoryManager repositoryManager) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(repositoryManager, "saveResource");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 
@@ -371,7 +371,7 @@ public class QueueConfig {
     MessageListenerAdapter resourceUpdateListenerAdapter(RepositoryManager repositoryManager) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(repositoryManager, "updateResource");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 
@@ -379,7 +379,7 @@ public class QueueConfig {
     MessageListenerAdapter resourceUnregistrationListenerAdapter(RepositoryManager repositoryManager) {
 
         MessageListenerAdapter adapter = new MessageListenerAdapter(repositoryManager, "deleteResource");
-        // adapter.setMessageConverter(jackson2JsonMessageConverter);
+        adapter.setMessageConverter(jackson2JsonMessageConverter);
         return adapter;
     }
 

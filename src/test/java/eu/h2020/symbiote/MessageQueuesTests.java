@@ -16,9 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
-import java.net.URL;
-import com.google.gson.Gson;
-
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -36,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.Random;
 import java.util.List;
 import java.util.Arrays;
+import java.net.URL;
 
 import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.repository.PlatformRepository;
@@ -285,35 +283,23 @@ public class MessageQueuesTests {
         return resource;
     }
 
-    void sendPlatformMessage (String exchange, String key, Platform object) throws Exception {
+    void sendPlatformMessage (String exchange, String key, Platform platform) throws Exception {
 
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(object);
-
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchange, key, message);
+        rabbitTemplate.convertAndSend(exchange, key, platform,
+            m -> {
+                    m.getMessageProperties().setContentType("application/json");
+                    m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                    return m;
+                 });
     }
 
-    void sendResourceMessage (String exchange, String key, Resource object) throws Exception {
+    void sendResourceMessage (String exchange, String key, Resource resource) throws Exception {
 
-        Gson gson = new Gson();
-        String objectInJson = gson.toJson(object);
-
-        MessageProperties props = MessagePropertiesBuilder.newInstance()
-            .setContentType("application/json")
-            .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
-            .build();
-        Message message = MessageBuilder.withBody(objectInJson.getBytes("UTF-8"))
-            .andProperties(props)
-            .build();
-
-        rabbitTemplate.send(exchange, key, message);
+        rabbitTemplate.convertAndSend(exchange, key, resource,
+            m -> {
+                    m.getMessageProperties().setContentType("application/json");
+                    m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                    return m;
+                 });
     }
 }

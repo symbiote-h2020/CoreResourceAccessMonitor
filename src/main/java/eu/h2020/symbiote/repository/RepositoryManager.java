@@ -16,7 +16,6 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.core.ExchangeTypes;
 
-import com.google.gson.Gson;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -58,13 +57,10 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the newly registered platform
    */
-    public static void savePlatform(byte[] bytes) throws Exception {
+    public static void savePlatform(Platform platform) throws Exception {
 
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        Platform platform = gson.fromJson(message, Platform.class);
         platformRepository.save(platform);
-        log.info("CRAM saved platform: " + message);
+        log.info("CRAM saved platform with id: " + platform.getPlatformId());
     }
 
    /**
@@ -75,18 +71,14 @@ public class RepositoryManager {
    * @param platform The platform object of the updated platform
    * @exception EntityNotFoundException If the platform does not exist
    */
-    public static void updatePlatform(byte[] bytes) throws Exception, EntityNotFoundException {
+    public static void updatePlatform(Platform platform) throws Exception, EntityNotFoundException {
         
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        Platform platform = gson.fromJson(message, Platform.class);
-
         if (platformRepository.findOne(platform.getPlatformId()) == null) 
             throw new EntityNotFoundException ("Received an update message for "
                 + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
         platformRepository.save(platform);
-        log.info("CRAM updated platform: " + message);
+        log.info("CRAM updated platform with id: " + platform.getPlatformId());
     }
 
    /**
@@ -97,18 +89,16 @@ public class RepositoryManager {
    * @param platform The platform object of the platform to be deleted
    * @exception EntityNotFoundException If the platform does not exist
    */
-    public static void deletePlatform(byte[] bytes) throws Exception, EntityNotFoundException {
-        
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        Platform platform = gson.fromJson(message, Platform.class);
+    public static void deletePlatform(Platform platform) throws Exception, EntityNotFoundException {
+
         if (platformRepository.findOne(platform.getPlatformId()) == null) 
 
             throw new EntityNotFoundException ("Received an uregistration message for "
                 + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
         platformRepository.delete(platform.getPlatformId());
-        log.info("CRAM deleted platform: " + platform.getPlatformId());
+        log.info("CRAM deleted platform with id: " + platform.getPlatformId());
+
     }
 
    /**
@@ -119,25 +109,17 @@ public class RepositoryManager {
    * @param resource The resource object of the newly registered resource
    * @exception EntityNotFoundException If the platform which owns the resource does not exist
    */
-    public static void saveResource(byte[] bytes) throws Exception, EntityNotFoundException {
+    public static void saveResource(Resource resource) throws Exception, EntityNotFoundException {
         
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        Resource resource = gson.fromJson(message, Resource.class);
-
         // if (platformRepository.findOne(resource.getPlatformId()) == null)
         //     throw new EntityNotFoundException ("Received a registration message for "
         //         + "resource with id = " + resource.getId() + ", but the platform "
         //         + "with id = " + resource.getPlatformId() + " which owns the resource "
         //         + "does not exist.");
 
-        log.info("CRAM received resource registration: " + message);
-
         resource.setInterworkingServiceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
-
-        String objectInJson = gson.toJson(resource);
-        log.info("CRAM saved resource: " + objectInJson);
+        log.info("CRAM saved resource with id: " + resource.getId());
     }
 
    /**
@@ -148,12 +130,8 @@ public class RepositoryManager {
    * @param resource The resource object of the updated resource
    * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
-    public static void updateResource(byte[] bytes) throws Exception, EntityNotFoundException {
+    public static void updateResource(Resource resource) throws Exception, EntityNotFoundException {
         
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        Resource resource = gson.fromJson(message, Resource.class);
-
         if (resourceRepository.findOne(resource.getId()) == null) 
             throw new EntityNotFoundException ("Received an update message for "
                 + "resource with id = " + resource.getId() + ", but the resource does "
@@ -167,9 +145,7 @@ public class RepositoryManager {
 
         resource.setInterworkingServiceURL(generateResourceURL(resource));
         resourceRepository.save(resource);
-
-        String objectInJson = gson.toJson(resource);
-        log.info("CRAM updated resource: " + objectInJson);
+        log.info("CRAM updated resource with id: " + resource.getId());
     }
 
    /**
@@ -180,12 +156,8 @@ public class RepositoryManager {
    * @param resource The resource object of the resource to be deleted
    * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
-    public static void deleteResource(byte[] bytes) throws Exception, EntityNotFoundException {
+    public static void deleteResource(Resource resource) throws Exception, EntityNotFoundException {
         
-        Gson gson = new Gson();
-        String message = new String(bytes, "UTF-8");
-        Resource resource = gson.fromJson(message, Resource.class);
-
         if (resourceRepository.findOne(resource.getId()) == null) 
             throw new EntityNotFoundException ("Received an unregistration message for " 
                 + "resource with id = " + resource.getId() + ", but the resource does "
@@ -198,8 +170,7 @@ public class RepositoryManager {
         //         + "does not exist.");
 
         resourceRepository.delete(resource.getId());
-    
-        log.info("CRAM deleted resource: " + resource.getId());
+        log.info("CRAM deleted resource with id: " + resource.getId());
     }
 
 
