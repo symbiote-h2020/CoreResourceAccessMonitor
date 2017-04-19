@@ -30,6 +30,7 @@ import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.commons.security.SecurityHandler;
 import eu.h2020.symbiote.commons.security.token.SymbIoTeToken;
 import eu.h2020.symbiote.commons.security.token.TokenVerificationException;
+import eu.h2020.symbiote.commons.security.exception.DisabledException;
 
 import java.io.UnsupportedEncodingException;
 
@@ -99,8 +100,8 @@ public class RpcServer {
             SymbIoTeToken token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
             log.info("Token " + token + " was verified");
         }
-        catch (SecurityException e) { 
-            log.info("Security Handler is disabled");
+        catch (DisabledException e) { 
+            log.info(e);
         }
         catch (TokenVerificationException e) { 
             log.error("Token could not be verified");
@@ -108,13 +109,7 @@ public class RpcServer {
             error.put("error", "Token could not be verified");
             return error;
         }
-        catch (Exception e) { 
-            log.error("An exception was thrown");
-            JSONObject error = new JSONObject();
-            error.put("error", e);
-            return error;
-        }
-        
+       
 
         Iterator<String> iterator = array.iterator();
         JSONObject ids = new JSONObject();
