@@ -99,16 +99,13 @@ public class RpcServer {
             SymbIoTeToken token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
             log.info("Token " + token + " was verified");
         }
+        catch (SecurityException e) { 
+            log.info("Security Handler is disabled");
+        }
         catch (TokenVerificationException e) { 
             log.error("Token could not be verified");
             JSONObject error = new JSONObject();
             error.put("error", "Token could not be verified");
-            return error;
-        }
-        catch (MalformedJwtException e) { 
-            log.error("Token was malformed");
-            JSONObject error = new JSONObject();
-            error.put("error", "Token was malformed");
             return error;
         }
         catch (Exception e) { 

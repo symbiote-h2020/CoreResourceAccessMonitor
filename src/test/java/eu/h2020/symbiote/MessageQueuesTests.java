@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.Random;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.net.URL;
 
 import eu.h2020.symbiote.repository.ResourceRepository;
@@ -40,6 +41,8 @@ import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.Location;
 import eu.h2020.symbiote.core.model.resources.Resource;
+import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
+import eu.h2020.symbiote.core.model.internal.CoreResource;
 
 import static org.junit.Assert.assertEquals;
 
@@ -160,22 +163,35 @@ public class MessageQueuesTests {
 
         Location location = createLocation();
 
-        Resource resource = createResource(platform, location);
+        CoreResource resource1 = createResource(platform, location);
+        CoreResource resource2 = createResource(platform, location);
 
+        CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
+        ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
+        resources.add(resource1);
+        resources.add(resource2);
+        regMessage.setPlatformId(platform.getPlatformId());
+        regMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, resource);
+        sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resource.getId());
+        Resource result = resourceRepo.findOne(resource1.getId());
 
-        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource.getId()
+        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource1.getId()
+               + "')", result.getInterworkingServiceURL());   
+
+
+        result = resourceRepo.findOne(resource2.getId());
+
+        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource2.getId()
                + "')", result.getInterworkingServiceURL());   
 
         platformRepo.delete(platform.getPlatformId());
-        resourceRepo.delete(resource.getId());
-
+        resourceRepo.delete(resource1.getId());
+        resourceRepo.delete(resource2.getId());
 	}
 
     @Test
@@ -186,25 +202,47 @@ public class MessageQueuesTests {
 
         Location location = createLocation();
 
-        Resource resource = createResource(platform, location);
-        resourceRepo.save(resource);
-
+        Resource resource1 = createResource(platform, location);
+        resourceRepo.save(resource1);
+        Resource resource2 = createResource(platform, location);
+        resourceRepo.save(resource2);
 
         String resourceNewLabel = "label3";
         List<String> labels = Arrays.asList("label1", "label2", resourceNewLabel);
 
-        resource.setLabels(labels);        
-        sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, resource);
+        CoreResource coreResource1 = new CoreResource();
+        coreResource1.setId(resource1.getId());
+        coreResource1.setLabels(labels);
+        coreResource1.setInterworkingServiceURL(resource1.getInterworkingServiceURL());
+        
+        CoreResource coreResource2 = new CoreResource();
+        coreResource2.setId(resource2.getId());
+        coreResource2.setLabels(labels);
+        coreResource2.setInterworkingServiceURL(resource2.getInterworkingServiceURL());
+
+        CoreResourceRegisteredOrModifiedEventPayload updMessage = new CoreResourceRegisteredOrModifiedEventPayload();
+        ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
+        resources.add(coreResource1);
+        resources.add(coreResource2);
+        updMessage.setPlatformId(platform.getPlatformId());
+        updMessage.setResources(resources);
+
+        sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, updMessage);
 
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resource.getId());
+        Resource result = resourceRepo.findOne(resource1.getId());
+        assertEquals(resourceNewLabel, result.getLabels().get(2)); 
+
+        result = resourceRepo.findOne(resource2.getId());
         assertEquals(resourceNewLabel, result.getLabels().get(2)); 
 
         platformRepo.delete(platform.getPlatformId());
-        resourceRepo.delete(resource.getId());
+        resourceRepo.delete(resource1.getId());
+        resourceRepo.delete(resource1.getId());
+
 	}
 
     @Test
@@ -215,15 +253,22 @@ public class MessageQueuesTests {
 
         Location location = createLocation();
 
-        Resource resource = createResource(platform, location);
-        resourceRepo.save(resource);
+        Resource resource1 = createResource(platform, location);
+        resourceRepo.save(resource1);
+        Resource resource2 = createResource(platform, location);
+        resourceRepo.save(resource2);
+        ArrayList<String> resources = new ArrayList<String>();
+        resources.add(resource1.getId());
+        resources.add(resource2.getId());
 
-        sendResourceMessage(resourceExchangeName, resourceRemovedRoutingKey, resource);
+        sendResourceDeleteMessage(resourceExchangeName, resourceRemovedRoutingKey, resources);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resource.getId());
+        Resource result = resourceRepo.findOne(resource1.getId());
+        assertEquals(null, result);
+        result = resourceRepo.findOne(resource2.getId());
         assertEquals(null, result);
 
         platformRepo.delete(platform.getPlatformId());
@@ -259,9 +304,9 @@ public class MessageQueuesTests {
         return location;
     }
 
-    Resource createResource(Platform platform, Location location) {
+    CoreResource createResource(Platform platform, Location location) {
 
-        Resource resource = new Resource();
+        CoreResource resource = new CoreResource();
         String resourceId = Integer.toString(rand.nextInt(50000));
         // String resourceName = "sensor" + rand.nextInt(50000);
         // List<String> observedProperties = Arrays.asList("air", "temp");
@@ -293,13 +338,24 @@ public class MessageQueuesTests {
                  });
     }
 
-    void sendResourceMessage (String exchange, String key, Resource resource) throws Exception {
+    void sendResourceMessage (String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) throws Exception {
 
-        rabbitTemplate.convertAndSend(exchange, key, resource,
+        rabbitTemplate.convertAndSend(exchange, key, resources,
             m -> {
                     m.getMessageProperties().setContentType("application/json");
                     m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                     return m;
                  });
     }
+
+    void sendResourceDeleteMessage (String exchange, String key, List<String> resources) throws Exception {
+
+        rabbitTemplate.convertAndSend(exchange, key, resources,
+            m -> {
+                    m.getMessageProperties().setContentType("application/json");
+                    m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                    return m;
+                 });
+    }
+
 }

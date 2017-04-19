@@ -76,7 +76,7 @@ public class CoreResourceAccessMonitorApplicationTests {
     private String cramExchangeName;
 
     @Autowired
-    CoreAndPlatformAAMDummyServer coreAndPlatformAAMDummyServer;
+    private CoreAndPlatformAAMDummyServer coreAndPlatformAAMDummyServer;
 
     @Value("${rabbit.routingKey.cram.getResourceUrls}")
     private String cramGetResourceUrlsRoutingKey;

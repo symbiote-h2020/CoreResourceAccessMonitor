@@ -8,6 +8,9 @@ import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.resources.Resource;
+import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
+import eu.h2020.symbiote.core.model.internal.CoreResource;
+
 import eu.h2020.symbiote.exception.EntityNotFoundException;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -17,6 +20,8 @@ import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.core.ExchangeTypes;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
+import java.util.List;
 
 /**
 * <h1>Repository Manager for saving platform and resource information</h1>
@@ -109,17 +114,19 @@ public class RepositoryManager {
    * @param resource The resource object of the newly registered resource
    * @exception EntityNotFoundException If the platform which owns the resource does not exist
    */
-    public static void saveResource(Resource resource) throws Exception, EntityNotFoundException {
+    public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message) throws Exception, EntityNotFoundException {
         
-        // if (platformRepository.findOne(resource.getPlatformId()) == null)
-        //     throw new EntityNotFoundException ("Received a registration message for "
-        //         + "resource with id = " + resource.getId() + ", but the platform "
-        //         + "with id = " + resource.getPlatformId() + " which owns the resource "
-        //         + "does not exist.");
+        if (platformRepository.findOne(message.getPlatformId()) == null)
+            throw new EntityNotFoundException ("Received a registration message"
+                + ", but the platform " + "with id = " + message.getPlatformId() 
+                + " which owns the resources does not exist.");
 
-        resource.setInterworkingServiceURL(generateResourceURL(resource));
-        resourceRepository.save(resource);
-        log.info("CRAM saved resource with id: " + resource.getId());
+        for (Iterator<CoreResource> it = message.getResources().iterator(); it.hasNext();) {
+            Resource resource = (Resource) it.next();
+            resource.setInterworkingServiceURL(generateResourceURL(resource));
+            resourceRepository.save(resource);
+            log.info("CRAM saved resource with id: " + resource.getId());
+        }
     }
 
    /**
@@ -130,22 +137,24 @@ public class RepositoryManager {
    * @param resource The resource object of the updated resource
    * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
-    public static void updateResource(Resource resource) throws Exception, EntityNotFoundException {
-        
-        if (resourceRepository.findOne(resource.getId()) == null) 
-            throw new EntityNotFoundException ("Received an update message for "
-                + "resource with id = " + resource.getId() + ", but the resource does "
-                + "not exist");
+    public static void updateResource(CoreResourceRegisteredOrModifiedEventPayload message) throws Exception, EntityNotFoundException {
 
-        // if (platformRepository.findOne(resource.getPlatformId()) == null) 
-        //     throw new EntityNotFoundException ("Received an update message for " 
-        //         + "resource with id = " + resource.getId() + ", but the platform "
-        //         + "with id = " + resource.getPlatformId() + " which owns the resource " 
-        //         + "does not exist.");
+        if (platformRepository.findOne(message.getPlatformId()) == null)
+            throw new EntityNotFoundException ("Received an update message"
+                + ", but the platform " + "with id = " + message.getPlatformId() 
+                + " which owns the resources does not exist.");
 
-        resource.setInterworkingServiceURL(generateResourceURL(resource));
-        resourceRepository.save(resource);
-        log.info("CRAM updated resource with id: " + resource.getId());
+        for (Iterator<CoreResource> it = message.getResources().iterator(); it.hasNext();) {
+            Resource resource = (Resource) it.next();
+            if (resourceRepository.findOne(resource.getId()) == null) 
+                throw new EntityNotFoundException ("Received an update message for "
+                    + "resource with id = " + resource.getId() + ", but the resource does "
+                    + "not exist");
+
+            resource.setInterworkingServiceURL(generateResourceURL(resource));
+            resourceRepository.save(resource);
+            log.info("CRAM updated resource with id: " + resource.getId());
+        }
     }
 
    /**
@@ -156,21 +165,24 @@ public class RepositoryManager {
    * @param resource The resource object of the resource to be deleted
    * @exception EntityNotFoundException If the resource or the platform which owns the resource does not exist
    */
-    public static void deleteResource(Resource resource) throws Exception, EntityNotFoundException {
-        
-        if (resourceRepository.findOne(resource.getId()) == null) 
-            throw new EntityNotFoundException ("Received an unregistration message for " 
-                + "resource with id = " + resource.getId() + ", but the resource does "
-                + "not exist");
+    public static void deleteResource(List<String> resourcesId) throws Exception, EntityNotFoundException {
+        for (Iterator<String> it = resourcesId.iterator(); it.hasNext();) {
+            String id = (String) it.next();
 
-        // if (platformRepository.findOne(resource.getPlatformId()) == null) 
-        //     throw new EntityNotFoundException ("Received an unregistration message for " 
-        //         + "resource with id = " + resource.getId() + ", but the platform "
-        //         + "with id = " + resource.getPlatformId() + " which owns the resource " 
-        //         + "does not exist.");
+            if (resourceRepository.findOne(id) == null) 
+                throw new EntityNotFoundException ("Received an unregistration message for " 
+                    + "resource with id = " + id + ", but the resource does "
+                    + "not exist");
 
-        resourceRepository.delete(resource.getId());
-        log.info("CRAM deleted resource with id: " + resource.getId());
+            // if (platformRepository.findOne(resource.getPlatformId()) == null) 
+            //     throw new EntityNotFoundException ("Received an unregistration message for " 
+            //         + "resource with id = " + resource.getId() + ", but the platform "
+            //         + "with id = " + resource.getPlatformId() + " which owns the resource " 
+            //         + "does not exist.");
+
+            resourceRepository.delete(id);
+            log.info("CRAM deleted resource with id: " + id);
+        }
     }
 
 

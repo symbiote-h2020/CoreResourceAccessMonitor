@@ -43,6 +43,9 @@ public class CoreResourceAccessMonitorApplication {
     @Value("${symbiote.coreaam.url}") 
     private String coreAAMUrl;
 
+    @Value("${security.enabled}") 
+    private boolean securityEnabled;
+
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
     }
@@ -110,7 +113,7 @@ public class CoreResourceAccessMonitorApplication {
 
     @Bean
     public SecurityHandler securityHandler() {
-        SecurityHandler securityHandler = new SecurityHandler(coreAAMUrl, rabbitHost);
+        SecurityHandler securityHandler = new SecurityHandler(coreAAMUrl, rabbitHost, securityEnabled);
         return securityHandler;
     }
 
