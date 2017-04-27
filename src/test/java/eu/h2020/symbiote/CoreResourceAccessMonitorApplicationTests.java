@@ -22,6 +22,8 @@ import org.springframework.amqp.rabbit.AsyncRabbitTemplate.RabbitConverterFuture
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
@@ -33,8 +35,6 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.io.IOException;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONArray;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -44,6 +44,7 @@ import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.Location;
 import eu.h2020.symbiote.core.model.resources.Resource;
+import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -143,14 +144,14 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test    
     public void testGetResourcesUrlsWithValidToken() throws Exception {
 
-        JSONObject query = new JSONObject();
-        JSONArray idList = new JSONArray();
-        final AtomicReference<JSONObject> resultRef = new AtomicReference<JSONObject>();
+        ResourceUrlsRequest query = new ResourceUrlsRequest();
+        ArrayList<String> idList = new ArrayList<String>();
+        final AtomicReference<Map<String, String>> resultRef = new AtomicReference<Map<String, String>>();
         final String ALIAS = "mytest";
 
         idList.add("sensor_id");
         idList.add("sensor_id2");
-        query.put("idList", idList);
+        query.setIdList(idList);
 
         try{
             KeyStore ks = KeyStore.getInstance("JKS");
@@ -165,7 +166,7 @@ public class CoreResourceAccessMonitorApplicationTests {
                 .claim("name", "test2")
                 .signWith(SignatureAlgorithm.RS512, key)
                 .compact();
-            query.put("token", tokenString);
+            query.setToken(tokenString);
 
         } 
         catch(Exception e){
@@ -175,14 +176,14 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         log.info("Before sending the message");
 
-        RabbitConverterFuture<JSONObject> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
+        RabbitConverterFuture<Map<String, String>> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
         log.info("After sending the message");
 
-        future.addCallback(new ListenableFutureCallback<JSONObject>() {
+        future.addCallback(new ListenableFutureCallback<Map<String, String>>() {
 
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onSuccess(Map<String, String> result) {
 
                 log.info("Successully received resource urls: " + result);
                 resultRef.set(result);
@@ -210,25 +211,25 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test    
     public void testGetResourcesUrlsWithInvalidToken() throws Exception {
 
-        JSONObject query = new JSONObject();
-        JSONArray idList = new JSONArray();
-        final AtomicReference<JSONObject> resultRef = new AtomicReference<JSONObject>();
+        ResourceUrlsRequest query = new ResourceUrlsRequest();
+        ArrayList<String> idList = new ArrayList<String>();
+        final AtomicReference<Map<String, String>> resultRef = new AtomicReference<Map<String, String>>();
             
-        query.put("token", "invalidToken");
+        query.setToken("invalidToken");
         idList.add("sensor_id");
         idList.add("sensor_id2");
-        query.put("idList", idList);
+        query.setIdList(idList);
 
         log.info("Before sending the message");
 
-        RabbitConverterFuture<JSONObject> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
+        RabbitConverterFuture<Map<String, String>> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
         log.info("After sending the message");
 
-        future.addCallback(new ListenableFutureCallback<JSONObject>() {
+        future.addCallback(new ListenableFutureCallback<Map<String, String>>() {
 
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onSuccess(Map<String, String> result) {
 
                 log.info("Successully received resource urls: " + result);
                 resultRef.set(result);
