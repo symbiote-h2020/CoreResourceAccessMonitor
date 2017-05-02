@@ -16,11 +16,12 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.AMQP;
 import org.springframework.amqp.core.Message;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
+import java.util.HashMap;
+
 import java.net.MalformedURLException;
 
-import org.json.simple.JSONObject;
 import io.jsonwebtoken.MalformedJwtException;
 
 import eu.h2020.symbiote.repository.PlatformRepository;
@@ -31,6 +32,7 @@ import eu.h2020.symbiote.commons.security.SecurityHandler;
 import eu.h2020.symbiote.commons.security.token.SymbIoTeToken;
 import eu.h2020.symbiote.commons.security.token.TokenVerificationException;
 import eu.h2020.symbiote.commons.security.exception.DisabledException;
+import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
 
 import java.io.UnsupportedEncodingException;
 
@@ -82,10 +84,10 @@ public class RpcServer {
    * @param resourceIdList The list of resource ids
    * @return The urls of the resources specified in the resourceIdList
    */
-    public JSONObject getResourcesUrls(JSONObject resourceIdList) throws Exception {
+    public HashMap<String, String> getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) throws Exception {
 
-        ArrayList<String> array = (ArrayList<String>)resourceIdList.get("idList");
-        Resource firstResource = resourceRepository.findOne(array.get(0));
+        List<String> resourceList = resourceUrlsRequest.getIdList();
+        Resource firstResource = resourceRepository.findOne(resourceList.get(0));
         if (firstResource != null) {
             log.info("firstResource = " + firstResource);
         }
@@ -94,9 +96,9 @@ public class RpcServer {
         }
 
         String aamUrl = firstResource.getInterworkingServiceURL() + platformAAMUrlPath;
-        log.info("CRAM received a request for the following ids: " + resourceIdList);
+        log.info("CRAM received a request for the following ids: " + resourceList);
         try {
-            String tokenString = resourceIdList.get("token").toString();
+            String tokenString = resourceUrlsRequest.getToken();
             SymbIoTeToken token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
             log.info("Token " + token + " was verified");
         }
@@ -105,14 +107,14 @@ public class RpcServer {
         }
         catch (TokenVerificationException e) { 
             log.error("Token could not be verified");
-            JSONObject error = new JSONObject();
+            HashMap<String, String> error = new HashMap<String, String>();
             error.put("error", "Token could not be verified");
             return error;
         }
        
 
-        Iterator<String> iterator = array.iterator();
-        JSONObject ids = new JSONObject();
+        Iterator<String> iterator = resourceList.iterator();
+        HashMap<String, String> ids = new HashMap<String, String>();
 
         while (iterator.hasNext()) {
             Resource resource = resourceRepository.findOne(iterator.next());
