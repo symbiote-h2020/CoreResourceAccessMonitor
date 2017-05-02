@@ -161,10 +161,8 @@ public class MessageQueuesTests {
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Location location = createLocation();
-
-        CoreResource resource1 = createResource(platform, location);
-        CoreResource resource2 = createResource(platform, location);
+        CoreResource resource1 = createResource(platform);
+        CoreResource resource2 = createResource(platform);
 
         CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
@@ -200,11 +198,9 @@ public class MessageQueuesTests {
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Location location = createLocation();
-
-        Resource resource1 = createResource(platform, location);
+        Resource resource1 = createResource(platform);
         resourceRepo.save(resource1);
-        Resource resource2 = createResource(platform, location);
+        Resource resource2 = createResource(platform);
         resourceRepo.save(resource2);
 
         String resourceNewLabel = "label3";
@@ -251,11 +247,9 @@ public class MessageQueuesTests {
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Location location = createLocation();
-
-        Resource resource1 = createResource(platform, location);
+        Resource resource1 = createResource(platform);
         resourceRepo.save(resource1);
-        Resource resource2 = createResource(platform, location);
+        Resource resource2 = createResource(platform);
         resourceRepo.save(resource2);
         ArrayList<String> resources = new ArrayList<String>();
         resources.add(resource1.getId());
@@ -290,35 +284,11 @@ public class MessageQueuesTests {
         return platform;
     }
 
-    Location createLocation() {
-
-        Location location = new Location();
-        String locationId = Integer.toString(rand.nextInt(50000));
-        location.setId(locationId);
-        location.setName("location_name");
-        location.setDescription("location_description");
-        location.setLatitude(0.1);
-        location.setLongitude(0.2);
-        location.setAltitude(0.3);
-
-        return location;
-    }
-
-    CoreResource createResource(Platform platform, Location location) {
+    CoreResource createResource(Platform platform) {
 
         CoreResource resource = new CoreResource();
         String resourceId = Integer.toString(rand.nextInt(50000));
-        // String resourceName = "sensor" + rand.nextInt(50000);
-        // List<String> observedProperties = Arrays.asList("air", "temp");
         resource.setId(resourceId);
-        // resource.setName(resourceName);
-        // resource.setOwner("OpenIoT");
-        // resource.setDescription("Temperature Sensor");
-        // resource.setObservedProperties(observedProperties);
-        // resource.setResourceURL("http://www.symbIoTe.com/sensor1");
-        // resource.setLocation(location);
-        // resource.setFeatureOfInterest("Nothing");
-        // resource.setPlatformId(platform.getPlatformId());
 
         List<String> labels = Arrays.asList("label1", "label2");
         List<String> comments = Arrays.asList("comment1", "comment2");

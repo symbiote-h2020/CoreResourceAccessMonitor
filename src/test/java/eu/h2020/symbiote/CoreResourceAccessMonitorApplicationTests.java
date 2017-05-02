@@ -94,14 +94,6 @@ public class CoreResourceAccessMonitorApplicationTests {
             log.info("coreAndPlatformAAMDummyServer created");
 
         List<String> observedProperties = Arrays.asList("temp", "air");
-        
-        Location location = new Location();
-        location.setId("location_id");
-        location.setName("location_name");
-        location.setDescription("location_description");
-        location.setLatitude(0.1);
-        location.setLongitude(0.2);
-        location.setAltitude(0.3);
 
         Platform platform = new Platform ();
         platform.setPlatformId("platform_id");
@@ -112,27 +104,11 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         Resource resource1 = new Resource();
         resource1.setId("sensor_id");
-        // resource1.setName("Sensor1");
-        // resource1.setOwner("OpenIoT");
-        // resource1.setDescription("Temperature Sensor");
-        // resource1.setObservedProperties(observedProperties);
-        // resource1.setResourceURL("http://www.symbIoTe.com/sensor1");
-        // resource1.setLocation(location);
-        // resource1.setFeatureOfInterest("Nothing");
-        // resource1.setPlatformId("platform_id");
         resource1.setInterworkingServiceURL(platformAAMUrl);
 
 
         Resource resource2 = new Resource();
         resource2.setId("sensor_id2");
-        // resource2.setName("Sensor2");
-        // resource2.setOwner("OpenIoT");
-        // resource2.setDescription("Temperature Sensor");
-        // resource2.setObservedProperties(observedProperties);
-        // resource2.setResourceURL("http://www.symbIoTe.com/sensor2");
-        // resource2.setLocation(location);
-        // resource2.setFeatureOfInterest("Nothing");
-        // resource2.setPlatformId("platform_id");
         resource2.setInterworkingServiceURL(platformAAMUrl);
 
         platformRepo.save(platform);
