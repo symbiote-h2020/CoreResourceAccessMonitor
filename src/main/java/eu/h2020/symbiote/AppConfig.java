@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @EnableMongoRepositories
-class AppConfig extends AbstractMongoConfiguration {
-
+class AppConfig /* extends AbstractMongoConfiguration*/ {
+/*
     @Override
     protected String getDatabaseName() {
         return "symbiote-core-cram-database";
@@ -23,5 +23,5 @@ class AppConfig extends AbstractMongoConfiguration {
     protected String getMappingBasePackage() {
         return "com.oreilly.springdata.mongodb";
     }
-
+*/
 }
