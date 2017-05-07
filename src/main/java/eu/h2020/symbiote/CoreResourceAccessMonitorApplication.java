@@ -22,7 +22,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import eu.h2020.symbiote.commons.security.SecurityHandler;
+import eu.h2020.symbiote.security.SecurityHandler;
 
 @EnableDiscoveryClient
 @EnableRabbit

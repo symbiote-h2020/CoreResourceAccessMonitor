@@ -28,10 +28,10 @@ import eu.h2020.symbiote.repository.PlatformRepository;
 import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.commons.security.SecurityHandler;
-import eu.h2020.symbiote.commons.security.token.SymbIoTeToken;
-import eu.h2020.symbiote.commons.security.token.TokenVerificationException;
-import eu.h2020.symbiote.commons.security.exception.DisabledException;
+import eu.h2020.symbiote.security.SecurityHandler;
+import eu.h2020.symbiote.security.token.Token;
+import eu.h2020.symbiote.security.exceptions.aam.TokenValidationException;
+import eu.h2020.symbiote.security.exceptions.sh.SecurityHandlerDisabledException;
 import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
 
 import java.io.UnsupportedEncodingException;
@@ -99,13 +99,13 @@ public class RpcServer {
         log.info("CRAM received a request for the following ids: " + resourceList);
         try {
             String tokenString = resourceUrlsRequest.getToken();
-            SymbIoTeToken token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
+            Token token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
             log.info("Token " + token + " was verified");
         }
-        catch (DisabledException e) { 
+        catch (SecurityHandlerDisabledException e) { 
             log.info(e);
         }
-        catch (TokenVerificationException e) { 
+        catch (TokenValidationException e) { 
             log.error("Token could not be verified");
             HashMap<String, String> error = new HashMap<String, String>();
             error.put("error", "Token could not be verified");

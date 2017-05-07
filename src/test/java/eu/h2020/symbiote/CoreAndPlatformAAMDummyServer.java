@@ -10,6 +10,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.logging.Log;
@@ -21,11 +22,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import eu.h2020.symbiote.CoreResourceAccessMonitorApplicationTests.DateUtil;
-import eu.h2020.symbiote.commons.security.constants.SHConstants;
-import eu.h2020.symbiote.commons.security.messaging.bean.Credential;
-import eu.h2020.symbiote.commons.security.messaging.bean.Status;
-import eu.h2020.symbiote.commons.security.messaging.bean.Token;
+import eu.h2020.symbiote.security.constants.SecurityHandlerConstants;
+import eu.h2020.symbiote.security.payloads.Credentials;
+import eu.h2020.symbiote.security.payloads.CheckTokenRevocationResponse;
+import eu.h2020.symbiote.security.token.Token;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -39,7 +39,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 public class CoreAndPlatformAAMDummyServer {
   private static final Log logger = LogFactory.getLog(CoreAndPlatformAAMDummyServer.class);
   
-  @RequestMapping(method = RequestMethod.GET, path = SHConstants.GET_CORE_AAM_CA_CERTIFICATE)
+  @RequestMapping(method = RequestMethod.GET, path = SecurityHandlerConstants.GET_CORE_AAM_CA_CERTIFICATE)
   public byte[] getRootCertificate() {
 	  logger.debug("invoked get token public");
 	  String pemFile =
@@ -68,24 +68,24 @@ public class CoreAndPlatformAAMDummyServer {
 		return pemFile.getBytes();
   }
   
-  @RequestMapping(method = RequestMethod.POST, path = SHConstants.DO_CORE_AAM_LOGIN,  produces = "application/json", consumes = "application/json")
-  public @ResponseBody Token doLogin(@RequestBody Credential credential) {
-	  logger.info("User trying to login "+credential.getUser()+ " - "+credential.getPasswd());
+  @RequestMapping(method = RequestMethod.POST, path = SecurityHandlerConstants.DO_CORE_AAM_LOGIN,  produces = "application/json", consumes = "application/json")
+  public @ResponseBody Token doLogin(@RequestBody Credentials credential) {
+	  logger.info("User trying to login "+credential.getUsername()+ " - "+credential.getPassword());
 	  Token token = new Token();
 	  token.setToken("eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJ0ZXN0MSIsImV4cCI6MTQ5MDI3ODIyMSwibmFtZSI6InRlc3QyIn0.V2qYTXOp1Xv1jSXZaxn-pbr_Byhmhuu6fAMy0fytco1JgJpvxTw5wlhJ1GuAvuA71IRmINyCAgcUo4oBrXFd4Wy_NthR3pQ5YIflD2t31RoVD1QQlhARri6A-mkjj4rVbsU98BG3ixvdYTkAjiLUbpvNrqm2Y3cDstaLWcSfGzN7ulVuMbEUWbZj9rkW_G4VF62vvOXL9C8UsxYyV0qx9dPzy2iiMGJQ-s16dYb5jiFY5BfvxUf3TWRJPhe5eaX5X7oDvzNh4JDWAFxoKYEH2PvoHctknX5Kon0HBCV_8xmJtxwlKB3lzeugqqFQW8HQiAqSbTAhkcmK9QGs_zkmyA");
 	  return token;
   }
   
 
-  @RequestMapping(method = RequestMethod.POST, path = SHConstants.DO_CORE_AAM_CHECK_TOKEN_REVOCATION, produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
-  public @ResponseBody Status checkTokenRevocation(@RequestBody Token token) {
+  @RequestMapping(method = RequestMethod.POST, path = SecurityHandlerConstants.DO_CORE_AAM_CHECK_TOKEN_REVOCATION, produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
+  public @ResponseBody CheckTokenRevocationResponse checkTokenRevocation(@RequestBody Token token) {
 	  logger.info("Checking token revocation "+token);
-	  Status status = new Status();
-	  status.setStatus(Status.SUCCESS);
+	  CheckTokenRevocationResponse status = new CheckTokenRevocationResponse();
+	  status.setStatus("success");
 	  return status;
   }       
 
-  @RequestMapping(method = RequestMethod.POST, path = SHConstants.DO_REQUEST_CORE_TOKEN, produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
+  @RequestMapping(method = RequestMethod.POST, path = SecurityHandlerConstants.DO_REQUEST_CORE_TOKEN, produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
   public @ResponseBody Token requestCoreToken(@RequestBody Token homeToken) {
 	  final String ALIAS = "mytest";
 	  logger.info("Requesting core token, received home token "+homeToken.getToken());
@@ -112,7 +112,7 @@ public class CoreAndPlatformAAMDummyServer {
 	  return null;
   }       
 
-  @RequestMapping(method = RequestMethod.POST, path = SHConstants.DO_REQUEST_FOREIGN_TOKEN, produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
+  @RequestMapping(method = RequestMethod.POST, path = SecurityHandlerConstants.DO_REQUEST_FOREIGN_TOKEN, produces = "application/json;charset=UTF-8", consumes = "application/json;charset=UTF-8")
   public @ResponseBody Token requestForeignToken(@RequestBody Token homeToken) {
 	  final String ALIAS = "mytest";
 	  logger.info("Requesting foreign token, received home token "+homeToken.getToken());
@@ -139,6 +139,14 @@ public class CoreAndPlatformAAMDummyServer {
 	  return null;
   }       
 
-
+    static public class DateUtil
+    {
+        public static Date addDays(Date date, int days)
+        {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            cal.add(Calendar.DATE, days); //minus number would decrement the days
+            return cal.getTime();
+        }
+    }
 }
-
