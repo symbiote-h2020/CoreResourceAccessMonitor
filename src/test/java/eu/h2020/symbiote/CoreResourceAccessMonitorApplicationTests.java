@@ -24,6 +24,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
@@ -31,8 +32,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 import java.io.InputStream;
 import java.io.FileInputStream;
-import java.security.Key;
-import java.security.KeyStore;
+import java.security.*;
 import java.io.IOException;
 
 import io.jsonwebtoken.Jwts;
@@ -45,15 +45,19 @@ import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.Location;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
+import eu.h2020.symbiote.security.token.jwt.JWTEngine;
+import eu.h2020.symbiote.security.enums.IssuingAuthorityType;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
                 properties = {"eureka.client.enabled=false", 
                               "spring.sleuth.enabled=false",
-                              "platform.aam.url=http://localhost:8033"})
+                              "platform.aam.url=http://localhost:18033"})
 @ContextConfiguration(locations = {"classpath:test-properties.xml" })
 @Configuration
 @ComponentScan
@@ -84,6 +88,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     @Value("${platform.aam.url}")
     private String platformAAMUrl;
+
 
     // Execute the Setup method before the test.    
     @Before    
@@ -116,33 +121,30 @@ public class CoreResourceAccessMonitorApplicationTests {
         resourceRepo.save(resource1);
         resourceRepo.save(resource2);
     }
-    
+
+
     @Test    
     public void testGetResourcesUrlsWithValidToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<String>();
         final AtomicReference<Map<String, String>> resultRef = new AtomicReference<Map<String, String>>();
-        final String ALIAS = "mytest";
+        String platformTokenString;
 
         idList.add("sensor_id");
         idList.add("sensor_id2");
         query.setIdList(idList);
 
         try{
-            KeyStore ks = KeyStore.getInstance("JKS");
-            InputStream readStream = new FileInputStream("./src/test/resources/certificates/mytest.jks");// Use file stream to load from file system or class.getResourceAsStream to load from classpath
-            ks.load(readStream, "password".toCharArray());
-            Key key = ks.getKey(ALIAS, "password".toCharArray());
-            readStream.close();
+            final String ALIAS = "test aam keystore";
+            KeyStore ks = KeyStore.getInstance("PKCS12", "BC");
+            ks.load(new FileInputStream("./src/test/resources/TestAAM.keystore"), "1234567".toCharArray());
+            Key key = ks.getKey(ALIAS, "1234567".toCharArray());
+            HashMap<String, String> attributes = new HashMap<>();
+            attributes.put("name", "test2");
+            platformTokenString = JWTEngine.generateJWTToken("test1", attributes, ks.getCertificate(ALIAS).getPublicKey().getEncoded(), IssuingAuthorityType.PLATFORM, DateUtil.addDays(new Date(), 1).getTime(), "securityHandlerTestPlatformAAM", ks.getCertificate(ALIAS).getPublicKey(), (PrivateKey) key);
 
-            String tokenString=  Jwts.builder()
-                .setSubject("test1")
-                .setExpiration(DateUtil.addDays(new Date(), 1))
-                .claim("name", "test2")
-                .signWith(SignatureAlgorithm.RS512, key)
-                .compact();
-            query.setToken(tokenString);
+            query.setToken(platformTokenString);
 
         } 
         catch(Exception e){
@@ -184,7 +186,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         resourceRepo.delete("sensor_id2");
     }
 
-    // @Test    
+    @Test    
     public void testGetResourcesUrlsWithInvalidToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
