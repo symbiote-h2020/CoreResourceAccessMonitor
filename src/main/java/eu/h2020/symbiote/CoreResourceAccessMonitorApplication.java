@@ -23,6 +23,13 @@ import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.h2020.symbiote.security.SecurityHandler;
+import eu.h2020.symbiote.security.session.AAM;
+import eu.h2020.symbiote.security.exceptions.SecurityHandlerException;
+
+import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+
 
 @EnableDiscoveryClient
 @EnableRabbit
@@ -32,19 +39,16 @@ public class CoreResourceAccessMonitorApplication {
 	private static Log log = LogFactory.getLog(CoreResourceAccessMonitorApplication.class);
 
     @Value("${rabbit.host}") 
-    private String rabbitHost;
+    private String rabbitMQHostIP;
 
     @Value("${rabbit.username}") 
-    private String rabbitUsername;
+    private String rabbitMQUsername;
 
     @Value("${rabbit.password}") 
-    private String rabbitPassword;
+    private String rabbitMQPassword;
 
     @Value("${symbiote.coreaam.url}") 
-    private String coreAAMUrl;
-
-    @Value("${security.enabled}") 
-    private boolean securityEnabled;
+    private String symbioteCoreInterfaceAddress;
 
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
@@ -84,11 +88,11 @@ public class CoreResourceAccessMonitorApplication {
 
     @Bean
     public ConnectionFactory connectionFactory() throws Exception {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHost);
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitMQHostIP);
         // connectionFactory.setPublisherConfirms(true);
         // connectionFactory.setPublisherReturns(true);
-        connectionFactory.setUsername(rabbitUsername);
-        connectionFactory.setPassword(rabbitPassword);
+        connectionFactory.setUsername(rabbitMQUsername);
+        connectionFactory.setPassword(rabbitMQPassword);
         return connectionFactory;
     }
 
@@ -111,11 +115,14 @@ public class CoreResourceAccessMonitorApplication {
         return asyncRabbitTemplate;
     }
 
-    @Bean
-    public SecurityHandler securityHandler() {
-        SecurityHandler securityHandler = new SecurityHandler(coreAAMUrl, rabbitHost, securityEnabled);
-        return securityHandler;
+    @Bean HashMap<String, AAM> aamsMap() {
+        return new HashMap<String, AAM>();
     }
 
+    @Bean
+    public SecurityHandler securityHandler(HashMap<String, AAM> aamsMap) {
 
+        SecurityHandler securityHandler = new SecurityHandler(symbioteCoreInterfaceAddress);
+        return securityHandler;
+    }
 }

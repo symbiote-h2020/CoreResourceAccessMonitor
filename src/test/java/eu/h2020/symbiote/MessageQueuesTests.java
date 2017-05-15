@@ -54,10 +54,8 @@ import org.junit.rules.ExpectedException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
-@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
-                properties = {"eureka.client.enabled=false", 
-                              "spring.sleuth.enabled=false",
-                              "symbiote.coreaam.url=http://localhost:8033"})
+@SpringBootTest(properties = {"eureka.client.enabled=false", 
+                              "spring.sleuth.enabled=false"})
 public class MessageQueuesTests {
 
 

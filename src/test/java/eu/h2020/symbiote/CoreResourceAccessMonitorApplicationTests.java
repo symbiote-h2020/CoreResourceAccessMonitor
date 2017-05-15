@@ -57,8 +57,11 @@ import static org.junit.Assert.fail;
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
                 properties = {"eureka.client.enabled=false", 
                               "spring.sleuth.enabled=false",
-                              "platform.aam.url=http://localhost:18033"})
-@ContextConfiguration(locations = {"classpath:test-properties.xml" })
+                              "symbiote.testaam" +".url=http://localhost:8080",
+                              "symbiote.coreaam.url=http://localhost:8080",
+                              "platform.aam.url=http://localhost:8080"}
+                              )
+@ContextConfiguration
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
@@ -81,7 +84,7 @@ public class CoreResourceAccessMonitorApplicationTests {
     private String cramExchangeName;
 
     @Autowired
-    private CoreAndPlatformAAMDummyServer coreAndPlatformAAMDummyServer;
+    private DummyAAMRestListeners dummyAAMRestListeners;
 
     @Value("${rabbit.routingKey.cram.getResourceUrls}")
     private String cramGetResourceUrlsRoutingKey;
@@ -94,10 +97,10 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Before    
     public void setUp() throws Exception {
 
-        if (coreAndPlatformAAMDummyServer == null)
-            log.info("coreAndPlatformAAMDummyServer NOT created");
+        if (dummyAAMRestListeners == null)
+            log.info("dummyAAMRestListeners NOT created");
         else
-            log.info("coreAndPlatformAAMDummyServer created");
+            log.info("dummyAAMRestListeners created");
 
         List<String> observedProperties = Arrays.asList("temp", "air");
 
@@ -224,7 +227,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         while(!future.isDone())
             TimeUnit.SECONDS.sleep(1);
 
-        assertEquals("Token could not be verified", resultRef.get().get("error"));
+        assertEquals("eu.h2020.symbiote.security.exceptions.aam.TokenValidationException: Token could not be validated", resultRef.get().get("error"));
 
     }
 

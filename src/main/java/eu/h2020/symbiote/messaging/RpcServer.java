@@ -31,8 +31,12 @@ import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.security.SecurityHandler;
 import eu.h2020.symbiote.security.token.Token;
 import eu.h2020.symbiote.security.exceptions.aam.TokenValidationException;
-import eu.h2020.symbiote.security.exceptions.sh.SecurityHandlerDisabledException;
+import eu.h2020.symbiote.security.session.AAM;
 import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
+import eu.h2020.symbiote.security.exceptions.SecurityHandlerException;
+import eu.h2020.symbiote.security.enums.ValidationStatus;
+import eu.h2020.symbiote.security.token.jwt.JWTClaims;
+import eu.h2020.symbiote.security.token.jwt.JWTEngine;
 
 import java.io.UnsupportedEncodingException;
 
@@ -60,6 +64,9 @@ public class RpcServer {
 
     @Autowired
     private SecurityHandler securityHandler;
+
+    @Autowired
+    private HashMap<String, AAM> aamsMap;
 
     private String platformAAMUrlPath = "";
 
@@ -95,21 +102,68 @@ public class RpcServer {
             log.info("The resource with specified id was not found");
         }
 
-        String aamUrl = firstResource.getInterworkingServiceURL() + platformAAMUrlPath;
         log.info("CRAM received a request for the following ids: " + resourceList);
         try {
-            String tokenString = resourceUrlsRequest.getToken();
-            Token token = securityHandler.verifyForeignPlatformToken(aamUrl, tokenString);
+            Token token = new Token(resourceUrlsRequest.getToken());
+
+            JWTClaims claims = JWTEngine.getClaimsFromToken(token.getToken());
+            String aamInstanceId = claims.getIss();
+            AAM aam = aamsMap.get(aamInstanceId);
+            
+            if (aam == null) {
+                rebuildMapUsing();
+                aam = aamsMap.get(aamInstanceId);
+                if (aam == null)
+                  throw new TokenValidationException("The specified platform AAM with aamInstanceId = " + 
+                                                     aamInstanceId + " does not exist");
+            }
+
+            ValidationStatus status = securityHandler.verifyPlatformToken(aam, token);
+            
+            switch (status){
+                case VALID: {
+                    log.info("Token is VALID");  
+                    break;
+                }
+                case VALID_OFFLINE: {
+                    log.info("Token is VALID_OFFLINE");  
+                    break;
+                }
+                case EXPIRED: {
+                    log.info("Token is EXPIRED");
+                    HashMap<String, String> error = new HashMap<String, String>();
+                    error.put("error", "Token is EXPIRED");
+                    return error;
+                }
+                case REVOKED: {
+                    log.info("Token is REVOKED");  
+                    HashMap<String, String> error = new HashMap<String, String>();
+                    error.put("error", "Token is REVOKED");
+                    return error;                
+                }
+                case INVALID: {
+                    log.info("Token is INVALID");  
+                    HashMap<String, String> error = new HashMap<String, String>();
+                    error.put("error", "Token is INVALID");
+                    return error;                
+                }
+                case NULL: {
+                    log.info("Token is NULL");  
+                    HashMap<String, String> error = new HashMap<String, String>();
+                    error.put("error", "Token is NULL");
+                    return error;
+                }
+            }             
             log.info("Token " + token + " was verified");
-        }
-        catch (SecurityHandlerDisabledException e) { 
-            log.info(e);
         }
         catch (TokenValidationException e) { 
             log.error("Token could not be verified");
             HashMap<String, String> error = new HashMap<String, String>();
-            error.put("error", "Token could not be verified");
+            error.put("error", e.toString());
             return error;
+        }
+        catch (SecurityHandlerException e) {
+            log.info(e); 
         }
        
 
@@ -133,4 +187,13 @@ public class RpcServer {
         return ids;
     }
 
+
+    private void rebuildMapUsing() throws SecurityHandlerException {
+        List<AAM> listOfAAMs = securityHandler.getAvailableAAMs();
+
+        for(Iterator iter = listOfAAMs.iterator(); iter.hasNext();) {
+            AAM aam = (AAM) iter.next();
+            aamsMap.put(aam.getAamInstanceId(), aam);
+        }
+    }
 }
