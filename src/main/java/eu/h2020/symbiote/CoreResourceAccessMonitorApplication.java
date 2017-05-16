@@ -22,7 +22,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import eu.h2020.symbiote.security.SecurityHandler;
+import eu.h2020.symbiote.security.InternalSecurityHandler;
 import eu.h2020.symbiote.security.session.AAM;
 import eu.h2020.symbiote.security.exceptions.SecurityHandlerException;
 
@@ -120,9 +120,9 @@ public class CoreResourceAccessMonitorApplication {
     }
 
     @Bean
-    public SecurityHandler securityHandler(HashMap<String, AAM> aamsMap) {
+    public InternalSecurityHandler securityHandler(HashMap<String, AAM> aamsMap) {
 
-        SecurityHandler securityHandler = new SecurityHandler(symbioteCoreInterfaceAddress);
+        InternalSecurityHandler securityHandler = new InternalSecurityHandler(symbioteCoreInterfaceAddress, rabbitMQHostIP, rabbitMQUsername, rabbitMQPassword);
         return securityHandler;
     }
 }
