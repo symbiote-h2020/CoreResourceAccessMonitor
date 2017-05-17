@@ -1,4 +1,4 @@
-package eu.h2020.symbiote.exception;
+package eu.h2020.symbiote.cram.exception;
 
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 

@@ -1,4 +1,4 @@
-package eu.h2020.symbiote;
+package eu.h2020.symbiote.cram;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.apache.commons.logging.Log;
@@ -21,8 +21,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
-import eu.h2020.symbiote.repository.RepositoryManager;
-import eu.h2020.symbiote.messaging.RpcServer;
+import eu.h2020.symbiote.cram.repository.RepositoryManager;
+import eu.h2020.symbiote.cram.messaging.RpcServer;
 
 
 @Configuration

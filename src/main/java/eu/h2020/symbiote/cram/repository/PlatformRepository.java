@@ -1,4 +1,4 @@
-package eu.h2020.symbiote.repository;
+package eu.h2020.symbiote.cram.repository;
 
 import eu.h2020.symbiote.core.model.Platform;
 import org.springframework.data.mongodb.repository.MongoRepository;

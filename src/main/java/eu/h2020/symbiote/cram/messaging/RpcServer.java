@@ -1,4 +1,4 @@
-package eu.h2020.symbiote.messaging;
+package eu.h2020.symbiote.cram.messaging;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,13 +19,8 @@ import org.springframework.amqp.core.Message;
 import java.util.List;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.io.UnsupportedEncodingException;
 
-import java.net.MalformedURLException;
-
-import io.jsonwebtoken.MalformedJwtException;
-
-import eu.h2020.symbiote.repository.PlatformRepository;
-import eu.h2020.symbiote.repository.ResourceRepository;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.security.InternalSecurityHandler;
@@ -38,7 +33,8 @@ import eu.h2020.symbiote.security.enums.ValidationStatus;
 import eu.h2020.symbiote.security.token.jwt.JWTClaims;
 import eu.h2020.symbiote.security.token.jwt.JWTEngine;
 
-import java.io.UnsupportedEncodingException;
+import eu.h2020.symbiote.cram.repository.PlatformRepository;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
 
 /**
 * <h1>RPC Server</h1>
@@ -89,7 +85,7 @@ public class RpcServer {
    *
    * 
    * @param resourceIdList The list of resource ids
-   * @return The urls of the resources specified in the resourceIdList
+   * @return A map containing urls of the resources specified in the ResourceUrlsRequest
    */
     public HashMap<String, String> getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) throws Exception {
 

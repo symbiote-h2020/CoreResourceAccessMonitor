@@ -1,4 +1,4 @@
-package eu.h2020.symbiote;
+package eu.h2020.symbiote.cram;
 
 
 import org.slf4j.Logger;
@@ -36,8 +36,8 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.net.URL;
 
-import eu.h2020.symbiote.repository.ResourceRepository;
-import eu.h2020.symbiote.repository.PlatformRepository;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
+import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.Location;
 import eu.h2020.symbiote.core.model.resources.Resource;

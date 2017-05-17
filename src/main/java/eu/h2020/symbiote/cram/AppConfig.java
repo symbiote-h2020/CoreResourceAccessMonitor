@@ -1,4 +1,4 @@
-package eu.h2020.symbiote;
+package eu.h2020.symbiote.cram;
 
 import com.mongodb.Mongo;
 import org.springframework.context.annotation.Configuration;

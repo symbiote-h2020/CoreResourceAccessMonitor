@@ -1,4 +1,4 @@
-package eu.h2020.symbiote;
+package eu.h2020.symbiote.cram;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +38,9 @@ import java.io.IOException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-import eu.h2020.symbiote.repository.RepositoryManager;
-import eu.h2020.symbiote.repository.ResourceRepository;
-import eu.h2020.symbiote.repository.PlatformRepository;
+import eu.h2020.symbiote.cram.repository.RepositoryManager;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
+import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.Location;
 import eu.h2020.symbiote.core.model.resources.Resource;
@@ -48,6 +48,7 @@ import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
 import eu.h2020.symbiote.security.token.jwt.JWTEngine;
 import eu.h2020.symbiote.security.enums.IssuingAuthorityType;
 
+import eu.h2020.symbiote.cram.DummyAAMRestListeners;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -57,7 +58,7 @@ import static org.junit.Assert.fail;
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
                 properties = {"eureka.client.enabled=false", 
                               "spring.sleuth.enabled=false",
-                              "symbiote.testaam" +".url=http://localhost:8080",
+                              "symbiote.testaam" + ".url=http://localhost:8080",
                               "symbiote.coreaam.url=http://localhost:8080",
                               "platform.aam.url=http://localhost:8080"}
                               )
