@@ -13,6 +13,9 @@ import eu.h2020.symbiote.security.payloads.Credentials;
 import eu.h2020.symbiote.security.session.AAM;
 import eu.h2020.symbiote.security.token.Token;
 import eu.h2020.symbiote.security.token.jwt.JWTEngine;
+import eu.h2020.symbiote.security.token.jwt.JWTClaims;
+import eu.h2020.symbiote.security.exceptions.aam.MalformedJWTException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -101,8 +104,45 @@ public class DummyAAMRestListeners {
             .TOKEN_HEADER_NAME) String token) {
         log.info("Checking token revocation " + token);
         // todo implement... for the moment returns valid
-        return new ResponseEntity<>(new CheckRevocationResponse
-                (ValidationStatus.VALID), HttpStatus.OK);
+        String status = "VALID";
+
+        try {
+            JWTClaims claims = JWTEngine.getClaimsFromToken(token);
+            status = claims.getAtt().get("status");
+
+            log.info("Status = " + status);
+        } catch (MalformedJWTException e) {
+            log.info(e); 
+        }
+        
+        switch(status) {
+            case "VALID_OFFLINE": {
+                return new ResponseEntity<>(new CheckRevocationResponse
+                        (ValidationStatus.VALID_OFFLINE), HttpStatus.OK);
+            }
+            case "EXPIRED": {
+                return new ResponseEntity<>(new CheckRevocationResponse
+                        (ValidationStatus.EXPIRED), HttpStatus.OK);
+            }
+            case "REVOKED": {
+                return new ResponseEntity<>(new CheckRevocationResponse
+                        (ValidationStatus.REVOKED), HttpStatus.OK);
+            }
+            case "INVALID": {
+                return new ResponseEntity<>(new CheckRevocationResponse
+                        (ValidationStatus.INVALID), HttpStatus.OK);
+            }
+            case "NULL": {
+                return new ResponseEntity<>(new CheckRevocationResponse
+                        (ValidationStatus.NULL), HttpStatus.OK);
+            }
+            default: {
+                return new ResponseEntity<>(new CheckRevocationResponse
+                        (ValidationStatus.VALID), HttpStatus.OK);
+            }
+        }
+        // return new ResponseEntity<>(new CheckRevocationResponse
+        //         (ValidationStatus.VALID), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = AAMConstants.AAM_REQUEST_FOREIGN_TOKEN, produces =
