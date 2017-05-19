@@ -160,6 +160,9 @@ public class RpcServer {
         }
         catch (SecurityHandlerException e) {
             log.info(e); 
+            HashMap<String, String> error = new HashMap<String, String>();
+            error.put("error", e.toString());
+            return error;
         }
        
 
