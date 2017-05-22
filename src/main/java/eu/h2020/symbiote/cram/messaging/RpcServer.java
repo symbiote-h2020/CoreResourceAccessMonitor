@@ -164,7 +164,12 @@ public class RpcServer {
             error.put("error", e.toString());
             return error;
         }
-       
+        catch (Exception e) {
+            log.info(e); 
+            HashMap<String, String> error = new HashMap<String, String>();
+            error.put("error", e.toString());
+            return error;
+        }
 
         Iterator<String> iterator = resourceList.iterator();
         HashMap<String, String> ids = new HashMap<String, String>();
