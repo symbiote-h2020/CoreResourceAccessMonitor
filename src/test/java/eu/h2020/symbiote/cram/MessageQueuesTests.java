@@ -176,13 +176,13 @@ public class MessageQueuesTests {
 
         Resource result = resourceRepo.findOne(resource1.getId());
 
-        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource1.getId()
+        assertEquals("http://www.symbIoTe.com/rap/Sensors('" + resource1.getId()
                + "')", result.getInterworkingServiceURL());   
 
 
         result = resourceRepo.findOne(resource2.getId());
 
-        assertEquals("http://www.symbIoTe.com/rap/Sensor('" + resource2.getId()
+        assertEquals("http://www.symbIoTe.com/rap/Sensors('" + resource2.getId()
                + "')", result.getInterworkingServiceURL());   
 
         platformRepo.delete(platform.getPlatformId());

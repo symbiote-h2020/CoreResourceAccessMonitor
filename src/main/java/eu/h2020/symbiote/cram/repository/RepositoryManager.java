@@ -197,7 +197,7 @@ public class RepositoryManager {
 
     private static String generateResourceURL (Resource resource) {
 
-        return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "") +  "/rap/Sensor('" + resource.getId()
+        return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "") +  "/rap/Sensors('" + resource.getId()
                + "')";
     }
 }
