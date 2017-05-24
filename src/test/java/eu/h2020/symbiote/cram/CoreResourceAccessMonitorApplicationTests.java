@@ -49,6 +49,7 @@ import eu.h2020.symbiote.security.token.jwt.JWTEngine;
 import eu.h2020.symbiote.security.enums.IssuingAuthorityType;
 
 import eu.h2020.symbiote.cram.DummyAAMRestListeners;
+import eu.h2020.symbiote.cram.model.CramResource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -112,12 +113,12 @@ public class CoreResourceAccessMonitorApplicationTests {
         platform.setUrl("http://www.symbIoTe.com");
         platform.setInformationModelId("platform_info_model");
 
-        Resource resource1 = new Resource();
+        CramResource resource1 = new CramResource();
         resource1.setId("sensor_id");
         resource1.setInterworkingServiceURL(platformAAMUrl);
 
 
-        Resource resource2 = new Resource();
+        CramResource resource2 = new CramResource();
         resource2.setId("sensor_id2");
         resource2.setInterworkingServiceURL(platformAAMUrl);
 

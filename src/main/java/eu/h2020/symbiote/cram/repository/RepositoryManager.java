@@ -5,23 +5,18 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 
 import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.resources.Resource;
+import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.model.internal.CoreResource;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.core.ExchangeTypes;
-
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.List;
 
 import eu.h2020.symbiote.cram.exception.EntityNotFoundException;
+import eu.h2020.symbiote.cram.model.CramResource;
 
 
 /**
@@ -76,7 +71,7 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the updated platform
    */
-    public static void updatePlatform(Platform platform) {
+    public static void updatePlatform(Platform platform) throws EntityNotFoundException {
         try {    
             if (platformRepository.findOne(platform.getPlatformId()) == null) 
                 throw new EntityNotFoundException ("Received an update message for "
@@ -85,6 +80,9 @@ public class RepositoryManager {
             platformRepository.save(platform);
             log.info("CRAM updated platform with id: " + platform.getPlatformId());
         } catch (EntityNotFoundException e) {
+          log.info(e);
+          throw e;
+        } catch (Exception e) {
           log.info(e);
         }
     }
@@ -96,7 +94,8 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the platform to be deleted
    */
-    public static void deletePlatform(Platform platform) {
+    public static void deletePlatform(Platform platform) 
+      throws EntityNotFoundException {
 
         try {
             if (platformRepository.findOne(platform.getPlatformId()) == null) 
@@ -108,6 +107,9 @@ public class RepositoryManager {
             log.info("CRAM deleted platform with id: " + platform.getPlatformId());
         } catch (EntityNotFoundException e) {
           log.info(e);
+          throw e;
+        } catch (Exception e) {
+          log.info(e);
         }
     }
 
@@ -118,7 +120,8 @@ public class RepositoryManager {
    * 
    * @param message The message of the newly registered resources
    */
-    public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message) {
+    public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message) 
+      throws EntityNotFoundException, AmqpRejectAndDontRequeueException {
         
         try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
@@ -127,15 +130,22 @@ public class RepositoryManager {
                     + " which owns the resources does not exist.");
 
             for (Iterator<CoreResource> it = message.getResources().iterator(); it.hasNext();) {
-                Resource resource = (Resource) it.next();
-                resource.setInterworkingServiceURL(generateResourceURL(resource));
-                resourceRepository.save(resource);
-                log.info("CRAM saved resource with id: " + resource.getId());
+                CoreResource coreResource = (CoreResource) it.next();
+                CramResource cramResource = new CramResource(coreResource);
+
+                cramResource.setResourceUrl(generateResourceURL(cramResource));
+                resourceRepository.save(cramResource);
+                log.info("CRAM saved resource with id: " + cramResource.getId());
             }
         } catch (EntityNotFoundException e) {
           log.info(e);
+          throw e;
+        } catch (AmqpRejectAndDontRequeueException e) {
+          log.info(e);
+          throw e;
+        } catch (Exception e) {
+          log.info(e);
         }
-
     }
 
    /**
@@ -145,26 +155,31 @@ public class RepositoryManager {
    * 
    * @param message The message of the newly updated resources
    */
-    public static void updateResource(CoreResourceRegisteredOrModifiedEventPayload message) {
-
+    public static void updateResource(CoreResourceRegisteredOrModifiedEventPayload message) 
+      throws EntityNotFoundException, AmqpRejectAndDontRequeueException {
         try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
                 throw new EntityNotFoundException ("Received an update message"
                     + ", but the platform " + "with id = " + message.getPlatformId() 
                     + " which owns the resources does not exist.");
-
             for (Iterator<CoreResource> it = message.getResources().iterator(); it.hasNext();) {
-                Resource resource = (Resource) it.next();
-                if (resourceRepository.findOne(resource.getId()) == null) 
+                CoreResource coreResource = (CoreResource) it.next();
+                if (resourceRepository.findOne(coreResource.getId()) == null)
                     throw new EntityNotFoundException ("Received an update message for "
-                        + "resource with id = " + resource.getId() + ", but the resource does "
+                        + "resource with id = " + coreResource.getId() + ", but the resource does "
                         + "not exist");
-
-                resource.setInterworkingServiceURL(generateResourceURL(resource));
-                resourceRepository.save(resource);
-                log.info("CRAM updated resource with id: " + resource.getId());
+                CramResource cramResource = new CramResource(coreResource);
+                cramResource.setResourceUrl(generateResourceURL(cramResource));
+                resourceRepository.save(cramResource);
+                log.info("CRAM updated resource with id: " + cramResource.getId());
             }
         } catch (EntityNotFoundException e) {
+          log.info(e);
+          throw e;
+        } catch (AmqpRejectAndDontRequeueException e) {
+          log.info(e);
+          throw e;
+        } catch (Exception e) {
           log.info(e);
         }
     }
@@ -176,7 +191,8 @@ public class RepositoryManager {
    * 
    * @param resourcesIds List of resource Ids of the newly deleted resources
    */
-    public static void deleteResource(List<String> resourcesIds) {
+    public static void deleteResource(List<String> resourcesIds) 
+      throws EntityNotFoundException {
         
         try {
             for (Iterator<String> it = resourcesIds.iterator(); it.hasNext();) {
@@ -192,12 +208,35 @@ public class RepositoryManager {
             }
         } catch (EntityNotFoundException e) {
           log.info(e);
-        }   
+          throw e;
+        } catch (Exception e) {
+          log.info(e);
+        } 
     }
 
-    private static String generateResourceURL (Resource resource) {
+    private static String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
+        CoreResourceType type = resource.getType();
+        if (type == null)
+          throw new AmqpRejectAndDontRequeueException("The resource type was not set");
 
-        return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "") +  "/rap/Sensors('" + resource.getId()
-               + "')";
+        switch (type) {
+            case ACTUATOR:
+               return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
+                      +  "/rap/Actuators('" + resource.getId() + "')";
+            case SERVICE:
+               return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
+                      +  "/rap/Services('" + resource.getId() + "')";
+            case ACTUATING_SERVICE:
+               return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
+                      +  "/rap/ActuatingServices('" + resource.getId() + "')";
+            case STATIONARY_SENSOR:
+            case MOBILE_SENSOR:
+            case MOBILE_DEVICE:
+            case STATIONARY_DEVICE:
+            default:
+               return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
+                      +  "/rap/Sensors('" + resource.getId() + "')"; 
+        }
+
     }
 }

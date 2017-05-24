@@ -43,6 +43,9 @@ import eu.h2020.symbiote.core.model.Location;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.model.internal.CoreResource;
+import eu.h2020.symbiote.core.model.internal.CoreResourceType;
+
+import eu.h2020.symbiote.cram.model.CramResource;
 
 import static org.junit.Assert.assertEquals;
 
@@ -91,6 +94,8 @@ public class MessageQueuesTests {
     @Value("${rabbit.routingKey.resource.removed}")
     private String resourceRemovedRoutingKey;
 
+    private String platformUrl = "http://www.symbIoTe.com/";
+
     @Before
     public void setup() throws IOException, TimeoutException {
 
@@ -117,7 +122,8 @@ public class MessageQueuesTests {
 
     @Test
     public void PlatformUpdatedTest() throws Exception {
-        
+
+        log.info("PlatformUpdatedTest started!!!");
         Platform platform = createPlatform();
 
         platformRepo.save(platform);
@@ -140,6 +146,7 @@ public class MessageQueuesTests {
     @Test
     public void PlatformDeletedTest() throws Exception {
 
+        log.info("PlatformDeletedTest started!!!");
         Platform platform = createPlatform();
 
         platformRepo.save(platform);
@@ -156,16 +163,29 @@ public class MessageQueuesTests {
     @Test
     public void SensorCreatedTest() throws Exception {
 
+        log.info("SensorCreatedTest started!!!");
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
         CoreResource resource1 = createResource(platform);
         CoreResource resource2 = createResource(platform);
+        CoreResource resource3 = createResource(platform);
+        CoreResource resource4 = createResource(platform);
+        CoreResource resource5 = createResource(platform);
+
+        resource1.setType(CoreResourceType.ACTUATOR);
+        resource2.setType(CoreResourceType.SERVICE);
+        resource3.setType(CoreResourceType.ACTUATING_SERVICE);
+        resource4.setType(CoreResourceType.STATIONARY_SENSOR);
+        resource5.setType(CoreResourceType.MOBILE_DEVICE);
 
         CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
         resources.add(resource1);
-        resources.add(resource2);
+        resources.add(resource2);        
+        resources.add(resource3);
+        resources.add(resource4);        
+        resources.add(resource5);
         regMessage.setPlatformId(platform.getPlatformId());
         regMessage.setResources(resources);
 
@@ -174,50 +194,74 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resource1.getId());
+        CramResource result = resourceRepo.findOne(resource1.getId());
 
-        assertEquals("http://www.symbIoTe.com/rap/Sensors('" + resource1.getId()
-               + "')", result.getInterworkingServiceURL());   
+        assertEquals(platformUrl + "rap/Actuators('" + resource1.getId()
+               + "')", result.getResourceUrl());   
 
 
         result = resourceRepo.findOne(resource2.getId());
 
-        assertEquals("http://www.symbIoTe.com/rap/Sensors('" + resource2.getId()
-               + "')", result.getInterworkingServiceURL());   
+        assertEquals(platformUrl + "rap/Services('" + resource2.getId()
+               + "')", result.getResourceUrl());   
+
+        result = resourceRepo.findOne(resource3.getId());
+
+        assertEquals(platformUrl + "rap/ActuatingServices('" + resource3.getId()
+               + "')", result.getResourceUrl());   
+
+
+        result = resourceRepo.findOne(resource4.getId());
+
+        assertEquals(platformUrl + "rap/Sensors('" + resource4.getId()
+               + "')", result.getResourceUrl());  
+
+        result = resourceRepo.findOne(resource5.getId());
+
+        assertEquals(platformUrl + "rap/Sensors('" + resource5.getId()
+               + "')", result.getResourceUrl());   
 
         platformRepo.delete(platform.getPlatformId());
         resourceRepo.delete(resource1.getId());
-        resourceRepo.delete(resource2.getId());
+        resourceRepo.delete(resource2.getId());        
+        resourceRepo.delete(resource3.getId());
+        resourceRepo.delete(resource4.getId());        
+        resourceRepo.delete(resource5.getId());
 	}
 
     @Test
     public void SensorUpdatedTest() throws Exception {
 
+        log.info("SensorUpdatedTest started!!!");
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Resource resource1 = createResource(platform);
-        resourceRepo.save(resource1);
-        Resource resource2 = createResource(platform);
-        resourceRepo.save(resource2);
+        CoreResource coreResource1 = createResource(platform);
+        CramResource cramResource1 = new CramResource(coreResource1);
+        resourceRepo.save(cramResource1);
+        CoreResource coreResource2 = createResource(platform);
+        CramResource cramResource2 = new CramResource(coreResource2);
+        resourceRepo.save(cramResource2);
 
         String resourceNewLabel = "label3";
         List<String> labels = Arrays.asList("label1", "label2", resourceNewLabel);
 
-        CoreResource coreResource1 = new CoreResource();
-        coreResource1.setId(resource1.getId());
-        coreResource1.setLabels(labels);
-        coreResource1.setInterworkingServiceURL(resource1.getInterworkingServiceURL());
-        
-        CoreResource coreResource2 = new CoreResource();
-        coreResource2.setId(resource2.getId());
-        coreResource2.setLabels(labels);
-        coreResource2.setInterworkingServiceURL(resource2.getInterworkingServiceURL());
+        CoreResource newCoreResource1 = new CoreResource();
+        newCoreResource1.setId(coreResource1.getId());
+        newCoreResource1.setLabels(labels);
+        newCoreResource1.setInterworkingServiceURL(coreResource1.getInterworkingServiceURL());
+        newCoreResource1.setType(CoreResourceType.ACTUATOR);
+
+        CoreResource newCoreResource2 = new CoreResource();
+        newCoreResource2.setId(coreResource2.getId());
+        newCoreResource2.setLabels(labels);
+        newCoreResource2.setInterworkingServiceURL(coreResource2.getInterworkingServiceURL());
+        newCoreResource2.setType(CoreResourceType.ACTUATOR);
 
         CoreResourceRegisteredOrModifiedEventPayload updMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
-        resources.add(coreResource1);
-        resources.add(coreResource2);
+        resources.add(newCoreResource1);
+        resources.add(newCoreResource2);
         updMessage.setPlatformId(platform.getPlatformId());
         updMessage.setResources(resources);
 
@@ -227,27 +271,30 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resource1.getId());
+        CramResource result = resourceRepo.findOne(coreResource1.getId());
         assertEquals(resourceNewLabel, result.getLabels().get(2)); 
 
-        result = resourceRepo.findOne(resource2.getId());
+        result = resourceRepo.findOne(coreResource2.getId());
         assertEquals(resourceNewLabel, result.getLabels().get(2)); 
 
         platformRepo.delete(platform.getPlatformId());
-        resourceRepo.delete(resource1.getId());
-        resourceRepo.delete(resource1.getId());
+        resourceRepo.delete(coreResource1.getId());
+        resourceRepo.delete(coreResource2.getId());
 
 	}
 
     @Test
     public void SensorDeletedTest() throws Exception {
 
+        log.info("SensorDeletedTest started!!!");
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        Resource resource1 = createResource(platform);
+        CoreResource coreResource1 = createResource(platform);
+        CramResource resource1 = new CramResource(coreResource1);
         resourceRepo.save(resource1);
-        Resource resource2 = createResource(platform);
+        CoreResource coreResource2 = createResource(platform);
+        CramResource resource2 = new CramResource(coreResource2);
         resourceRepo.save(resource2);
         ArrayList<String> resources = new ArrayList<String>();
         resources.add(resource1.getId());
@@ -258,7 +305,7 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(3);
 
-        Resource result = resourceRepo.findOne(resource1.getId());
+        CramResource result = resourceRepo.findOne(resource1.getId());
         assertEquals(null, result);
         result = resourceRepo.findOne(resource2.getId());
         assertEquals(null, result);
@@ -276,7 +323,7 @@ public class MessageQueuesTests {
         platform.setPlatformId(platformId);
         platform.setName(name);
         platform.setDescription("platform_description");
-        platform.setUrl("http://www.symbIoTe.com/");
+        platform.setUrl(platformUrl);
         platform.setInformationModelId("platform_info_model");
 
         return platform;
@@ -292,7 +339,7 @@ public class MessageQueuesTests {
         List<String> comments = Arrays.asList("comment1", "comment2");
         resource.setLabels(labels);
         resource.setComments(comments);
-        resource.setInterworkingServiceURL("http://www.symbIoTe.com/");
+        resource.setInterworkingServiceURL(platformUrl);
         return resource;
     }
 
