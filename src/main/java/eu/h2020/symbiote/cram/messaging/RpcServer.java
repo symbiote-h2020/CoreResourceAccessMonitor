@@ -35,6 +35,7 @@ import eu.h2020.symbiote.security.token.jwt.JWTEngine;
 
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
+import eu.h2020.symbiote.cram.model.CramResource;
 
 /**
 * <h1>RPC Server</h1>
@@ -90,13 +91,7 @@ public class RpcServer {
     public HashMap<String, String> getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) throws Exception {
 
         List<String> resourceList = resourceUrlsRequest.getIdList();
-        Resource firstResource = resourceRepository.findOne(resourceList.get(0));
-        if (firstResource != null) {
-            log.info("firstResource = " + firstResource);
-        }
-        else {
-            log.info("The resource with specified id was not found");
-        }
+        HashMap<String, String> ids = new HashMap<String, String>();
 
         log.info("CRAM received a request for the following ids: " + resourceList);
         try {
@@ -151,6 +146,22 @@ public class RpcServer {
                 }
             }             
             log.info("Token " + token + " was verified");
+
+            Iterator<String> iterator = resourceList.iterator();
+
+            while (iterator.hasNext()) {
+                CramResource resource = resourceRepository.findOne(iterator.next());
+                if (resource != null){
+
+                    String url = resource.getResourceUrl();
+                    ids.put(resource.getId(), url.toString());
+                    log.info("AccessController found a resource with id " + resource.getId() +
+                         " and url " + url.toString());
+                }
+                else {
+                    log.info("The resource with specified id was not found");
+                }
+            }
         }
         catch (TokenValidationException e) { 
             log.error("Token could not be verified");
@@ -169,23 +180,6 @@ public class RpcServer {
             HashMap<String, String> error = new HashMap<String, String>();
             error.put("error", e.toString());
             return error;
-        }
-
-        Iterator<String> iterator = resourceList.iterator();
-        HashMap<String, String> ids = new HashMap<String, String>();
-
-        while (iterator.hasNext()) {
-            Resource resource = resourceRepository.findOne(iterator.next());
-            if (resource != null){
-
-                String url = resource.getInterworkingServiceURL();
-                ids.put(resource.getId(), url.toString());
-                log.info("AccessController found a resource with id " + resource.getId() +
-                     " and url " + url.toString());
-            }
-            else {
-                log.info("The resource with specified id was not found");
-            }
         }
 
         return ids;

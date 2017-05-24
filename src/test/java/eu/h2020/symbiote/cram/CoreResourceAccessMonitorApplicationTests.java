@@ -94,6 +94,7 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Value("${platform.aam.url}")
     private String platformAAMUrl;
 
+    private String resourceUrl;
 
     // Execute the Setup method before the test.    
     @Before    
@@ -105,6 +106,7 @@ public class CoreResourceAccessMonitorApplicationTests {
             log.info("dummyAAMRestListeners created");
 
         List<String> observedProperties = Arrays.asList("temp", "air");
+        resourceUrl = platformAAMUrl + "/rap";
 
         Platform platform = new Platform ();
         platform.setPlatformId("platform_id");
@@ -116,11 +118,13 @@ public class CoreResourceAccessMonitorApplicationTests {
         CramResource resource1 = new CramResource();
         resource1.setId("sensor_id");
         resource1.setInterworkingServiceURL(platformAAMUrl);
+        resource1.setResourceUrl(resourceUrl);
 
 
         CramResource resource2 = new CramResource();
         resource2.setId("sensor_id2");
         resource2.setInterworkingServiceURL(platformAAMUrl);
+        resource2.setResourceUrl(resourceUrl);
 
         platformRepo.save(platform);
         resourceRepo.save(resource1);
@@ -183,8 +187,8 @@ public class CoreResourceAccessMonitorApplicationTests {
         while(!future.isDone())
             TimeUnit.SECONDS.sleep(1);
 
-        assertEquals(platformAAMUrl, resultRef.get().get("sensor_id"));
-        assertEquals(platformAAMUrl, resultRef.get().get("sensor_id2"));
+        assertEquals(resourceUrl, resultRef.get().get("sensor_id"));
+        assertEquals(resourceUrl, resultRef.get().get("sensor_id2"));
 
         platformRepo.delete("platform_id");
         resourceRepo.delete("sensor_id");
@@ -246,8 +250,8 @@ public class CoreResourceAccessMonitorApplicationTests {
         while(!future.isDone())
             TimeUnit.SECONDS.sleep(1);
 
-        assertEquals(platformAAMUrl, resultRef.get().get("sensor_id"));
-        assertEquals(platformAAMUrl, resultRef.get().get("sensor_id2"));
+        assertEquals(resourceUrl, resultRef.get().get("sensor_id"));
+        assertEquals(resourceUrl, resultRef.get().get("sensor_id2"));
 
         platformRepo.delete("platform_id");
         resourceRepo.delete("sensor_id");
