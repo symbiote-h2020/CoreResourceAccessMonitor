@@ -10,19 +10,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.AMQP;
-import org.springframework.amqp.core.Message;
 
 import java.util.List;
 import java.util.Iterator;
 import java.util.HashMap;
-import java.io.UnsupportedEncodingException;
 
-import eu.h2020.symbiote.core.model.resources.Resource;
-import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.security.InternalSecurityHandler;
 import eu.h2020.symbiote.security.token.Token;
 import eu.h2020.symbiote.security.exceptions.aam.TokenValidationException;
@@ -65,8 +58,6 @@ public class RpcServer {
     @Autowired
     private HashMap<String, AAM> aamsMap;
 
-    private String platformAAMUrlPath = "";
-
     @Autowired
     public RpcServer(PlatformRepository platformRepository, ResourceRepository resourceRepository) {
     	
@@ -85,9 +76,17 @@ public class RpcServer {
    * the specified resources.
    *
    * 
-   * @param resourceIdList The list of resource ids
+   * @param resourceUrlsRequest Contains the list of resource ids along with the token of the user who issued the request
    * @return A map containing urls of the resources specified in the ResourceUrlsRequest
    */
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "cramGetResourceUrls", durable = "${rabbit.exchange.cram.durable}",
+                   autoDelete = "${rabbit.exchange.cram.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.cram.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.cram.durable}", autoDelete  = "${rabbit.exchange.cram.autodelete}",
+                   internal = "${rabbit.exchange.cram.internal}", type = "${rabbit.exchange.cram.type}"),
+           key = "${rabbit.routingKey.cram.getResourceUrls}")
+   )
     public HashMap<String, String> getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) throws Exception {
 
         List<String> resourceList = resourceUrlsRequest.getIdList();

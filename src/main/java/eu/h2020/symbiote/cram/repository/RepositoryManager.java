@@ -2,6 +2,10 @@ package eu.h2020.symbiote.cram.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -58,6 +62,14 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the newly registered platform
    */
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "platformRegistration", durable = "${rabbit.exchange.platform.durable}",
+                   autoDelete = "${rabbit.exchange.platform.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.platform.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.platform.durable}", autoDelete  = "${rabbit.exchange.platform.autodelete}",
+                   internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
+           key = "${rabbit.routingKey.platform.created}")
+   )
     public static void savePlatform(Platform platform) {
 
         platformRepository.save(platform);
@@ -71,7 +83,15 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the updated platform
    */
-    public static void updatePlatform(Platform platform) throws EntityNotFoundException {
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "platformUpdated", durable = "${rabbit.exchange.platform.durable}",
+                   autoDelete = "${rabbit.exchange.platform.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.platform.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.platform.durable}", autoDelete  = "${rabbit.exchange.platform.autodelete}",
+                   internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
+           key = "${rabbit.routingKey.platform.modified}")
+   )
+    public static void updatePlatform(Platform platform) {
         try {    
             if (platformRepository.findOne(platform.getPlatformId()) == null) 
                 throw new EntityNotFoundException ("Received an update message for "
@@ -94,8 +114,15 @@ public class RepositoryManager {
    * 
    * @param platform The platform object of the platform to be deleted
    */
-    public static void deletePlatform(Platform platform) 
-      throws EntityNotFoundException {
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "platformUnregistration", durable = "${rabbit.exchange.platform.durable}",
+                   autoDelete = "${rabbit.exchange.platform.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.platform.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.platform.durable}", autoDelete  = "${rabbit.exchange.platform.autodelete}",
+                   internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
+           key = "${rabbit.routingKey.platform.removed}")
+   )
+    public static void deletePlatform(Platform platform) {
 
         try {
             if (platformRepository.findOne(platform.getPlatformId()) == null) 
@@ -120,8 +147,16 @@ public class RepositoryManager {
    * 
    * @param message The message of the newly registered resources
    */
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "resourceRegistration", durable = "${rabbit.exchange.resource.durable}",
+                   autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
+                   internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
+           key = "${rabbit.routingKey.resource.created}")
+   )
     public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message) 
-      throws EntityNotFoundException, AmqpRejectAndDontRequeueException {
+      throws AmqpRejectAndDontRequeueException {
         
         try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
@@ -155,8 +190,16 @@ public class RepositoryManager {
    * 
    * @param message The message of the newly updated resources
    */
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "resourceUpdated", durable = "${rabbit.exchange.resource.durable}",
+                   autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
+                   internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
+           key = "${rabbit.routingKey.resource.modified}")
+   )
     public static void updateResource(CoreResourceRegisteredOrModifiedEventPayload message) 
-      throws EntityNotFoundException, AmqpRejectAndDontRequeueException {
+      throws AmqpRejectAndDontRequeueException {
         try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
                 throw new EntityNotFoundException ("Received an update message"
@@ -191,8 +234,15 @@ public class RepositoryManager {
    * 
    * @param resourcesIds List of resource Ids of the newly deleted resources
    */
-    public static void deleteResource(List<String> resourcesIds) 
-      throws EntityNotFoundException {
+   @RabbitListener(bindings = @QueueBinding(
+           value = @Queue(value = "resourceUnregistration", durable = "${rabbit.exchange.resource.durable}",
+                   autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
+           exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
+                   durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
+                   internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
+           key = "${rabbit.routingKey.resource.removed}")
+   )
+    public static void deleteResource(List<String> resourcesIds) {
         
         try {
             for (Iterator<String> it = resourcesIds.iterator(); it.hasNext();) {
