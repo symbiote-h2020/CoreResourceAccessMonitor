@@ -1,12 +1,12 @@
 package eu.h2020.symbiote.cram;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 
@@ -17,19 +17,15 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
+
+import java.util.HashMap;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.h2020.symbiote.security.InternalSecurityHandler;
 import eu.h2020.symbiote.security.session.AAM;
-import eu.h2020.symbiote.security.exceptions.SecurityHandlerException;
-
-import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
-
 
 @EnableDiscoveryClient
 @EnableRabbit
@@ -50,6 +46,10 @@ public class CoreResourceAccessMonitorApplication {
     @Value("${symbiote.coreaam.url}") 
     private String symbioteCoreInterfaceAddress;
 
+    @Value("${subIntervalDuration}")
+    @Qualifier("subIntervalDuration")
+    private String subIntervalDurationString;
+
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
     }
@@ -59,6 +59,14 @@ public class CoreResourceAccessMonitorApplication {
         return new AlwaysSampler();
     }
 
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean Long subIntervalDuration() {
+	    return Long.parseLong(subIntervalDurationString);
+    }
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {

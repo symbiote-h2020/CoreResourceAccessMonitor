@@ -1,8 +1,9 @@
-package eu.h2020.symbiote.cram;
+package eu.h2020.symbiote.cram.integration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.Before;
 
@@ -30,25 +31,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
-import java.io.InputStream;
 import java.io.FileInputStream;
 import java.security.*;
-import java.io.IOException;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-
-import eu.h2020.symbiote.cram.repository.RepositoryManager;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.Location;
-import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
 import eu.h2020.symbiote.security.token.jwt.JWTEngine;
 import eu.h2020.symbiote.security.enums.IssuingAuthorityType;
 
-import eu.h2020.symbiote.cram.DummyAAMRestListeners;
 import eu.h2020.symbiote.cram.model.CramResource;
 
 import static org.junit.Assert.assertEquals;
@@ -85,9 +77,6 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Value("${rabbit.exchange.cram.name}")
     private String cramExchangeName;
 
-    @Autowired
-    private DummyAAMRestListeners dummyAAMRestListeners;
-
     @Value("${rabbit.routingKey.cram.getResourceUrls}")
     private String cramGetResourceUrlsRoutingKey;
 
@@ -99,11 +88,6 @@ public class CoreResourceAccessMonitorApplicationTests {
     // Execute the Setup method before the test.    
     @Before    
     public void setUp() throws Exception {
-
-        if (dummyAAMRestListeners == null)
-            log.info("dummyAAMRestListeners NOT created");
-        else
-            log.info("dummyAAMRestListeners created");
 
         List<String> observedProperties = Arrays.asList("temp", "air");
         resourceUrl = platformAAMUrl + "/rap";
@@ -129,8 +113,14 @@ public class CoreResourceAccessMonitorApplicationTests {
         platformRepo.save(platform);
         resourceRepo.save(resource1);
         resourceRepo.save(resource2);
+
     }
 
+    @After
+    public void clearRepos() {
+        platformRepo.deleteAll();
+        resourceRepo.deleteAll();
+    }
 
     @Test    
     public void testGetResourcesUrlsWithValidToken() throws Exception {
@@ -190,12 +180,9 @@ public class CoreResourceAccessMonitorApplicationTests {
         assertEquals(resourceUrl, resultRef.get().get("sensor_id"));
         assertEquals(resourceUrl, resultRef.get().get("sensor_id2"));
 
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsWithValidOfflineToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -253,12 +240,9 @@ public class CoreResourceAccessMonitorApplicationTests {
         assertEquals(resourceUrl, resultRef.get().get("sensor_id"));
         assertEquals(resourceUrl, resultRef.get().get("sensor_id2"));
 
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsWithExpiredToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -315,12 +299,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         assertEquals("Token is EXPIRED", resultRef.get().get("error"));
 
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsWithRevokedToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -377,12 +358,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         assertEquals("Token is REVOKED", resultRef.get().get("error"));
 
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsWithInvalidToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -439,12 +417,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         assertEquals("Token is INVALID", resultRef.get().get("error"));
 
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsWithNullToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -501,12 +476,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         assertEquals("Token is NULL", resultRef.get().get("error"));
 
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsThrowingTokenValidationException() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -545,10 +517,7 @@ public class CoreResourceAccessMonitorApplicationTests {
             TimeUnit.SECONDS.sleep(1);
 
         assertEquals("eu.h2020.symbiote.security.exceptions.aam.TokenValidationException: Token could not be validated", resultRef.get().get("error"));
-        
-        platformRepo.delete("platform_id");
-        resourceRepo.delete("sensor_id");
-        resourceRepo.delete("sensor_id2");
+
     }
 
     static public class DateUtil

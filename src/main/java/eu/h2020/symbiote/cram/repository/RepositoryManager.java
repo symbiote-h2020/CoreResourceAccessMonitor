@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.repository;
 
+import eu.h2020.symbiote.cram.model.SubIntervalViews;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -7,6 +8,7 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -16,6 +18,8 @@ import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.model.internal.CoreResource;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,17 +46,21 @@ public class RepositoryManager {
     private static Log log = LogFactory.getLog(RepositoryManager.class);
 
     private static PlatformRepository platformRepository;
-
     private static ResourceRepository resourceRepository;
+    private static Long subIntervalDuration;
 
     @Autowired
-    public RepositoryManager(PlatformRepository platformRepository, ResourceRepository resourceRepository){
+    public RepositoryManager(PlatformRepository platformRepository, ResourceRepository resourceRepository, @Qualifier("subIntervalDuration") Long subIntervalDuration){
     	
     	Assert.notNull(platformRepository,"Platform repository can not be null!");
     	this.platformRepository = platformRepository;
     	
     	Assert.notNull(resourceRepository,"Sensor repository can not be null!");
     	this.resourceRepository = resourceRepository;
+
+        Assert.notNull(subIntervalDuration,"SubIntervalDuration repository can not be null!");
+        this.subIntervalDuration = subIntervalDuration;
+
     }
 
    /**
@@ -168,7 +176,16 @@ public class RepositoryManager {
                 CoreResource coreResource = (CoreResource) it.next();
                 CramResource cramResource = new CramResource(coreResource);
 
-                cramResource.setResourceUrl(generateResourceURL(cramResource));
+                cramResource.setResourceUrl(generateResourceURL(cramResource));log.info(1);
+                cramResource.setViewsInDefinedInterval(0);log.info("2");
+
+                ArrayList<SubIntervalViews>  subIntervalList = new ArrayList<SubIntervalViews>();log.info("3");
+                Date startDate = new Date();log.info("4");
+                Date endDate = new Date();log.info("5");
+                endDate.setTime(startDate.getTime() + subIntervalDuration);log.info("6");
+                subIntervalList.add(new SubIntervalViews(startDate, endDate, 0));log.info("7");
+                cramResource.setViewsInSubIntervals(subIntervalList);log.info("8");
+
                 resourceRepository.save(cramResource);
                 log.info("CRAM saved resource with id: " + cramResource.getId());
             }

@@ -1,7 +1,7 @@
 package eu.h2020.symbiote.cram;
 
 
-import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplicationTests.DateUtil;
+import eu.h2020.symbiote.cram.integration.CoreResourceAccessMonitorApplicationTests.DateUtil;
 import eu.h2020.symbiote.security.certificate.Certificate;
 import eu.h2020.symbiote.security.constants.AAMConstants;
 import eu.h2020.symbiote.security.enums.IssuingAuthorityType;

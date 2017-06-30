@@ -1,30 +1,22 @@
-package eu.h2020.symbiote.cram;
+package eu.h2020.symbiote.cram.integration;
 
 
+import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.junit.Test;
 import org.junit.Before;
-
+import org.junit.After;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.MessagePropertiesBuilder;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageDeliveryMode;
 
 import java.io.IOException;
@@ -34,13 +26,10 @@ import java.util.Random;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.net.URL;
 
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.Location;
-import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.model.internal.CoreResource;
 import eu.h2020.symbiote.core.model.internal.CoreResourceType;
@@ -49,28 +38,30 @@ import eu.h2020.symbiote.cram.model.CramResource;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.rules.ExpectedException;
 
-/** 
+/**
  * This file tests the PlatformRepository and ResourceRepository
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
-@SpringBootTest(properties = {"eureka.client.enabled=false", 
+@SpringBootTest(properties = {"eureka.client.enabled=false",
                               "spring.sleuth.enabled=false"})
 public class MessageQueuesTests {
 
 
     private static Logger log = LoggerFactory
                           .getLogger(MessageQueuesTests.class);
-    
+
     @Autowired
     private ResourceRepository resourceRepo;
-    
-    @Autowired    
+
+    @Autowired
     private PlatformRepository platformRepo;
-    
+
+    @Autowired
+    private Long subIntervalDuration;
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -100,7 +91,12 @@ public class MessageQueuesTests {
     public void setup() throws IOException, TimeoutException {
 
         rand = new Random();
+    }
 
+    @After
+    public void clearRepos() {
+        platformRepo.deleteAll();
+        resourceRepo.deleteAll();
     }
 
     @Test
@@ -116,8 +112,6 @@ public class MessageQueuesTests {
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(platform.getName(), result.getName());
-
-        platformRepo.delete(platform.getPlatformId());
     }
 
     @Test
@@ -138,9 +132,6 @@ public class MessageQueuesTests {
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(newName, result.getName());
-
-        platformRepo.delete(platform.getPlatformId());
-
     }
 
     @Test
@@ -157,7 +148,8 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
-        assertEquals(null, result);    
+        assertEquals(null, result);
+
 	}
 
     @Test
@@ -182,9 +174,9 @@ public class MessageQueuesTests {
         CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
         resources.add(resource1);
-        resources.add(resource2);        
+        resources.add(resource2);
         resources.add(resource3);
-        resources.add(resource4);        
+        resources.add(resource4);
         resources.add(resource5);
         regMessage.setPlatformId(platform.getPlatformId());
         regMessage.setResources(resources);
@@ -195,38 +187,30 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         CramResource result = resourceRepo.findOne(resource1.getId());
-
         assertEquals(platformUrl + "rap/Actuators('" + resource1.getId()
-               + "')", result.getResourceUrl());   
+               + "')", result.getResourceUrl());
+        assertEquals(0, (long) result.getViewsInDefinedInterval());
+        assertEquals((long) subIntervalDuration,  result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
+                result.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
 
 
         result = resourceRepo.findOne(resource2.getId());
-
         assertEquals(platformUrl + "rap/Services('" + resource2.getId()
-               + "')", result.getResourceUrl());   
+               + "')", result.getResourceUrl());
 
         result = resourceRepo.findOne(resource3.getId());
-
         assertEquals(platformUrl + "rap/ActuatingServices('" + resource3.getId()
-               + "')", result.getResourceUrl());   
+               + "')", result.getResourceUrl());
 
 
         result = resourceRepo.findOne(resource4.getId());
-
         assertEquals(platformUrl + "rap/Sensors('" + resource4.getId()
-               + "')", result.getResourceUrl());  
+               + "')", result.getResourceUrl());
 
         result = resourceRepo.findOne(resource5.getId());
-
         assertEquals(platformUrl + "rap/Sensors('" + resource5.getId()
-               + "')", result.getResourceUrl());   
+               + "')", result.getResourceUrl());
 
-        platformRepo.delete(platform.getPlatformId());
-        resourceRepo.delete(resource1.getId());
-        resourceRepo.delete(resource2.getId());        
-        resourceRepo.delete(resource3.getId());
-        resourceRepo.delete(resource4.getId());        
-        resourceRepo.delete(resource5.getId());
 	}
 
     @Test
@@ -272,14 +256,10 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(3);
 
         CramResource result = resourceRepo.findOne(coreResource1.getId());
-        assertEquals(resourceNewLabel, result.getLabels().get(2)); 
+        assertEquals(resourceNewLabel, result.getLabels().get(2));
 
         result = resourceRepo.findOne(coreResource2.getId());
-        assertEquals(resourceNewLabel, result.getLabels().get(2)); 
-
-        platformRepo.delete(platform.getPlatformId());
-        resourceRepo.delete(coreResource1.getId());
-        resourceRepo.delete(coreResource2.getId());
+        assertEquals(resourceNewLabel, result.getLabels().get(2));
 
 	}
 
@@ -310,7 +290,6 @@ public class MessageQueuesTests {
         result = resourceRepo.findOne(resource2.getId());
         assertEquals(null, result);
 
-        platformRepo.delete(platform.getPlatformId());
     }
 
 
