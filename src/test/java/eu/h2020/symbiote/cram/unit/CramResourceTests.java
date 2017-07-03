@@ -55,7 +55,21 @@ public class CramResourceTests {
 
     @Test
     public void scheduleUpdateInResourceAccessStatsTest() {
-        CramResource cramResource = createCramResourceWithIntervals();
+        CramResource cramResource = new CramResource();
+        cramResource.setViewsInDefinedInterval(0);
+        SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(2000), 0);
+        ArrayList<SubIntervalViews> subIntervals = new ArrayList<SubIntervalViews>();
+        subIntervals.add(subInterval1);
+        cramResource.setViewsInSubIntervals(subIntervals);
+
+        assertEquals(1, cramResource.getViewsInSubIntervals().size());
+
+        cramResource.scheduleUpdateInResourceAccessStats(new Long(3), new Long(1000));
+        assertEquals(2, cramResource.getViewsInSubIntervals().size());
+
+        cramResource.scheduleUpdateInResourceAccessStats(new Long(3), new Long(1000));
+        assertEquals(3, cramResource.getViewsInSubIntervals().size());
+
         ArrayList<Date> dateList = new ArrayList<Date>();
         dateList.add(new Date(1000));
         dateList.add(new Date(1500));

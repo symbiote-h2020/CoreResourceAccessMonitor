@@ -4,6 +4,8 @@ package eu.h2020.symbiote.cram.model;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.model.internal.CoreResource;
 import eu.h2020.symbiote.core.model.internal.CoreResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,6 +22,9 @@ import java.util.List;
 * @since   2017-05-24
 */
 public class CramResource extends Resource {
+
+    private static final Logger log = LoggerFactory
+            .getLogger(CramResource.class);
 
     private CoreResourceType type;
     private String resourceUrl;
@@ -84,19 +89,28 @@ public class CramResource extends Resource {
     }
 
     public void scheduleUpdateInResourceAccessStats(Long noSubIntervals, Long subIntervalDuration) {
-        int sizeOfViewList = viewsInSubIntervals.size();
-        Date newStartSubIntervalTime = new Date();
-        Date newEndSubIntervalTime = new Date();
-        long newStartSubIntervalTime_ms = viewsInSubIntervals.get(sizeOfViewList - 1).getEndOfInterval().getTime();
-        newStartSubIntervalTime.setTime(newStartSubIntervalTime_ms);
-        newEndSubIntervalTime.setTime(newStartSubIntervalTime_ms + subIntervalDuration);
-        SubIntervalViews subIntervalViews = new SubIntervalViews(newStartSubIntervalTime, newEndSubIntervalTime, 0);
-        viewsInSubIntervals.add(subIntervalViews);
+
+        log.info("Update STARTED for resource with id = " + getId());
+        int sizeOfViewList = (viewsInSubIntervals == null) ? 0 : viewsInSubIntervals.size();
+
+        SubIntervalViews nextSubIntervalView = createNextSubIntervalView(sizeOfViewList, subIntervalDuration);
+        viewsInSubIntervals.add(nextSubIntervalView);
 
         if(sizeOfViewList == noSubIntervals) {
             viewsInDefinedInterval -= viewsInSubIntervals.get(0).getViews();
             viewsInSubIntervals.remove(0);
         }
 
+        log.info("Update ENDED for resource with id = " + getId());
+
+    }
+
+    private SubIntervalViews createNextSubIntervalView(int sizeOfViewList, Long subIntervalDuration) {
+        Date newStartSubIntervalTime = new Date();
+        Date newEndSubIntervalTime = new Date();
+        long newStartSubIntervalTime_ms = viewsInSubIntervals.get(sizeOfViewList - 1).getEndOfInterval().getTime();
+        newStartSubIntervalTime.setTime(newStartSubIntervalTime_ms);
+        newEndSubIntervalTime.setTime(newStartSubIntervalTime_ms + subIntervalDuration);
+        return new SubIntervalViews(newStartSubIntervalTime, newEndSubIntervalTime, 0);
     }
 }

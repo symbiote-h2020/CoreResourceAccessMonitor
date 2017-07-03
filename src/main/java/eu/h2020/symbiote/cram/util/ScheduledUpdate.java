@@ -35,13 +35,19 @@ public class ScheduledUpdate extends TimerTask{
     }
 
     public void run() {
-        log.info("Periodic resource popularity update is being done :" + new Date());
+        log.info("Periodic resource popularity update STARTED :" + new Date());
 
         List<CramResource> listOfCramResources = resourceRepository.findAll();
+
+        // Todo: store notifications from when this operation happens
 
         for(Iterator iter = listOfCramResources.iterator(); iter.hasNext();){
             CramResource cramResource = (CramResource) iter.next();
             cramResource.scheduleUpdateInResourceAccessStats(noSubIntervals, subIntervalDuration);
+//            resourceRepository.save(cramResource);
         }
+        resourceRepository.save(listOfCramResources);
+        log.info("Periodic resource popularity update ENDED :" + new Date());
+
     }
 }
