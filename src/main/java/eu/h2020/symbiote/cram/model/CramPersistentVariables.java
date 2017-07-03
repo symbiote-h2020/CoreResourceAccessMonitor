@@ -9,6 +9,7 @@ public class CramPersistentVariables {
 
     @Id
     private String id;
+    protected String variableName;
 
     public String getId() { return this.id; }
     public void setId(String id) { this.id = id; }

@@ -53,6 +53,42 @@ public class CramResourceTests {
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(2).getViews());
     }
 
+    @Test
+    public void scheduleUpdateInResourceAccessStatsTest() {
+        CramResource cramResource = createCramResourceWithIntervals();
+        ArrayList<Date> dateList = new ArrayList<Date>();
+        dateList.add(new Date(1000));
+        dateList.add(new Date(1500));
+        dateList.add(new Date(2000));
+        dateList.add(new Date(3000));
+        dateList.add(new Date(3500));
+        dateList.add(new Date(4000));
+
+        cramResource.addViewsInSubIntervals(dateList);
+        cramResource.scheduleUpdateInResourceAccessStats(new Long(3), new Long(1000));
+
+        assertEquals(1, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
+        assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
+        assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(2).getViews());
+
+        assertEquals(2000, cramResource.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
+        assertEquals(4000, cramResource.getViewsInSubIntervals().get(2).getStartOfInterval().getTime());
+        assertEquals(5000, cramResource.getViewsInSubIntervals().get(2).getEndOfInterval().getTime());
+
+        assertEquals(3, cramResource.getViewsInSubIntervals().size());
+        assertEquals(3, (long) cramResource.getViewsInDefinedInterval());
+
+        ArrayList<Date> newDateList = new ArrayList<Date>();
+        newDateList.add(new Date(4000));
+        newDateList.add(new Date(5000));
+        cramResource.addViewsInSubIntervals(newDateList);
+
+        assertEquals(1, (long) cramResource.getViewsInSubIntervals().get(2).getViews());
+        assertEquals(3, cramResource.getViewsInSubIntervals().size());
+        assertEquals(4, (long) cramResource.getViewsInDefinedInterval());
+
+    }
+
     private CramResource createCramResourceWithIntervals() {
         SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(2000), 0);
         SubIntervalViews subInterval2 = new SubIntervalViews(new Date(2000), new Date(3000), 0);

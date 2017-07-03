@@ -64,7 +64,7 @@ public class RpcServer {
     	Assert.notNull(platformRepository,"Platform repository can not be null!");
     	this.platformRepository = platformRepository;
     	
-    	Assert.notNull(resourceRepository,"Sensor repository can not be null!");
+    	Assert.notNull(resourceRepository,"Resource repository can not be null!");
     	this.resourceRepository = resourceRepository;
     }
 

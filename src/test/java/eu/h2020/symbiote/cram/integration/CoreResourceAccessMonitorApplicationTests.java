@@ -1,5 +1,7 @@
 package eu.h2020.symbiote.cram.integration;
 
+import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
+import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +11,7 @@ import org.junit.Before;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -73,6 +76,16 @@ public class CoreResourceAccessMonitorApplicationTests {
     
     @Autowired    
     private PlatformRepository platformRepo;
+
+    @Autowired
+    private CramPersistentVariablesRepository cramPersistentVariablesRepository;
+
+    @Autowired
+    private NextPopularityUpdate nextPopularityUpdate;
+
+    @Autowired
+    @Qualifier("noSubIntervals")
+    private Long noSubIntervals;
 
     @Value("${rabbit.exchange.cram.name}")
     private String cramExchangeName;
@@ -518,6 +531,19 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         assertEquals("eu.h2020.symbiote.security.exceptions.aam.TokenValidationException: Token could not be validated", resultRef.get().get("error"));
 
+    }
+
+    @Test
+    public void NextPopularityUpdateTest() {
+        NextPopularityUpdate savedNextPopularityUpdate = (NextPopularityUpdate) cramPersistentVariablesRepository.findByVariableName("NEXT_POPULARITY_UPDATE");
+        log.info("savedNextPopularityUpdate = " + savedNextPopularityUpdate.getNextUpdate().getTime());
+        log.info("nextPopularityUpdate = " + nextPopularityUpdate.getNextUpdate().getTime());
+        assertEquals(savedNextPopularityUpdate.getNextUpdate().getTime(), nextPopularityUpdate.getNextUpdate().getTime());
+    }
+
+    @Test
+    public void TestNoIntervals() {
+        assertEquals(3, (long) noSubIntervals);
     }
 
     static public class DateUtil

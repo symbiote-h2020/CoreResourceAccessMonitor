@@ -83,4 +83,20 @@ public class CramResource extends Resource {
         return foundSubInterval;
     }
 
+    public void scheduleUpdateInResourceAccessStats(Long noSubIntervals, Long subIntervalDuration) {
+        int sizeOfViewList = viewsInSubIntervals.size();
+        Date newStartSubIntervalTime = new Date();
+        Date newEndSubIntervalTime = new Date();
+        long newStartSubIntervalTime_ms = viewsInSubIntervals.get(sizeOfViewList - 1).getEndOfInterval().getTime();
+        newStartSubIntervalTime.setTime(newStartSubIntervalTime_ms);
+        newEndSubIntervalTime.setTime(newStartSubIntervalTime_ms + subIntervalDuration);
+        SubIntervalViews subIntervalViews = new SubIntervalViews(newStartSubIntervalTime, newEndSubIntervalTime, 0);
+        viewsInSubIntervals.add(subIntervalViews);
+
+        if(sizeOfViewList == noSubIntervals) {
+            viewsInDefinedInterval -= viewsInSubIntervals.get(0).getViews();
+            viewsInSubIntervals.remove(0);
+        }
+
+    }
 }

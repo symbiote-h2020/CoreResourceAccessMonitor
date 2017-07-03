@@ -1,5 +1,8 @@
 package eu.h2020.symbiote.cram;
 
+import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
+import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,6 +23,7 @@ import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +38,9 @@ public class CoreResourceAccessMonitorApplication {
 
 	private static Log log = LogFactory.getLog(CoreResourceAccessMonitorApplication.class);
 
+	@Autowired
+    private CramPersistentVariablesRepository cramPersistentVariablesRepository;
+
     @Value("${rabbit.host}") 
     private String rabbitMQHostIP;
 
@@ -47,8 +54,10 @@ public class CoreResourceAccessMonitorApplication {
     private String symbioteCoreInterfaceAddress;
 
     @Value("${subIntervalDuration}")
-    @Qualifier("subIntervalDuration")
     private String subIntervalDurationString;
+
+    @Value("${intervalDuration}")
+    private String intervalDurationString;
 
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
@@ -64,8 +73,46 @@ public class CoreResourceAccessMonitorApplication {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-    @Bean Long subIntervalDuration() {
+    @Bean(name="subIntervalDuration")
+    public Long subIntervalDuration() {
 	    return Long.parseLong(subIntervalDurationString);
+    }
+
+    @Bean(name="intervalDuration")
+    public Long intervalDuration() {
+        return Long.parseLong(intervalDurationString);
+    }
+
+    @Bean(name="noSubIntervals")
+    public Long noSubIntervals(@Qualifier("subIntervalDuration") Long subIntervalDuration,
+                               @Qualifier("intervalDuration") Long intervalDuration) {
+        log.info("intervalDuration is :" + intervalDuration + " ms");
+        log.info("SubIntervalDuration is :" + subIntervalDuration + " ms");
+	    return intervalDuration/subIntervalDuration;
+    }
+
+    @Bean
+    public NextPopularityUpdate nextPopularityUpdate(@Qualifier("subIntervalDuration") Long subIntervalDuration) {
+	    log.info("SubIntervalDuration is :" + subIntervalDuration + " ms");
+	    NextPopularityUpdate nextPopularityUpdate = (NextPopularityUpdate) cramPersistentVariablesRepository.findByVariableName("NEXT_POPULARITY_UPDATE");
+	    if (nextPopularityUpdate == null) {
+            log.info("No NextPopularityUpdate was saved in Database");
+            NextPopularityUpdate newPopularityUpdate = new NextPopularityUpdate(subIntervalDuration);
+            cramPersistentVariablesRepository.save(newPopularityUpdate);
+            return newPopularityUpdate;
+        }
+        else if (new Date().getTime() > nextPopularityUpdate.getNextUpdate().getTime()){
+            log.info("NextPopularityUpdate saved in Database has passed: " + nextPopularityUpdate.getNextUpdate().getTime());
+            nextPopularityUpdate.getNextUpdate().setTime(new Date().getTime() + subIntervalDuration);
+            log.info("New NextPopularityUpdate is at: " + nextPopularityUpdate.getNextUpdate().getTime());
+            cramPersistentVariablesRepository.save(nextPopularityUpdate);
+            return nextPopularityUpdate;
+        }
+	    else {
+            log.info("NextPopularityUpdate saved in Database has not passed: " + nextPopularityUpdate.getNextUpdate().getTime());
+            return nextPopularityUpdate;
+        }
+
     }
 
     @Bean

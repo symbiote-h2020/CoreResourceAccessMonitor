@@ -55,7 +55,7 @@ public class RepositoryManager {
     	Assert.notNull(platformRepository,"Platform repository can not be null!");
     	this.platformRepository = platformRepository;
     	
-    	Assert.notNull(resourceRepository,"Sensor repository can not be null!");
+    	Assert.notNull(resourceRepository,"Resource repository can not be null!");
     	this.resourceRepository = resourceRepository;
 
         Assert.notNull(subIntervalDuration,"SubIntervalDuration repository can not be null!");
@@ -176,15 +176,16 @@ public class RepositoryManager {
                 CoreResource coreResource = (CoreResource) it.next();
                 CramResource cramResource = new CramResource(coreResource);
 
-                cramResource.setResourceUrl(generateResourceURL(cramResource));log.info(1);
-                cramResource.setViewsInDefinedInterval(0);log.info("2");
+                cramResource.setResourceUrl(generateResourceURL(cramResource));
+                cramResource.setViewsInDefinedInterval(0);
 
-                ArrayList<SubIntervalViews>  subIntervalList = new ArrayList<SubIntervalViews>();log.info("3");
-                Date startDate = new Date();log.info("4");
-                Date endDate = new Date();log.info("5");
-                endDate.setTime(startDate.getTime() + subIntervalDuration);log.info("6");
-                subIntervalList.add(new SubIntervalViews(startDate, endDate, 0));log.info("7");
-                cramResource.setViewsInSubIntervals(subIntervalList);log.info("8");
+                ArrayList<SubIntervalViews>  subIntervalList = new ArrayList<SubIntervalViews>();
+                Date startDate = new Date();
+                Date endDate = new Date();
+                // Todo: Change endDate
+                endDate.setTime(startDate.getTime() + subIntervalDuration);
+                subIntervalList.add(new SubIntervalViews(startDate, endDate, 0));
+                cramResource.setViewsInSubIntervals(subIntervalList);
 
                 resourceRepository.save(cramResource);
                 log.info("CRAM saved resource with id: " + cramResource.getId());

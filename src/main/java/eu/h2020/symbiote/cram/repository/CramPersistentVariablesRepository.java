@@ -9,4 +9,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
  */
 @RepositoryRestResource(collectionResourceRel = "cramPersistentVariables", path = "cramPersistentVariables")
 public interface CramPersistentVariablesRepository extends MongoRepository<CramPersistentVariables, String> {
+    public CramPersistentVariables findByVariableName(String variableName);
 }

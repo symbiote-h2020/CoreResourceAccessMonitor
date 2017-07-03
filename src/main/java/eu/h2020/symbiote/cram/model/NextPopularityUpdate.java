@@ -1,7 +1,5 @@
 package eu.h2020.symbiote.cram.model;
 
-import org.springframework.data.annotation.Id;
-
 import java.util.Date;
 
 /**
@@ -9,12 +7,17 @@ import java.util.Date;
  */
 public class NextPopularityUpdate extends CramPersistentVariables {
 
-    @Id
-    private static final String id = "NEXT_POPULARITY_UPDATE";
-    public Date nextUpdate;
+    private Date nextUpdate;
 
     public NextPopularityUpdate() {
+        // empty constructor
+    }
+
+    public NextPopularityUpdate(Long subIntervalDuration) {
+
         this.nextUpdate = new Date();
+        this.variableName = "NEXT_POPULARITY_UPDATE";
+        nextUpdate.setTime(nextUpdate.getTime() + subIntervalDuration);
     }
 
     public Date getNextUpdate() { return this.nextUpdate; }
