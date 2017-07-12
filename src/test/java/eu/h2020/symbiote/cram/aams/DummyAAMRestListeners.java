@@ -112,9 +112,9 @@ public class DummyAAMRestListeners {
 
             log.info("Status = " + status);
         } catch (MalformedJWTException e) {
-            log.info(e); 
+            log.info(e);
         }
-        
+
         switch(status) {
             case "VALID_OFFLINE": {
                 return new ResponseEntity<>(new CheckRevocationResponse

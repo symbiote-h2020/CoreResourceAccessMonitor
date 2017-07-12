@@ -1,10 +1,13 @@
 package eu.h2020.symbiote.cram.integration;
 
+import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
+import eu.h2020.symbiote.cram.model.SuccessfulAttempts;
+import eu.h2020.symbiote.cram.model.SuccessfulAttemptsMessage;
+import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 
-import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +60,9 @@ public class ResourceAccessStatsUpdaterTests {
     private ResourceRepository resourceRepo;
 
     @Autowired
+    private CramPersistentVariablesRepository cramPersistentVariablesRepository;
+
+    @Autowired
     @Qualifier("subIntervalDuration")
     private Long subIntervalDuration;
 
@@ -69,7 +75,7 @@ public class ResourceAccessStatsUpdaterTests {
     private Long noSubIntervals;
 
     @Autowired
-    ResourceAccessStatsUpdater resourceAccessStatsUpdater;
+    private AccessNotificationListener accessNotificationListener;
 
     @Value("${rabbit.exchange.cram.name}")
     private String cramExchangeName;
@@ -84,13 +90,12 @@ public class ResourceAccessStatsUpdaterTests {
 
     // Execute the Setup method before the test.
     @Before
-    public void setUp() throws Exception {
-
+    public void setUp() {
         List<String> observedProperties = Arrays.asList("temp", "air");
         resourceUrl = platformAAMUrl + "/rap";
 
         CramResource resource1 = new CramResource();
-        resource1.setId("sensor_id");
+        resource1.setId("sensor_id_rasut");
         resource1.setInterworkingServiceURL(platformAAMUrl);
         resource1.setResourceUrl(resourceUrl);
         resource1.setViewsInDefinedInterval(0);
@@ -100,7 +105,7 @@ public class ResourceAccessStatsUpdaterTests {
         resource1.setViewsInSubIntervals(subIntervals);
 
         CramResource resource2 = new CramResource();
-        resource2.setId("sensor_id2");
+        resource2.setId("sensor_id2_rasut");
         resource2.setInterworkingServiceURL(platformAAMUrl);
         resource2.setResourceUrl(resourceUrl);
         resource2.setViewsInDefinedInterval(0);
@@ -112,35 +117,89 @@ public class ResourceAccessStatsUpdaterTests {
     }
 
     @After
-    public void clearRepos() {
+    public void clearSetup() {
         resourceRepo.deleteAll();
+        cramPersistentVariablesRepository.deleteAll();
+        accessNotificationListener.setScheduledUpdateOngoing(false);
+        accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
     }
 
     @Test
-    public void testTimer() throws Exception {
+    public void testTimerWithEmptySuccessfulAttemptsMessageList() throws Exception {
 
-        TimeUnit.MILLISECONDS.sleep(subIntervalDuration);
-        log.info("testTimer1");
+        TimeUnit.MILLISECONDS.sleep( (long) (1.2 * subIntervalDuration));
 
-        CramResource cramResource = resourceRepo.findOne("sensor_id");
+        CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
-        cramResource = resourceRepo.findOne("sensor_id2");
+        cramResource = resourceRepo.findOne("sensor_id2_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
 
-        TimeUnit.MILLISECONDS.sleep(intervalDuration);
-        log.info("testTimer2");
+        TimeUnit.MILLISECONDS.sleep( (long) (1.2 * intervalDuration));
 
-        cramResource = resourceRepo.findOne("sensor_id");
+        cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals((long) noSubIntervals, (long) cramResource.getViewsInSubIntervals().size());
-        cramResource = resourceRepo.findOne("sensor_id2");
+        cramResource = resourceRepo.findOne("sensor_id2_rasut");
         assertEquals((long) noSubIntervals, (long) cramResource.getViewsInSubIntervals().size());
 
-        resourceAccessStatsUpdater.getTimer().cancel();
-        resourceAccessStatsUpdater.getTimer().purge();
     }
 
+    @Test
+    public void testScheduledUpdateOngoing() throws Exception {
 
+        CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
+        assertEquals(1, (long) cramResource.getViewsInSubIntervals().size());
 
+        assertEquals(false, accessNotificationListener.getScheduledUpdateOngoing());
 
+        // Sleep for one update
+        TimeUnit.MILLISECONDS.sleep( (long) (1.2 * subIntervalDuration));
+
+        cramResource = resourceRepo.findOne("sensor_id_rasut");
+        assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
+
+        assertEquals(false, accessNotificationListener.getScheduledUpdateOngoing());
+    }
+
+    @Test
+    public void testTimerWithNonEmptySuccessfulAttemptsMessageList() throws Exception {
+
+        accessNotificationListener.getSuccessfulAttemptsMessageList().add(createSuccessfulAttemptsMessage());
+        assertEquals(1, accessNotificationListener.getSuccessfulAttemptsMessageList().size());
+        TimeUnit.MILLISECONDS.sleep( (long) (1.2 * subIntervalDuration));
+
+        CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
+        assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
+        assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
+        assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
+
+        cramResource = resourceRepo.findOne("sensor_id2_rasut");
+        assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
+        assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
+        assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
+
+        assertEquals(0, accessNotificationListener.getSuccessfulAttemptsMessageList().size());
+
+    }
+
+    private SuccessfulAttemptsMessage createSuccessfulAttemptsMessage() {
+        ArrayList<Date> dateList = new ArrayList<Date>();
+        dateList.add(new Date(1000));
+        dateList.add(new Date(1400));
+        dateList.add(new Date(20000));
+
+        SuccessfulAttempts successfulAttempts1 = new SuccessfulAttempts();
+        successfulAttempts1.setSymbioteId("sensor_id_rasut");
+        successfulAttempts1.setTimestamps(dateList);
+
+        SuccessfulAttempts successfulAttempts2 = new SuccessfulAttempts();
+        successfulAttempts2.setSymbioteId("sensor_id2_rasut");
+        successfulAttempts2.setTimestamps(dateList);
+
+        SuccessfulAttemptsMessage successfulAttemptsMessage = new SuccessfulAttemptsMessage();
+        successfulAttemptsMessage.addSuccessfulAttempts(successfulAttempts1);
+        successfulAttemptsMessage.addSuccessfulAttempts(successfulAttempts2);
+
+        return successfulAttemptsMessage;
+    }
 }
 

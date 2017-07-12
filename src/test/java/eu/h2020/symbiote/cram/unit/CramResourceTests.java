@@ -57,17 +57,23 @@ public class CramResourceTests {
     public void scheduleUpdateInResourceAccessStatsTest() {
         CramResource cramResource = new CramResource();
         cramResource.setViewsInDefinedInterval(0);
-        SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(2000), 0);
+        Long subIntervalDuration_ms = new Long(1000);
+        Long sizeOfViewList = new Long(3);
+
+        // Create a single subInterval
+        SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(1000 + subIntervalDuration_ms), 0);
         ArrayList<SubIntervalViews> subIntervals = new ArrayList<SubIntervalViews>();
         subIntervals.add(subInterval1);
         cramResource.setViewsInSubIntervals(subIntervals);
 
+        // Check that it has only one subInterval
         assertEquals(1, cramResource.getViewsInSubIntervals().size());
 
-        cramResource.scheduleUpdateInResourceAccessStats(new Long(3), new Long(1000));
+        // Check that new subIntervals are added
+        cramResource.scheduleUpdateInResourceAccessStats(sizeOfViewList, subIntervalDuration_ms);
         assertEquals(2, cramResource.getViewsInSubIntervals().size());
 
-        cramResource.scheduleUpdateInResourceAccessStats(new Long(3), new Long(1000));
+        cramResource.scheduleUpdateInResourceAccessStats(sizeOfViewList, subIntervalDuration_ms);
         assertEquals(3, cramResource.getViewsInSubIntervals().size());
 
         ArrayList<Date> dateList = new ArrayList<Date>();
@@ -79,7 +85,9 @@ public class CramResourceTests {
         dateList.add(new Date(4000));
 
         cramResource.addViewsInSubIntervals(dateList);
-        cramResource.scheduleUpdateInResourceAccessStats(new Long(3), new Long(1000));
+
+        // New subInterval is added
+        cramResource.scheduleUpdateInResourceAccessStats(sizeOfViewList, subIntervalDuration_ms);
 
         assertEquals(1, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
@@ -89,16 +97,17 @@ public class CramResourceTests {
         assertEquals(4000, cramResource.getViewsInSubIntervals().get(2).getStartOfInterval().getTime());
         assertEquals(5000, cramResource.getViewsInSubIntervals().get(2).getEndOfInterval().getTime());
 
-        assertEquals(3, cramResource.getViewsInSubIntervals().size());
+        assertEquals((long) sizeOfViewList, cramResource.getViewsInSubIntervals().size());
         assertEquals(3, (long) cramResource.getViewsInDefinedInterval());
 
         ArrayList<Date> newDateList = new ArrayList<Date>();
+        newDateList.add(new Date(1000));
         newDateList.add(new Date(4000));
         newDateList.add(new Date(5000));
         cramResource.addViewsInSubIntervals(newDateList);
 
         assertEquals(1, (long) cramResource.getViewsInSubIntervals().get(2).getViews());
-        assertEquals(3, cramResource.getViewsInSubIntervals().size());
+        assertEquals((long) sizeOfViewList, cramResource.getViewsInSubIntervals().size());
         assertEquals(4, (long) cramResource.getViewsInDefinedInterval());
 
     }

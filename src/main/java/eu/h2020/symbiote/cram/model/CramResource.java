@@ -90,7 +90,7 @@ public class CramResource extends Resource {
 
     public void scheduleUpdateInResourceAccessStats(Long noSubIntervals, Long subIntervalDuration) {
 
-        log.info("Update STARTED for resource with id = " + getId());
+        log.debug("Update STARTED for resource with id = " + getId());
         int sizeOfViewList = (viewsInSubIntervals == null) ? 0 : viewsInSubIntervals.size();
 
         SubIntervalViews nextSubIntervalView = createNextSubIntervalView(sizeOfViewList, subIntervalDuration);
@@ -101,7 +101,7 @@ public class CramResource extends Resource {
             viewsInSubIntervals.remove(0);
         }
 
-        log.info("Update ENDED for resource with id = " + getId());
+        log.debug("Update ENDED for resource with id = " + getId());
 
     }
 

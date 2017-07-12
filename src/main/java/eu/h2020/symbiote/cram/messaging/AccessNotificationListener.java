@@ -2,6 +2,7 @@ package eu.h2020.symbiote.cram.messaging;
 
 import eu.h2020.symbiote.cram.model.SuccessfulAttempts;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
+import eu.h2020.symbiote.cram.util.ScheduledUpdate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -10,13 +11,16 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SuccessfulAttemptsMessage;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by vasgl on 7/2/2017.
@@ -28,11 +32,24 @@ public class AccessNotificationListener {
 
     private static ResourceRepository resourceRepository;
 
+    private Boolean scheduledUpdateOngoing;
+    private List<SuccessfulAttemptsMessage> successfulAttemptsMessageList;
+
     @Autowired
     public AccessNotificationListener(ResourceRepository resourceRepository) {
+
         Assert.notNull(resourceRepository,"Resource repository can not be null!");
         this.resourceRepository = resourceRepository;
+
+        scheduledUpdateOngoing = new Boolean(false);
+        successfulAttemptsMessageList = new ArrayList<SuccessfulAttemptsMessage>();
     }
+
+    public Boolean getScheduledUpdateOngoing() { return this.scheduledUpdateOngoing; }
+    public void setScheduledUpdateOngoing(Boolean value) { this.scheduledUpdateOngoing = value; }
+
+    public List<SuccessfulAttemptsMessage> getSuccessfulAttemptsMessageList() { return this.successfulAttemptsMessageList; }
+    public void setSuccessfulAttemptsMessageList(List<SuccessfulAttemptsMessage> list) { this.successfulAttemptsMessageList = list; }
 
     /**
      * Spring AMQP Listener for Access Notification Requests. This component listens to Access Notification Requests
@@ -52,12 +69,16 @@ public class AccessNotificationListener {
 
         log.info("SuccessfulAttemptsMessage was received.");
 
-        for(Iterator iter = message.getSuccessfulAttempts().iterator(); iter.hasNext();) {
-            SuccessfulAttempts successfulAttempts = (SuccessfulAttempts) iter.next();
-            CramResource cramResource = resourceRepository.findOne(successfulAttempts.getSymbioteId());
-
-            if (cramResource != null)
-                cramResource.addViewsInSubIntervals(successfulAttempts.getTimestamps());
+        if (this.scheduledUpdateOngoing) {
+            log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");
+            successfulAttemptsMessageList.add(message);
+        } else if (successfulAttemptsMessageList.size() != 0){
+            log.info("Currently, the queued updates are process. The notifications will be queued there.");
+            successfulAttemptsMessageList.add(message);
+        } else {
+            log.info("Successfully updated");
+            ScheduledUpdate.updateSuccessfulAttemptsMessage(message);
         }
     }
+
 }

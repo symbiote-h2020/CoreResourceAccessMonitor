@@ -1,7 +1,9 @@
 package eu.h2020.symbiote.cram.integration;
 
+import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,12 +53,14 @@ import static org.junit.Assert.fail;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, 
-                properties = {"eureka.client.enabled=false", 
+@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT,
+                properties = {"eureka.client.enabled=false",
                               "spring.sleuth.enabled=false",
                               "symbiote.testaam" + ".url=http://localhost:8080",
                               "symbiote.coreaam.url=http://localhost:8080",
-                              "platform.aam.url=http://localhost:8080"}
+                              "platform.aam.url=http://localhost:8080",
+                              "subIntervalDuration=100000",
+                               "intervalDuration=310000"}
                               )
 @ContextConfiguration
 @Configuration
@@ -67,14 +71,14 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     private static final Logger log = LoggerFactory
                         .getLogger(CoreResourceAccessMonitorApplicationTests.class);
-    
-    @Autowired    
+
+    @Autowired
     private AsyncRabbitTemplate asyncRabbitTemplate;
 
     @Autowired
     private ResourceRepository resourceRepo;
-    
-    @Autowired    
+
+    @Autowired
     private PlatformRepository platformRepo;
 
     @Autowired
@@ -82,6 +86,12 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     @Autowired
     private NextPopularityUpdate nextPopularityUpdate;
+
+    @Autowired
+    private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
+
+    @Autowired
+    private AccessNotificationListener accessNotificationListener;
 
     @Autowired
     @Qualifier("noSubIntervals")
@@ -98,8 +108,8 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     private String resourceUrl;
 
-    // Execute the Setup method before the test.    
-    @Before    
+    // Execute the Setup method before the test.
+    @Before
     public void setUp() throws Exception {
 
         List<String> observedProperties = Arrays.asList("temp", "air");
@@ -130,12 +140,16 @@ public class CoreResourceAccessMonitorApplicationTests {
     }
 
     @After
-    public void clearRepos() {
+    public void clearSetup() {
         platformRepo.deleteAll();
         resourceRepo.deleteAll();
+        accessNotificationListener.setScheduledUpdateOngoing(false);
+        accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
+        resourceAccessStatsUpdater.getTimer().cancel();
+        resourceAccessStatsUpdater.getTimer().purge();
     }
 
-    @Test    
+    @Test
     public void testGetResourcesUrlsWithValidToken() throws Exception {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
@@ -158,7 +172,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
             query.setToken(platformTokenString);
 
-        } 
+        }
         catch(Exception e){
             log.info("Exception thrown");
         }
@@ -218,7 +232,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
             query.setToken(platformTokenString);
 
-        } 
+        }
         catch(Exception e){
             log.info("Exception thrown");
         }
@@ -278,7 +292,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
             query.setToken(platformTokenString);
 
-        } 
+        }
         catch(Exception e){
             log.info("Exception thrown");
         }
@@ -337,7 +351,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
             query.setToken(platformTokenString);
 
-        } 
+        }
         catch(Exception e){
             log.info("Exception thrown");
         }
@@ -396,7 +410,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
             query.setToken(platformTokenString);
 
-        } 
+        }
         catch(Exception e){
             log.info("Exception thrown");
         }
@@ -455,7 +469,7 @@ public class CoreResourceAccessMonitorApplicationTests {
 
             query.setToken(platformTokenString);
 
-        } 
+        }
         catch(Exception e){
             log.info("Exception thrown");
         }
@@ -497,7 +511,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<String>();
         final AtomicReference<Map<String, String>> resultRef = new AtomicReference<Map<String, String>>();
-            
+
         query.setToken("invalidToken");
         idList.add("sensor_id");
         idList.add("sensor_id2");
@@ -539,6 +553,8 @@ public class CoreResourceAccessMonitorApplicationTests {
         log.info("savedNextPopularityUpdate = " + savedNextPopularityUpdate.getNextUpdate().getTime());
         log.info("nextPopularityUpdate = " + nextPopularityUpdate.getNextUpdate().getTime());
         assertEquals(savedNextPopularityUpdate.getNextUpdate().getTime(), nextPopularityUpdate.getNextUpdate().getTime());
+        cramPersistentVariablesRepository.deleteAll();
+
     }
 
     @Test

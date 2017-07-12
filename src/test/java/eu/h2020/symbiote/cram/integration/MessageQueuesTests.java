@@ -2,6 +2,9 @@ package eu.h2020.symbiote.cram.integration;
 
 
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
+import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
+import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +50,10 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
 @SpringBootTest(properties = {"eureka.client.enabled=false",
-                              "spring.sleuth.enabled=false"})
+                              "spring.sleuth.enabled=false",
+                              "subIntervalDuration=100000",
+                               "intervalDuration=310000"})
 public class MessageQueuesTests {
-
 
     private static Logger log = LoggerFactory
                           .getLogger(MessageQueuesTests.class);
@@ -59,6 +63,15 @@ public class MessageQueuesTests {
 
     @Autowired
     private PlatformRepository platformRepo;
+
+    @Autowired
+    private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
+
+    @Autowired
+    private CramPersistentVariablesRepository cramPersistentVariablesRepository;
+
+    @Autowired
+    private AccessNotificationListener accessNotificationListener;
 
     @Autowired
     @Qualifier("subIntervalDuration")
@@ -96,9 +109,14 @@ public class MessageQueuesTests {
     }
 
     @After
-    public void clearRepos() {
+    public void clearSetup() {
         platformRepo.deleteAll();
         resourceRepo.deleteAll();
+        accessNotificationListener.setScheduledUpdateOngoing(false);
+        accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
+        cramPersistentVariablesRepository.deleteAll();
+        resourceAccessStatsUpdater.getTimer().cancel();
+        resourceAccessStatsUpdater.getTimer().purge();
     }
 
     @Test
@@ -110,7 +128,7 @@ public class MessageQueuesTests {
         sendPlatformMessage(platformExchangeName, platformCreatedRoutingKey, platform);
 
         // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(1);
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(platform.getName(), result.getName());
@@ -129,8 +147,8 @@ public class MessageQueuesTests {
 
         sendPlatformMessage(platformExchangeName, platformUpdatedRoutingKey, platform);
 
-        // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
+        // Sleep to make sure that the platform has been updated in the repo before querying
+        TimeUnit.SECONDS.sleep(1);
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(newName, result.getName());
@@ -146,8 +164,8 @@ public class MessageQueuesTests {
 
         sendPlatformMessage(platformExchangeName, platformRemovedRoutingKey, platform);
 
-        // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
+        // Sleep to make sure that the platform has been removed from the repo before querying
+        TimeUnit.SECONDS.sleep(1);
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
         assertEquals(null, result);
@@ -185,8 +203,8 @@ public class MessageQueuesTests {
 
         sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
 
-        // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
+        // Sleep to make sure that the resource has been saved to the repo before querying
+        TimeUnit.SECONDS.sleep(1);
 
         CramResource result = resourceRepo.findOne(resource1.getId());
         assertEquals(platformUrl + "rap/Actuators('" + resource1.getId()
@@ -254,8 +272,8 @@ public class MessageQueuesTests {
         sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, updMessage);
 
 
-        // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
+        // Sleep to make sure that the resource has been updated in the repo before querying
+        TimeUnit.SECONDS.sleep(1);
 
         CramResource result = resourceRepo.findOne(coreResource1.getId());
         assertEquals(resourceNewLabel, result.getLabels().get(2));
@@ -284,8 +302,8 @@ public class MessageQueuesTests {
 
         sendResourceDeleteMessage(resourceExchangeName, resourceRemovedRoutingKey, resources);
 
-        // Sleep to make sure that the platform has been saved to the repo before querying
-        TimeUnit.SECONDS.sleep(3);
+        // Sleep to make sure that the resource has been deleted from the repo before querying
+        TimeUnit.SECONDS.sleep(1);
 
         CramResource result = resourceRepo.findOne(resource1.getId());
         assertEquals(null, result);

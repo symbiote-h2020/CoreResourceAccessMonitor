@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.util;
 
+import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,14 +25,15 @@ public class ResourceAccessStatsUpdater {
     private static ResourceRepository resourceRepository;
     private NextPopularityUpdate nextPopularityUpdate;
     private Long subIntervalDuration;
-    private Long intervalDuration;
     private Long noSubIntervals;
+    private AccessNotificationListener accessNotificationListener;
     private Timer timer;
 
     @Autowired
     public ResourceAccessStatsUpdater(ResourceRepository resourceRepository, NextPopularityUpdate nextPopularityUpdate,
                                       @Qualifier("subIntervalDuration") Long subIntervalDuration,
-                                      @Qualifier("noSubIntervals") Long noSubIntervals) {
+                                      @Qualifier("noSubIntervals") Long noSubIntervals,
+                                      AccessNotificationListener accessNotificationListener) {
         Assert.notNull(resourceRepository,"Resource repository can not be null!");
         this.resourceRepository = resourceRepository;
 
@@ -44,8 +46,12 @@ public class ResourceAccessStatsUpdater {
         Assert.notNull(noSubIntervals,"noSubIntervals can not be null!");
         this.noSubIntervals = noSubIntervals;
 
+        Assert.notNull(accessNotificationListener,"accessNotificationListener can not be null!");
+        this.accessNotificationListener = accessNotificationListener;
+
         timer = new Timer();
-        ScheduledUpdate scheduledUpdate = new ScheduledUpdate(this.resourceRepository, this.noSubIntervals, this.subIntervalDuration);
+        ScheduledUpdate scheduledUpdate = new ScheduledUpdate(this.resourceRepository, this.noSubIntervals,
+                                                              this.subIntervalDuration, this.accessNotificationListener);
         timer.schedule(scheduledUpdate, nextPopularityUpdate.getNextUpdate(), this.subIntervalDuration);
     }
 
