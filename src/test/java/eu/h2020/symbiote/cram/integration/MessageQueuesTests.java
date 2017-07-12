@@ -52,7 +52,8 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest(properties = {"eureka.client.enabled=false",
                               "spring.sleuth.enabled=false",
                               "subIntervalDuration=100000",
-                               "intervalDuration=310000"})
+                              "intervalDuration=310000",
+                              "symbiote.core.cram.database=symbiote-core-cram-database-mqt"})
 public class MessageQueuesTests {
 
     private static Logger log = LoggerFactory

@@ -60,8 +60,8 @@ import static org.junit.Assert.fail;
                               "symbiote.coreaam.url=http://localhost:8080",
                               "platform.aam.url=http://localhost:8080",
                               "subIntervalDuration=100000",
-                               "intervalDuration=310000"}
-                              )
+                              "intervalDuration=310000",
+                              "symbiote.core.cram.database=symbiote-core-cram-database-cramat"})
 @ContextConfiguration
 @Configuration
 @ComponentScan

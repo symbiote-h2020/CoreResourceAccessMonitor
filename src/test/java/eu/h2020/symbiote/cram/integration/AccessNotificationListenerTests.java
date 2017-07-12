@@ -42,7 +42,8 @@ import static org.junit.Assert.assertEquals;
         "eureka.client.enabled=false",
         "spring.sleuth.enabled=false",
         "subIntervalDuration=100000",
-        "intervalDuration=310000"})
+        "intervalDuration=310000",
+        "symbiote.core.cram.database=symbiote-core-cram-database-anlt"})
 public class AccessNotificationListenerTests {
 
     private static Logger log = LoggerFactory

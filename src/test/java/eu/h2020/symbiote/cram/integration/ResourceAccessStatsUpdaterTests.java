@@ -45,7 +45,8 @@ import static org.junit.Assert.assertEquals;
         "symbiote.coreaam.url=http://localhost:8080",
         "platform.aam.url=http://localhost:8080",
         "subIntervalDuration=100",
-        "intervalDuration=200"})
+        "intervalDuration=200",
+        "symbiote.core.cram.database=symbiote-core-cram-database-rasut"})
 @ContextConfiguration
 @Configuration
 @ComponentScan
