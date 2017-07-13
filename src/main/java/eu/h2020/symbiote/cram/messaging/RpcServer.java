@@ -80,7 +80,7 @@ public class RpcServer {
    * @return A map containing urls of the resources specified in the ResourceUrlsRequest
    */
    @RabbitListener(bindings = @QueueBinding(
-           value = @Queue(value = "cramGetResourceUrls", durable = "${rabbit.exchange.cram.durable}",
+           value = @Queue(value = "${rabbit.queueName.cram.getResourceUrls}", durable = "${rabbit.exchange.cram.durable}",
                    autoDelete = "${rabbit.exchange.cram.autodelete}", exclusive = "false"),
            exchange = @Exchange(value = "${rabbit.exchange.cram.name}", ignoreDeclarationExceptions = "true",
                    durable = "${rabbit.exchange.cram.durable}", autoDelete  = "${rabbit.exchange.cram.autodelete}",

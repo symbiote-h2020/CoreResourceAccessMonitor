@@ -28,6 +28,7 @@ public class ResourceAccessStatsUpdater {
     private Long noSubIntervals;
     private AccessNotificationListener accessNotificationListener;
     private Timer timer;
+    private ScheduledUpdate scheduledUpdate;
 
     @Autowired
     public ResourceAccessStatsUpdater(ResourceRepository resourceRepository, NextPopularityUpdate nextPopularityUpdate,
@@ -49,11 +50,28 @@ public class ResourceAccessStatsUpdater {
         Assert.notNull(accessNotificationListener,"accessNotificationListener can not be null!");
         this.accessNotificationListener = accessNotificationListener;
 
+        this.timer = new Timer();
+        startTimer();
+    }
+
+    public Timer getTimer() { return this.timer; }
+    public ScheduledUpdate getScheduledUpdate() { return this.scheduledUpdate; }
+
+    public void restartTimer() {
+        cancelTimer();
+        startTimer();
+    }
+
+    public void startTimer() {
         timer = new Timer();
-        ScheduledUpdate scheduledUpdate = new ScheduledUpdate(this.resourceRepository, this.noSubIntervals,
-                                                              this.subIntervalDuration, this.accessNotificationListener);
+        scheduledUpdate = new ScheduledUpdate(this.resourceRepository, this.noSubIntervals,
+                this.subIntervalDuration, this.accessNotificationListener);
         timer.schedule(scheduledUpdate, nextPopularityUpdate.getNextUpdate(), this.subIntervalDuration);
     }
 
-    public Timer getTimer() { return timer; }
+    public void cancelTimer() {
+        timer.cancel();
+        timer.purge();
+        scheduledUpdate.cancel();
+    }
 }

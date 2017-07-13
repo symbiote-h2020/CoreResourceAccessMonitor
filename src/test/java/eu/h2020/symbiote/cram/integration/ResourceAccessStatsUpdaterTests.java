@@ -46,7 +46,11 @@ import static org.junit.Assert.assertEquals;
         "platform.aam.url=http://localhost:8080",
         "subIntervalDuration=100",
         "intervalDuration=200",
-        "symbiote.core.cram.database=symbiote-core-cram-database-rasut"})
+        "symbiote.core.cram.database=symbiote-core-cram-database-rasut",
+        "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-rasut",
+        "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-rasut",
+        "rabbit.queueName.cram.accessNotifications=accessNotifications-rasut",
+        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-rasut"})
 @ContextConfiguration
 @Configuration
 @ComponentScan

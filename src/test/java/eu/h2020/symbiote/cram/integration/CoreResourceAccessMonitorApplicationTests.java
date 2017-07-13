@@ -61,7 +61,11 @@ import static org.junit.Assert.fail;
                               "platform.aam.url=http://localhost:8080",
                               "subIntervalDuration=100000",
                               "intervalDuration=310000",
-                              "symbiote.core.cram.database=symbiote-core-cram-database-cramat"})
+                              "symbiote.core.cram.database=symbiote-core-cram-database-cramat",
+                              "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-cramat",
+                              "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-cramat",
+                              "rabbit.queueName.cram.accessNotifications=accessNotifications-cramat",
+                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-cramat"})
 @ContextConfiguration
 @Configuration
 @ComponentScan
@@ -112,6 +116,8 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Before
     public void setUp() throws Exception {
 
+        resourceAccessStatsUpdater.cancelTimer();;
+
         List<String> observedProperties = Arrays.asList("temp", "air");
         resourceUrl = platformAAMUrl + "/rap";
 
@@ -145,8 +151,6 @@ public class CoreResourceAccessMonitorApplicationTests {
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
-        resourceAccessStatsUpdater.getTimer().cancel();
-        resourceAccessStatsUpdater.getTimer().purge();
     }
 
     @Test

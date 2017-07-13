@@ -53,7 +53,11 @@ import static org.junit.Assert.assertEquals;
                               "spring.sleuth.enabled=false",
                               "subIntervalDuration=100000",
                               "intervalDuration=310000",
-                              "symbiote.core.cram.database=symbiote-core-cram-database-mqt"})
+                              "symbiote.core.cram.database=symbiote-core-cram-database-mqt",
+                              "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-mqt",
+                              "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-mqt",
+                              "rabbit.queueName.cram.accessNotifications=accessNotifications-mqt",
+                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt"})
 public class MessageQueuesTests {
 
     private static Logger log = LoggerFactory
@@ -105,7 +109,7 @@ public class MessageQueuesTests {
 
     @Before
     public void setup() throws IOException, TimeoutException {
-
+        resourceAccessStatsUpdater.cancelTimer();
         rand = new Random();
     }
 
@@ -115,9 +119,6 @@ public class MessageQueuesTests {
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
-        cramPersistentVariablesRepository.deleteAll();
-        resourceAccessStatsUpdater.getTimer().cancel();
-        resourceAccessStatsUpdater.getTimer().purge();
     }
 
     @Test

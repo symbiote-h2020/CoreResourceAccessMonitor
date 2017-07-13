@@ -58,7 +58,7 @@ public class AccessNotificationListener {
      * @param message Contains resource access updates coming from the Resource Access Proxy
      */
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "accessNotifications", durable = "${rabbit.exchange.cram.durable}",
+            value = @Queue(value = "${rabbit.queueName.cram.accessNotifications}", durable = "${rabbit.exchange.cram.durable}",
                     autoDelete = "${rabbit.exchange.cram.autodelete}", exclusive = "false"),
             exchange = @Exchange(value = "${rabbit.exchange.cram.name}", ignoreDeclarationExceptions = "true",
                     durable = "${rabbit.exchange.cram.durable}", autoDelete  = "${rabbit.exchange.cram.autodelete}",
