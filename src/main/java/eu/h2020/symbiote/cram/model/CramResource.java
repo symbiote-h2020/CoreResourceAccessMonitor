@@ -7,7 +7,6 @@ import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -90,7 +89,7 @@ public class CramResource extends Resource {
 
     public void scheduleUpdateInResourceAccessStats(Long noSubIntervals, Long subIntervalDuration) {
 
-        log.debug("Update STARTED for resource with id = " + getId());
+        log.debug("date STARTED for resource with id = " + getId());
         int sizeOfViewList = (viewsInSubIntervals == null) ? 0 : viewsInSubIntervals.size();
 
         SubIntervalViews nextSubIntervalView = createNextSubIntervalView(sizeOfViewList, subIntervalDuration);
@@ -101,13 +100,13 @@ public class CramResource extends Resource {
             viewsInSubIntervals.remove(0);
         }
 
-        log.debug("Update ENDED for resource with id = " + getId());
+        log.debug("date ENDED for resource with id = " + getId());
 
     }
 
     private SubIntervalViews createNextSubIntervalView(int sizeOfViewList, Long subIntervalDuration) {
-        Date newStartSubIntervalTime = new Date();
-        Date newEndSubIntervalTime = new Date();
+        Date newStartSubIntervalTime = new Date(new Date().getTime());
+        Date newEndSubIntervalTime = new Date(new Date().getTime());
         long newStartSubIntervalTime_ms = viewsInSubIntervals.get(sizeOfViewList - 1).getEndOfInterval().getTime();
         newStartSubIntervalTime.setTime(newStartSubIntervalTime_ms);
         newEndSubIntervalTime.setTime(newStartSubIntervalTime_ms + subIntervalDuration);

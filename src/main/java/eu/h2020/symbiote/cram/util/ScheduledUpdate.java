@@ -1,9 +1,9 @@
 package eu.h2020.symbiote.cram.util;
 
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
-import eu.h2020.symbiote.cram.model.SuccessfulAttempts;
-import eu.h2020.symbiote.cram.model.SuccessfulAttemptsMessage;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 
 import org.apache.commons.logging.Log;
@@ -43,7 +43,7 @@ public class ScheduledUpdate extends TimerTask{
     }
 
     public void run() {
-        log.debug("Periodic resource popularity update STARTED :" + new Date());
+        log.debug("Periodic resource popularity update STARTED :" + new Date(new Date().getTime()));
         accessNotificationListener.setScheduledUpdateOngoing(true);
 
         List<CramResource> listOfCramResources = resourceRepository.findAll();
@@ -59,31 +59,31 @@ public class ScheduledUpdate extends TimerTask{
         accessNotificationListener.setScheduledUpdateOngoing(false);
         log.debug("Periodic resource popularity update ENDED :" + new Date());
 
-        updateResourcesWithQueuedNotifications(accessNotificationListener.getSuccessfulAttemptsMessageList());
+        updateResourcesWithQueuedNotifications(accessNotificationListener.getNotificationMessageList());
     }
 
-    private void updateResourcesWithQueuedNotifications(List<SuccessfulAttemptsMessage> successfulAttemptsMessageList) {
+    private void updateResourcesWithQueuedNotifications(List<NotificationMessage> notificationMessageList) {
         log.debug("updateResourcesWithQueuedNotifications STARTED" );
 
-        for (SuccessfulAttemptsMessage successfulAttemptsMessage : successfulAttemptsMessageList) {
-            updateSuccessfulAttemptsMessage(successfulAttemptsMessage);
-            successfulAttemptsMessageList.remove(successfulAttemptsMessage);
+        for (NotificationMessage notificationMessage : notificationMessageList) {
+            updateSuccessfulAttemptsMessage(notificationMessage);
+            notificationMessageList.remove(notificationMessage);
         }
 
         log.debug("updateResourcesWithQueuedNotifications ENDED" );
     }
 
-    public static void updateSuccessfulAttemptsMessage(SuccessfulAttemptsMessage message) {
-        for(SuccessfulAttempts successfulAttempts : message.getSuccessfulAttempts()) {
-            CramResource cramResource = resourceRepository.findOne(successfulAttempts.getSymbioteId());
+    public static void updateSuccessfulAttemptsMessage(NotificationMessage message) {
+        for(SuccessfulAccessMessageInfo successfulAttempts : message.getSuccessfulAttempts()) {
+            CramResource cramResource = resourceRepository.findOne(successfulAttempts.getSymbIoTeId());
 
             if (cramResource != null){
-                log.debug("The views of the resource with id = " + successfulAttempts.getSymbioteId() + " were updated");
+                log.debug("The views of the resource with id = " + successfulAttempts.getSymbIoTeId() + " were updated");
                 cramResource.addViewsInSubIntervals(successfulAttempts.getTimestamps());
                 resourceRepository.save(cramResource);
             }
             else
-                log.debug("The resource with id = " + successfulAttempts.getSymbioteId() + " was not found");
+                log.debug("The resource with id = " + successfulAttempts.getSymbIoTeId() + " was not found");
         }
     }
 }

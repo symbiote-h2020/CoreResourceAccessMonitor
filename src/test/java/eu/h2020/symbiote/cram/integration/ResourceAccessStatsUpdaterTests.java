@@ -1,10 +1,10 @@
 package eu.h2020.symbiote.cram.integration;
 
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
-import eu.h2020.symbiote.cram.model.SuccessfulAttempts;
-import eu.h2020.symbiote.cram.model.SuccessfulAttemptsMessage;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 
@@ -104,7 +104,7 @@ public class ResourceAccessStatsUpdaterTests {
         resource1.setInterworkingServiceURL(platformAAMUrl);
         resource1.setResourceUrl(resourceUrl);
         resource1.setViewsInDefinedInterval(0);
-        ArrayList<SubIntervalViews> subIntervals = new ArrayList<SubIntervalViews>();
+        ArrayList<SubIntervalViews> subIntervals = new ArrayList<>();
         SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(2000), 0);
         subIntervals.add(subInterval1);
         resource1.setViewsInSubIntervals(subIntervals);
@@ -126,7 +126,7 @@ public class ResourceAccessStatsUpdaterTests {
         resourceRepo.deleteAll();
         cramPersistentVariablesRepository.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
-        accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
+        accessNotificationListener.getNotificationMessageList().clear();
     }
 
     @Test
@@ -168,8 +168,8 @@ public class ResourceAccessStatsUpdaterTests {
     @Test
     public void testTimerWithNonEmptySuccessfulAttemptsMessageList() throws Exception {
 
-        accessNotificationListener.getSuccessfulAttemptsMessageList().add(createSuccessfulAttemptsMessage());
-        assertEquals(1, accessNotificationListener.getSuccessfulAttemptsMessageList().size());
+        accessNotificationListener.getNotificationMessageList().add(createSuccessfulAttemptsMessage());
+        assertEquals(1, accessNotificationListener.getNotificationMessageList().size());
         TimeUnit.MILLISECONDS.sleep( (long) (1.2 * subIntervalDuration));
 
         CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
@@ -182,29 +182,29 @@ public class ResourceAccessStatsUpdaterTests {
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
 
-        assertEquals(0, accessNotificationListener.getSuccessfulAttemptsMessageList().size());
+        assertEquals(0, accessNotificationListener.getNotificationMessageList().size());
 
     }
 
-    private SuccessfulAttemptsMessage createSuccessfulAttemptsMessage() {
+    private NotificationMessage createSuccessfulAttemptsMessage() {
         ArrayList<Date> dateList = new ArrayList<Date>();
         dateList.add(new Date(1000));
         dateList.add(new Date(1400));
         dateList.add(new Date(20000));
 
-        SuccessfulAttempts successfulAttempts1 = new SuccessfulAttempts();
-        successfulAttempts1.setSymbioteId("sensor_id_rasut");
+        SuccessfulAccessMessageInfo successfulAttempts1 = new SuccessfulAccessMessageInfo();
+        successfulAttempts1.setSymbIoTeId("sensor_id_rasut");
         successfulAttempts1.setTimestamps(dateList);
 
-        SuccessfulAttempts successfulAttempts2 = new SuccessfulAttempts();
-        successfulAttempts2.setSymbioteId("sensor_id2_rasut");
+        SuccessfulAccessMessageInfo successfulAttempts2 = new SuccessfulAccessMessageInfo();
+        successfulAttempts2.setSymbIoTeId("sensor_id2_rasut");
         successfulAttempts2.setTimestamps(dateList);
 
-        SuccessfulAttemptsMessage successfulAttemptsMessage = new SuccessfulAttemptsMessage();
-        successfulAttemptsMessage.addSuccessfulAttempts(successfulAttempts1);
-        successfulAttemptsMessage.addSuccessfulAttempts(successfulAttempts2);
+        NotificationMessage notificationMessage = new NotificationMessage();
+        notificationMessage.addSuccessfulAttempt(successfulAttempts1);
+        notificationMessage.addSuccessfulAttempt(successfulAttempts2);
 
-        return successfulAttemptsMessage;
+        return notificationMessage;
     }
 }
 

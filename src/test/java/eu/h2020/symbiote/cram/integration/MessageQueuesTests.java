@@ -118,7 +118,7 @@ public class MessageQueuesTests {
         platformRepo.deleteAll();
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
-        accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
+        accessNotificationListener.getNotificationMessageList().clear();
     }
 
     @Test
@@ -133,6 +133,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(1);
 
         Platform result = platformRepo.findOne(platform.getPlatformId());
+        log.info("platform.id = " + platform.getPlatformId());
         assertEquals(platform.getName(), result.getName());
     }
 
@@ -194,7 +195,7 @@ public class MessageQueuesTests {
         resource5.setType(CoreResourceType.MOBILE_DEVICE);
 
         CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
-        ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
+        ArrayList<CoreResource> resources = new ArrayList<>();
         resources.add(resource1);
         resources.add(resource2);
         resources.add(resource3);
@@ -265,7 +266,7 @@ public class MessageQueuesTests {
         newCoreResource2.setType(CoreResourceType.ACTUATOR);
 
         CoreResourceRegisteredOrModifiedEventPayload updMessage = new CoreResourceRegisteredOrModifiedEventPayload();
-        ArrayList<CoreResource> resources = new ArrayList<CoreResource>();
+        ArrayList<CoreResource> resources = new ArrayList<>();
         resources.add(newCoreResource1);
         resources.add(newCoreResource2);
         updMessage.setPlatformId(platform.getPlatformId());
@@ -298,7 +299,7 @@ public class MessageQueuesTests {
         CoreResource coreResource2 = createResource(platform);
         CramResource resource2 = new CramResource(coreResource2);
         resourceRepo.save(resource2);
-        ArrayList<String> resources = new ArrayList<String>();
+        ArrayList<String> resources = new ArrayList<>();
         resources.add(resource1.getId());
         resources.add(resource2.getId());
 
@@ -315,7 +316,7 @@ public class MessageQueuesTests {
     }
 
 
-    Platform createPlatform() {
+    private Platform createPlatform() {
 
         Platform platform = new Platform ();
         String platformId = Integer.toString(rand.nextInt(50));
@@ -330,7 +331,7 @@ public class MessageQueuesTests {
         return platform;
     }
 
-    CoreResource createResource(Platform platform) {
+    private CoreResource createResource(Platform platform) {
 
         CoreResource resource = new CoreResource();
         String resourceId = Integer.toString(rand.nextInt(50000));
@@ -344,7 +345,7 @@ public class MessageQueuesTests {
         return resource;
     }
 
-    void sendPlatformMessage (String exchange, String key, Platform platform) throws Exception {
+    private void sendPlatformMessage (String exchange, String key, Platform platform) throws Exception {
 
         rabbitTemplate.convertAndSend(exchange, key, platform,
             m -> {
@@ -354,7 +355,7 @@ public class MessageQueuesTests {
                  });
     }
 
-    void sendResourceMessage (String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) throws Exception {
+    private void sendResourceMessage (String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) throws Exception {
 
         rabbitTemplate.convertAndSend(exchange, key, resources,
             m -> {
@@ -364,7 +365,7 @@ public class MessageQueuesTests {
                  });
     }
 
-    void sendResourceDeleteMessage (String exchange, String key, List<String> resources) throws Exception {
+    private void sendResourceDeleteMessage (String exchange, String key, List<String> resources) throws Exception {
 
         rabbitTemplate.convertAndSend(exchange, key, resources,
             m -> {

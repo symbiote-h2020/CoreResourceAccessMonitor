@@ -3,7 +3,7 @@ package eu.h2020.symbiote.cram.model;
 import java.util.Date;
 
 /**
- * Created by lebro_000 on 6/30/2017.
+ * Created by vasgl on 6/30/2017.
  */
 public class NextPopularityUpdate extends CramPersistentVariables {
 
@@ -15,11 +15,10 @@ public class NextPopularityUpdate extends CramPersistentVariables {
 
     public NextPopularityUpdate(Long subIntervalDuration) {
 
-        this.nextUpdate = new Date();
+        this.nextUpdate = new Date(new Date().getTime() + subIntervalDuration);
         this.variableName = "NEXT_POPULARITY_UPDATE";
-        nextUpdate.setTime(nextUpdate.getTime() + subIntervalDuration);
     }
 
     public Date getNextUpdate() { return this.nextUpdate; }
-    public void setNextUpdate(Date date) { this.nextUpdate = date; }
+    public void setNextUpdate(Date timestamp) { this.nextUpdate = timestamp; }
 }

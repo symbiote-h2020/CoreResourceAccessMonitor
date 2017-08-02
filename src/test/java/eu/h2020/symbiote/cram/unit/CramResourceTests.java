@@ -38,15 +38,15 @@ public class CramResourceTests {
     @Test
     public void addViewsInSubIntervalsTest() {
         CramResource cramResource = createCramResourceWithIntervals();
-        ArrayList<Date> dateList = new ArrayList<Date>();
-        dateList.add(new Date(1000));
-        dateList.add(new Date(1500));
-        dateList.add(new Date(2000));
-        dateList.add(new Date(3000));
-        dateList.add(new Date(3500));
-        dateList.add(new Date(4000));
+        ArrayList<Date> DateList = new ArrayList<Date>();
+        DateList.add(new Date(1000));
+        DateList.add(new Date(1500));
+        DateList.add(new Date(2000));
+        DateList.add(new Date(3000));
+        DateList.add(new Date(3500));
+        DateList.add(new Date(4000));
 
-        cramResource.addViewsInSubIntervals(dateList);
+        cramResource.addViewsInSubIntervals(DateList);
 
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(1, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
@@ -54,7 +54,7 @@ public class CramResourceTests {
     }
 
     @Test
-    public void scheduleUpdateInResourceAccessStatsTest() {
+    public void scheduleUpDateInResourceAccessStatsTest() {
         CramResource cramResource = new CramResource();
         cramResource.setViewsInDefinedInterval(0);
         Long subIntervalDuration_ms = new Long(1000);
@@ -76,15 +76,15 @@ public class CramResourceTests {
         cramResource.scheduleUpdateInResourceAccessStats(sizeOfViewList, subIntervalDuration_ms);
         assertEquals(3, cramResource.getViewsInSubIntervals().size());
 
-        ArrayList<Date> dateList = new ArrayList<Date>();
-        dateList.add(new Date(1000));
-        dateList.add(new Date(1500));
-        dateList.add(new Date(2000));
-        dateList.add(new Date(3000));
-        dateList.add(new Date(3500));
-        dateList.add(new Date(4000));
+        ArrayList<Date> DateList = new ArrayList<Date>();
+        DateList.add(new Date(1000));
+        DateList.add(new Date(1500));
+        DateList.add(new Date(2000));
+        DateList.add(new Date(3000));
+        DateList.add(new Date(3500));
+        DateList.add(new Date(4000));
 
-        cramResource.addViewsInSubIntervals(dateList);
+        cramResource.addViewsInSubIntervals(DateList);
 
         // New subInterval is added
         cramResource.scheduleUpdateInResourceAccessStats(sizeOfViewList, subIntervalDuration_ms);

@@ -150,7 +150,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         platformRepo.deleteAll();
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
-        accessNotificationListener.getSuccessfulAttemptsMessageList().clear();
+        accessNotificationListener.getNotificationMessageList().clear();
     }
 
     @Test

@@ -20,7 +20,6 @@ import eu.h2020.symbiote.core.model.internal.CoreResource;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import eu.h2020.symbiote.cram.exception.EntityNotFoundException;
@@ -50,7 +49,8 @@ public class RepositoryManager {
     private static Long subIntervalDuration;
 
     @Autowired
-    public RepositoryManager(PlatformRepository platformRepository, ResourceRepository resourceRepository, @Qualifier("subIntervalDuration") Long subIntervalDuration){
+    public RepositoryManager(PlatformRepository platformRepository, ResourceRepository resourceRepository,
+                             @Qualifier("subIntervalDuration") Long subIntervalDuration){
     	
     	Assert.notNull(platformRepository,"Platform repository can not be null!");
     	this.platformRepository = platformRepository;
@@ -60,7 +60,6 @@ public class RepositoryManager {
 
         Assert.notNull(subIntervalDuration,"SubIntervalDuration repository can not be null!");
         this.subIntervalDuration = subIntervalDuration;
-
     }
 
    /**
@@ -78,11 +77,10 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
            key = "${rabbit.routingKey.platform.created}")
    )
-    public static void savePlatform(Platform platform) {
-
-        platformRepository.save(platform);
-        log.info("CRAM saved platform with id: " + platform.getPlatformId());
-    }
+   public static void savePlatform(Platform platform) {
+       platformRepository.save(platform);
+       log.info("CRAM saved platform with id: " + platform.getPlatformId());
+   }
 
    /**
    * Spring AMQP Listener for platform update requests. This method is invoked when a platform
@@ -99,21 +97,21 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
            key = "${rabbit.routingKey.platform.modified}")
    )
-    public static void updatePlatform(Platform platform) {
-        try {    
+   public static void updatePlatform(Platform platform) {
+       try {
             if (platformRepository.findOne(platform.getPlatformId()) == null) 
                 throw new EntityNotFoundException ("Received an update message for "
                     + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
             platformRepository.save(platform);
             log.info("CRAM updated platform with id: " + platform.getPlatformId());
-        } catch (EntityNotFoundException e) {
-          log.info(e);
-          throw e;
-        } catch (Exception e) {
-          log.info(e);
-        }
-    }
+       } catch (EntityNotFoundException e) {
+           log.info(e);
+           throw e;
+       } catch (Exception e) {
+           log.info(e);
+       }
+   }
 
    /**
    * Spring AMQP Listener for platform unregistration requests. This method is invoked when a platform
@@ -130,23 +128,22 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
            key = "${rabbit.routingKey.platform.removed}")
    )
-    public static void deletePlatform(Platform platform) {
-
-        try {
+   public static void deletePlatform(Platform platform) {
+       try {
             if (platformRepository.findOne(platform.getPlatformId()) == null) 
 
-                throw new EntityNotFoundException ("Received an uregistration message for "
+                throw new EntityNotFoundException ("Received an unregistration message for "
                     + "platform with id = " + platform.getPlatformId() + " which does not exist.");
 
             platformRepository.delete(platform.getPlatformId());
             log.info("CRAM deleted platform with id: " + platform.getPlatformId());
-        } catch (EntityNotFoundException e) {
-          log.info(e);
-          throw e;
-        } catch (Exception e) {
-          log.info(e);
-        }
-    }
+       } catch (EntityNotFoundException e) {
+           log.info(e);
+           throw e;
+       } catch (Exception e) {
+           log.info(e);
+       }
+   }
 
    /**
    * Spring AMQP Listener for resource registration requests. This method is invoked when a resource
@@ -163,43 +160,37 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
            key = "${rabbit.routingKey.resource.created}")
    )
-    public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message) 
-      throws AmqpRejectAndDontRequeueException {
-        
-        try {
+   public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message)
+           throws AmqpRejectAndDontRequeueException {
+       try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
                 throw new EntityNotFoundException ("Received a registration message"
                     + ", but the platform " + "with id = " + message.getPlatformId() 
                     + " which owns the resources does not exist.");
 
-            for (Iterator<CoreResource> it = message.getResources().iterator(); it.hasNext();) {
-                CoreResource coreResource = (CoreResource) it.next();
+            for (CoreResource coreResource : message.getResources()) {
                 CramResource cramResource = new CramResource(coreResource);
 
                 cramResource.setResourceUrl(generateResourceURL(cramResource));
                 cramResource.setViewsInDefinedInterval(0);
 
-                ArrayList<SubIntervalViews>  subIntervalList = new ArrayList<SubIntervalViews>();
-                Date startDate = new Date();
-                Date endDate = new Date();
-                // Todo: Change endDate
-                endDate.setTime(startDate.getTime() + subIntervalDuration);
+                ArrayList<SubIntervalViews>  subIntervalList = new ArrayList<>();
+                Date startDate = new Date(new Date().getTime());
+                Date endDate = new Date(startDate.getTime() + subIntervalDuration);
+                // Todo: Change endTimestamp
                 subIntervalList.add(new SubIntervalViews(startDate, endDate, 0));
                 cramResource.setViewsInSubIntervals(subIntervalList);
 
                 resourceRepository.save(cramResource);
                 log.info("CRAM saved resource with id: " + cramResource.getId());
             }
-        } catch (EntityNotFoundException e) {
-          log.info(e);
-          throw e;
-        } catch (AmqpRejectAndDontRequeueException e) {
-          log.info(e);
-          throw e;
-        } catch (Exception e) {
-          log.info(e);
-        }
-    }
+       } catch (EntityNotFoundException e) {
+           log.info(e);
+           throw e;
+       } catch (Exception e) {
+           log.info(e);
+       }
+   }
 
    /**
    * Spring AMQP Listener for resource update requests. This method is invoked when a resource
@@ -209,22 +200,21 @@ public class RepositoryManager {
    * @param message The message of the newly updated resources
    */
    @RabbitListener(bindings = @QueueBinding(
-           value = @Queue(value = "resourceUpdated", durable = "${rabbit.exchange.resource.durable}",
+           value = @Queue(value = "resourceUpdatedd", durable = "${rabbit.exchange.resource.durable}",
                    autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
            exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
                    durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
            key = "${rabbit.routingKey.resource.modified}")
    )
-    public static void updateResource(CoreResourceRegisteredOrModifiedEventPayload message) 
-      throws AmqpRejectAndDontRequeueException {
-        try {
+   public static void updatedResource(CoreResourceRegisteredOrModifiedEventPayload message)
+           throws AmqpRejectAndDontRequeueException {
+       try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
                 throw new EntityNotFoundException ("Received an update message"
                     + ", but the platform " + "with id = " + message.getPlatformId() 
                     + " which owns the resources does not exist.");
-            for (Iterator<CoreResource> it = message.getResources().iterator(); it.hasNext();) {
-                CoreResource coreResource = (CoreResource) it.next();
+            for (CoreResource coreResource : message.getResources()) {
                 if (resourceRepository.findOne(coreResource.getId()) == null)
                     throw new EntityNotFoundException ("Received an update message for "
                         + "resource with id = " + coreResource.getId() + ", but the resource does "
@@ -234,16 +224,13 @@ public class RepositoryManager {
                 resourceRepository.save(cramResource);
                 log.info("CRAM updated resource with id: " + cramResource.getId());
             }
-        } catch (EntityNotFoundException e) {
-          log.info(e);
-          throw e;
-        } catch (AmqpRejectAndDontRequeueException e) {
-          log.info(e);
-          throw e;
-        } catch (Exception e) {
-          log.info(e);
-        }
-    }
+       } catch (EntityNotFoundException e) {
+           log.info(e);
+           throw e;
+       } catch (Exception e) {
+           log.info(e);
+       }
+   }
 
    /**
    * Spring AMQP Listener for resource unregistration requests. This method is invoked when a resource
@@ -260,11 +247,9 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
            key = "${rabbit.routingKey.resource.removed}")
    )
-    public static void deleteResource(List<String> resourcesIds) {
-        
-        try {
-            for (Iterator<String> it = resourcesIds.iterator(); it.hasNext();) {
-                String id = (String) it.next();
+   public static void deleteResource(List<String> resourcesIds) {
+       try {
+            for (String id : resourcesIds) {
 
                 if (resourceRepository.findOne(id) == null) 
                     throw new EntityNotFoundException ("Received an unregistration message for " 
@@ -274,15 +259,15 @@ public class RepositoryManager {
                 resourceRepository.delete(id);
                 log.info("CRAM deleted resource with id: " + id);
             }
-        } catch (EntityNotFoundException e) {
-          log.info(e);
-          throw e;
-        } catch (Exception e) {
-          log.info(e);
-        } 
-    }
+       } catch (EntityNotFoundException e) {
+           log.info(e);
+           throw e;
+       } catch (Exception e) {
+           log.info(e);
+       }
+   }
 
-    private static String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
+   private static String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
         CoreResourceType type = resource.getType();
         if (type == null)
           throw new AmqpRejectAndDontRequeueException("The resource type was not set");
@@ -305,6 +290,5 @@ public class RepositoryManager {
                return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
                       +  "/rap/Sensors('" + resource.getId() + "')"; 
         }
-
-    }
+   }
 }
