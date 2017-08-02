@@ -77,7 +77,7 @@ dependencies {
     */
     compile('com.github.symbiote-h2020:SymbIoTeLibraries:develop-SNAPSHOT') { changing = true }
     // compile('com.github.symbiote-h2020:SymbIoTeLibraries:0.2.0')
-    // compile('com.github.symbiote-h2020:SymbIoTeLibraries:f594eefcbadbd79c12b49d46e91eb876fd57c1f1')
+    // compile('com.github.symbiote-h2020:SymbIoTeLibraries:3bc56f18aec632f6ffa7a4b0675d638811c0c85a')
 
     // Spring
     compile('org.springframework.cloud:spring-cloud-starter-config')

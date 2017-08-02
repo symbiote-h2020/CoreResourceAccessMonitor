@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.integration;
 
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.FailedAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
@@ -116,7 +117,7 @@ public class AccessNotificationListenerTests {
     }
 
     @Test
-    public void noUpdateTest() throws Exception{
+    public void noUpdateTest() throws Exception {
 
         NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
@@ -138,7 +139,7 @@ public class AccessNotificationListenerTests {
     }
 
     @Test
-    public void whileUpdatingTest() throws Exception{
+    public void whileUpdatingTest() throws Exception {
 
         NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
         accessNotificationListener.setScheduledUpdateOngoing(true);
@@ -162,7 +163,7 @@ public class AccessNotificationListenerTests {
     }
 
     @Test
-    public void nonEmptyNotificationMessageList() throws Exception{
+    public void nonEmptyNotificationMessageList() throws Exception {
 
         NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
         accessNotificationListener.getNotificationMessageList().add(new NotificationMessage());
@@ -187,8 +188,49 @@ public class AccessNotificationListenerTests {
                 .getSuccessfulAttempts().size());
     }
 
+    @Test
+    public void checkFailedNotificationsAreDiscarded() throws Exception {
+        NotificationMessage notificationMessage = new NotificationMessage();
+        accessNotificationListener.setScheduledUpdateOngoing(true);
+
+        ArrayList<Date> dateList = new ArrayList<>();
+        dateList.add(new Date(1000));
+        dateList.add(new Date(1500));
+        dateList.add(new Date(20000));
+
+        FailedAccessMessageInfo failedAccessMessageInfo = new FailedAccessMessageInfo("sensor_id", dateList,
+                "code", "message", "appId", "issuer", "validationStatus",
+                "requestParams");
+        notificationMessage.addFailedAttempt(failedAccessMessageInfo);
+
+        // Send Notification Message as created with just a FailedAccessMessageInfo
+        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        notificationMessage.setSuccessfulAttempts(null);
+        notificationMessage.setSuccessfulPushes(null);
+        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        notificationMessage.setSuccessfulAttempts(new ArrayList<>());
+        notificationMessage.setSuccessfulPushes(null);
+        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        notificationMessage.setSuccessfulAttempts(null);
+        notificationMessage.setSuccessfulPushes(new ArrayList<>());
+        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        notificationMessage.setSuccessfulAttempts(new ArrayList<>());
+        notificationMessage.setSuccessfulPushes(new ArrayList<>());
+        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        // Sleep to make sure that message has been received
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        // Check that the messages were not queued
+        assertEquals(0, accessNotificationListener.getNotificationMessageList().size());
+    }
+
     private NotificationMessage createSuccessfulAttemptsMessage() {
-        ArrayList<Date> dateList = new ArrayList<Date>();
+        ArrayList<Date> dateList = new ArrayList<>();
         dateList.add(new Date(1000));
         dateList.add(new Date(1500));
         dateList.add(new Date(20000));
@@ -201,9 +243,14 @@ public class AccessNotificationListenerTests {
         successfulAttempts2.setSymbIoTeId("sensor_id2");
         successfulAttempts2.setTimestamps(dateList);
 
+        FailedAccessMessageInfo failedAccessMessageInfo = new FailedAccessMessageInfo("sensor_id", dateList,
+                "code", "message", "appId", "issuer", "validationStatus",
+                "requestParams");
+
         NotificationMessage notificationMessage = new NotificationMessage();
         notificationMessage.addSuccessfulAttempt(successfulAttempts1);
         notificationMessage.addSuccessfulAttempt(successfulAttempts2);
+        notificationMessage.addFailedAttempt(failedAccessMessageInfo);
 
         return notificationMessage;
     }

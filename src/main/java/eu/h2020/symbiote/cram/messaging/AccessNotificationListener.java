@@ -62,18 +62,29 @@ public class AccessNotificationListener {
     )
     public void listenAndUpdateResourceViewStats(NotificationMessage message) {
 
-        log.info("SuccessfulAttemptsMessage was received.");
+        log.info("NotificationMessage was received.");
 
-        if (this.scheduledUpdateOngoing) {
-            log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");
-            notificationMessageList.add(message);
-        } else if (notificationMessageList.size() != 0){
-            log.info("Currently, the queued updates are process. The notifications will be queued there.");
-            notificationMessageList.add(message);
-        } else {
-            log.info("Successfully updated");
-            ScheduledUpdate.updateSuccessfulAttemptsMessage(message);
+        try {
+            if ((message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
+                    (message.getSuccessfulPushes() != null && message.getSuccessfulPushes().size() != 0)) {
+                log.info("message.getSuccessfulAttempts() = " + message.getSuccessfulAttempts());
+                log.info("message.getSuccessfulAttempts().size() = " + message.getSuccessfulAttempts().size());
+                log.info("message.getSuccessfulPushes() = " + message.getSuccessfulPushes());
+                log.info("message.getSuccessfulPushes().size() = " + message.getSuccessfulPushes().size());
+
+                if (this.scheduledUpdateOngoing) {
+                    log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");
+                    notificationMessageList.add(message);
+                } else if (notificationMessageList.size() != 0){
+                    log.info("Currently, the queued updates are process. The notifications will be queued there.");
+                    notificationMessageList.add(message);
+                } else {
+                    log.info("Successfully updated");
+                    ScheduledUpdate.updateSuccessfulAttemptsMessage(message);
+                }
+            }
+        } catch (Exception e) {
+            log.info(e.toString());
         }
     }
-
 }
