@@ -1,7 +1,9 @@
 package eu.h2020.symbiote.cram.util;
 
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.MessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulPushesMessageInfo;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
@@ -74,16 +76,24 @@ public class ScheduledUpdate extends TimerTask{
     }
 
     public static void updateSuccessfulAttemptsMessage(NotificationMessage message) {
-        for(SuccessfulAccessMessageInfo successfulAttempts : message.getSuccessfulAttempts()) {
-            CramResource cramResource = resourceRepository.findOne(successfulAttempts.getSymbIoTeId());
+        for(SuccessfulAccessMessageInfo successfulAttempts : message.getSuccessfulAttempts())
+            updateResourceViews(successfulAttempts, "SuccessfulAccessMessageInfo");
 
-            if (cramResource != null){
-                log.debug("The views of the resource with id = " + successfulAttempts.getSymbIoTeId() + " were updated");
-                cramResource.addViewsInSubIntervals(successfulAttempts.getTimestamps());
-                resourceRepository.save(cramResource);
-            }
-            else
-                log.debug("The resource with id = " + successfulAttempts.getSymbIoTeId() + " was not found");
+        for(SuccessfulPushesMessageInfo successfulPushes : message.getSuccessfulPushes())
+            updateResourceViews(successfulPushes, "SuccessfulPushesMessageInfo");
+    }
+
+    private static void updateResourceViews(MessageInfo messageInfo, String typeOfMessage) {
+        log.debug("Updating views due to " + typeOfMessage);
+
+        CramResource cramResource = resourceRepository.findOne(messageInfo.getSymbIoTeId());
+
+        if (cramResource != null){
+            log.debug("The views of the resource with id = " + messageInfo.getSymbIoTeId() + " were updated");
+            cramResource.addViewsInSubIntervals(messageInfo.getTimestamps());
+            resourceRepository.save(cramResource);
         }
+        else
+            log.debug("The resource with id = " + messageInfo.getSymbIoTeId() + " was not found");
     }
 }

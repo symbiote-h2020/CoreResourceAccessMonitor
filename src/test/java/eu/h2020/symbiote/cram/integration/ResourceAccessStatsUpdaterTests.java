@@ -2,6 +2,7 @@ package eu.h2020.symbiote.cram.integration;
 
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
+import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulPushesMessageInfo;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
@@ -174,12 +175,12 @@ public class ResourceAccessStatsUpdaterTests {
 
         CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
-        assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
+        assertEquals(4, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
 
         cramResource = resourceRepo.findOne("sensor_id2_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
-        assertEquals(2, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
+        assertEquals(4, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
 
         assertEquals(0, accessNotificationListener.getNotificationMessageList().size());
@@ -200,9 +201,19 @@ public class ResourceAccessStatsUpdaterTests {
         successfulAttempts2.setSymbIoTeId("sensor_id2_rasut");
         successfulAttempts2.setTimestamps(dateList);
 
+        SuccessfulPushesMessageInfo successfulPushes1 = new SuccessfulPushesMessageInfo();
+        successfulPushes1.setSymbIoTeId("sensor_id_rasut");
+        successfulPushes1.setTimestamps(dateList);
+
+        SuccessfulPushesMessageInfo successfulPushes2 = new SuccessfulPushesMessageInfo();
+        successfulPushes2.setSymbIoTeId("sensor_id2_rasut");
+        successfulPushes2.setTimestamps(dateList);
+
         NotificationMessage notificationMessage = new NotificationMessage();
         notificationMessage.addSuccessfulAttempt(successfulAttempts1);
         notificationMessage.addSuccessfulAttempt(successfulAttempts2);
+        notificationMessage.addSuccessfulPush(successfulPushes1);
+        notificationMessage.addSuccessfulPush(successfulPushes2);
 
         return notificationMessage;
     }
