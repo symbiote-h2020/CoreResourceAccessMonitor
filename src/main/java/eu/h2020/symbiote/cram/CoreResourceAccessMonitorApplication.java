@@ -59,6 +59,15 @@ public class CoreResourceAccessMonitorApplication {
     @Value("${intervalDuration}")
     private String intervalDurationString;
 
+    @Value("${informSearchInterval}")
+    private String informSearchInterval;
+
+    @Value("${rabbit.exchange.search.name}")
+    private String searchExchange;
+
+    @Value("${rabbit.routingKey.search.popularityUpdates}")
+    private String searchPopularityUpdatesRoutingKey;
+
 	public static void main(String[] args) {
 		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
     }
@@ -71,6 +80,16 @@ public class CoreResourceAccessMonitorApplication {
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean(name="searchExchange")
+    public String searchExchange() {
+        return searchExchange;
+    }
+
+    @Bean(name="searchPopularityUpdatesRoutingKey")
+    public String searchPopularityUpdatesRoutingKey() {
+        return searchPopularityUpdatesRoutingKey;
     }
 
     @Bean(name="subIntervalDuration")
@@ -89,6 +108,11 @@ public class CoreResourceAccessMonitorApplication {
         log.info("intervalDuration is :" + intervalDuration + " ms");
         log.info("SubIntervalDuration is :" + subIntervalDuration + " ms");
 	    return intervalDuration/subIntervalDuration;
+    }
+
+    @Bean(name="informSearchInterval")
+    public Long informSearchInterval() {
+        return Long.parseLong(informSearchInterval);
     }
 
     @Bean

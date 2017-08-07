@@ -44,11 +44,13 @@ import static org.junit.Assert.assertEquals;
         "spring.sleuth.enabled=false",
         "subIntervalDuration=100000",
         "intervalDuration=310000",
+        "informSearchInterval=1000000",
         "symbiote.core.cram.database=symbiote-core-cram-database-anlt",
         "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-anlt",
         "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-anlt",
         "rabbit.queueName.cram.accessNotifications=accessNotifications-anlt",
-        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-anlt"})
+        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-anlt",
+        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-anlt"})
 public class AccessNotificationListenerTests {
 
     private static Logger log = LoggerFactory

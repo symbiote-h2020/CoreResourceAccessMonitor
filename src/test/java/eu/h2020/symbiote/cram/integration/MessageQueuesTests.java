@@ -53,11 +53,13 @@ import static org.junit.Assert.assertEquals;
                               "spring.sleuth.enabled=false",
                               "subIntervalDuration=100000",
                               "intervalDuration=310000",
+                              "informSearchInterval=1000000",
                               "symbiote.core.cram.database=symbiote-core-cram-database-mqt",
                               "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-mqt",
                               "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-mqt",
                               "rabbit.queueName.cram.accessNotifications=accessNotifications-mqt",
-                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt"})
+                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt",
+                              "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-mqt"})
 public class MessageQueuesTests {
 
     private static Logger log = LoggerFactory

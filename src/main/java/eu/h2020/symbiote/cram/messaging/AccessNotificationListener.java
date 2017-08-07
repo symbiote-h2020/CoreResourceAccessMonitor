@@ -67,10 +67,6 @@ public class AccessNotificationListener {
         try {
             if ((message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
                     (message.getSuccessfulPushes() != null && message.getSuccessfulPushes().size() != 0)) {
-                log.info("message.getSuccessfulAttempts() = " + message.getSuccessfulAttempts());
-                log.info("message.getSuccessfulAttempts().size() = " + message.getSuccessfulAttempts().size());
-                log.info("message.getSuccessfulPushes() = " + message.getSuccessfulPushes());
-                log.info("message.getSuccessfulPushes().size() = " + message.getSuccessfulPushes().size());
 
                 if (this.scheduledUpdateOngoing) {
                     log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");

@@ -61,11 +61,13 @@ import static org.junit.Assert.fail;
                               "platform.aam.url=http://localhost:8080",
                               "subIntervalDuration=100000",
                               "intervalDuration=310000",
+                              "informSearchInterval=1000000",
                               "symbiote.core.cram.database=symbiote-core-cram-database-cramat",
                               "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-cramat",
                               "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-cramat",
                               "rabbit.queueName.cram.accessNotifications=accessNotifications-cramat",
-                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-cramat"})
+                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-cramat",
+                              "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-cramat"})
 @ContextConfiguration
 @Configuration
 @ComponentScan

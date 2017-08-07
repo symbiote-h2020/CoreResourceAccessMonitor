@@ -20,7 +20,7 @@ import java.util.TimerTask;
 /**
  * Created by vasgl on 7/2/2017.
  */
-public class ScheduledUpdate extends TimerTask{
+public class ScheduledUpdate extends TimerTask {
 
     private static Log log = LogFactory.getLog(ScheduledUpdate.class);
 
@@ -28,9 +28,11 @@ public class ScheduledUpdate extends TimerTask{
     private Long noSubIntervals;
     private Long subIntervalDuration;
     private AccessNotificationListener accessNotificationListener;
+    private static PopularityUpdater popularityUpdater;
 
     public ScheduledUpdate(ResourceRepository resourceRepository, Long noSubIntervals,
-                           Long subIntervalDuration, AccessNotificationListener accessNotificationListener) {
+                           Long subIntervalDuration, AccessNotificationListener accessNotificationListener,
+                           PopularityUpdater popularityUpdater) {
         Assert.notNull(resourceRepository,"Resource repository can not be null!");
         this.resourceRepository = resourceRepository;
 
@@ -42,6 +44,9 @@ public class ScheduledUpdate extends TimerTask{
 
         Assert.notNull(accessNotificationListener,"accessNotificationListener can not be null!");
         this.accessNotificationListener = accessNotificationListener;
+
+        Assert.notNull(popularityUpdater,"popularityUpdater can not be null!");
+        this.popularityUpdater = popularityUpdater;
     }
 
     public void run() {
@@ -91,6 +96,7 @@ public class ScheduledUpdate extends TimerTask{
         if (cramResource != null){
             log.debug("The views of the resource with id = " + messageInfo.getSymbIoTeId() + " were updated");
             cramResource.addViewsInSubIntervals(messageInfo.getTimestamps());
+            popularityUpdater.addToPopularityUpdatesMap(cramResource);
             resourceRepository.save(cramResource);
         }
         else
