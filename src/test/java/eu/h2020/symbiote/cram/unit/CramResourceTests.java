@@ -1,8 +1,5 @@
 package eu.h2020.symbiote.cram.unit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,8 +18,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CramResourceTests {
-    private static Logger log = LoggerFactory
-            .getLogger(CramResourceTests.class);
+
 
     @Test
     public void addSingleViewInSubIntervalsTest() {
@@ -38,7 +34,7 @@ public class CramResourceTests {
     @Test
     public void addViewsInSubIntervalsTest() {
         CramResource cramResource = createCramResourceWithIntervals();
-        ArrayList<Date> DateList = new ArrayList<Date>();
+        ArrayList<Date> DateList = new ArrayList<>();
         DateList.add(new Date(1000));
         DateList.add(new Date(1500));
         DateList.add(new Date(2000));
@@ -62,7 +58,7 @@ public class CramResourceTests {
 
         // Create a single subInterval
         SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(1000 + subIntervalDuration_ms), 0);
-        ArrayList<SubIntervalViews> subIntervals = new ArrayList<SubIntervalViews>();
+        ArrayList<SubIntervalViews> subIntervals = new ArrayList<>();
         subIntervals.add(subInterval1);
         cramResource.setViewsInSubIntervals(subIntervals);
 
@@ -100,7 +96,7 @@ public class CramResourceTests {
         assertEquals((long) sizeOfViewList, cramResource.getViewsInSubIntervals().size());
         assertEquals(3, (long) cramResource.getViewsInDefinedInterval());
 
-        ArrayList<Date> newDateList = new ArrayList<Date>();
+        ArrayList<Date> newDateList = new ArrayList<>();
         newDateList.add(new Date(1000));
         newDateList.add(new Date(4000));
         newDateList.add(new Date(5000));
@@ -109,6 +105,18 @@ public class CramResourceTests {
         assertEquals(1, (long) cramResource.getViewsInSubIntervals().get(2).getViews());
         assertEquals((long) sizeOfViewList, cramResource.getViewsInSubIntervals().size());
         assertEquals(4, (long) cramResource.getViewsInDefinedInterval());
+
+    }
+
+    @Test
+    public void pastNotificationTest() {
+        CramResource cramResource = createCramResourceWithIntervals();
+
+        assertEquals(false, cramResource.addSingleViewInSubIntervals(new Date(500)));
+
+        assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
+        assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
+        assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(2).getViews());
 
     }
 
