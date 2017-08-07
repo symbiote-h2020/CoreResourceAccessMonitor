@@ -55,8 +55,6 @@ public class ScheduledUpdate extends TimerTask {
 
         List<CramResource> listOfCramResources = resourceRepository.findAll();
 
-        // Todo: store notifications coming from RAP when this operation happens
-
         for(Iterator iter = listOfCramResources.iterator(); iter.hasNext();){
             CramResource cramResource = (CramResource) iter.next();
             cramResource.scheduleUpdateInResourceAccessStats(noSubIntervals, subIntervalDuration);

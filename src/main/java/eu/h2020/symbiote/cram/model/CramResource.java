@@ -73,10 +73,13 @@ public class CramResource extends Resource {
     public boolean addSingleViewInSubIntervals(Date timestamp) {
         boolean foundSubInterval = false;
 
-        for (Iterator subIntervalsIter = viewsInSubIntervals.iterator(); subIntervalsIter.hasNext();) {
-            SubIntervalViews subIntervalViews = (SubIntervalViews) subIntervalsIter.next();
+        // Todo: what happens when an old notification comes
+        // Todo: what happens when a future notification comes
+        // Todo: what happens if a notification comes, which neither old nor future and there is no subinterval
 
-            if ( subIntervalViews.belongsToSubInterval(timestamp) ) {
+        for (SubIntervalViews subIntervalViews : viewsInSubIntervals) {
+
+            if (subIntervalViews.belongsToSubInterval(timestamp)) {
                 foundSubInterval = true;
                 subIntervalViews.increaseViews(1);
                 viewsInDefinedInterval++;
