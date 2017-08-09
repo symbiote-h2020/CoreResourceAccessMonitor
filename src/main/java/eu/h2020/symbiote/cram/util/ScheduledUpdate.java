@@ -25,9 +25,9 @@ public class ScheduledUpdate extends TimerTask {
     private static Log log = LogFactory.getLog(ScheduledUpdate.class);
 
     private static ResourceRepository resourceRepository;
-    private Long noSubIntervals;
-    private Long subIntervalDuration;
-    private AccessNotificationListener accessNotificationListener;
+    private static Long noSubIntervals;
+    private static Long subIntervalDuration;
+    private static AccessNotificationListener accessNotificationListener;
     private static PopularityUpdater popularityUpdater;
 
     public ScheduledUpdate(ResourceRepository resourceRepository, Long noSubIntervals,
@@ -93,7 +93,7 @@ public class ScheduledUpdate extends TimerTask {
 
         if (cramResource != null){
             log.debug("The views of the resource with id = " + messageInfo.getSymbIoTeId() + " were updated");
-            cramResource.addViewsInSubIntervals(messageInfo.getTimestamps());
+            cramResource.addViewsInSubIntervals(messageInfo.getTimestamps(), noSubIntervals, subIntervalDuration);
             popularityUpdater.addToPopularityUpdatesMap(cramResource);
             resourceRepository.save(cramResource);
         }

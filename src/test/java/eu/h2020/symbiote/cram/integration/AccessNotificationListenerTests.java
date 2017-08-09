@@ -98,7 +98,7 @@ public class AccessNotificationListenerTests {
         resource1.setId("sensor_id");
         resource1.setViewsInDefinedInterval(0);
         ArrayList<SubIntervalViews> subIntervals = new ArrayList<>();
-        SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(20000), 0);
+        SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(2000), 0);
         subIntervals.add(subInterval1);
         resource1.setViewsInSubIntervals(subIntervals);
 
@@ -128,12 +128,14 @@ public class AccessNotificationListenerTests {
         TimeUnit.MILLISECONDS.sleep(500);
 
         CramResource result = resourceRepo.findOne("sensor_id");
+        assertEquals(2, result.getViewsInSubIntervals().size());
         assertEquals(2, (int) result.getViewsInSubIntervals().get(0).getViews());
-        assertEquals(2, (int) result.getViewsInDefinedInterval());
+        assertEquals(3, (int) result.getViewsInDefinedInterval());
 
         result = resourceRepo.findOne("sensor_id2");
+        assertEquals(2, result.getViewsInSubIntervals().size());
         assertEquals(2, (int) result.getViewsInSubIntervals().get(0).getViews());
-        assertEquals(2, (int) result.getViewsInDefinedInterval());
+        assertEquals(3, (int) result.getViewsInDefinedInterval());
 
         // Check that the resources were not queued
         assertEquals(0, accessNotificationListener.getNotificationMessageList().size());
@@ -233,9 +235,12 @@ public class AccessNotificationListenerTests {
 
     private NotificationMessage createSuccessfulAttemptsMessage() {
         ArrayList<Date> dateList = new ArrayList<>();
+        Date futureDate = new Date();
+        futureDate.setTime(futureDate.getTime() + 1000000);
         dateList.add(new Date(1000));
         dateList.add(new Date(1500));
         dateList.add(new Date(20000));
+        dateList.add(futureDate);
 
         SuccessfulAccessMessageInfo successfulAttempts1 = new SuccessfulAccessMessageInfo();
         successfulAttempts1.setSymbIoTeId("sensor_id");

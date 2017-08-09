@@ -155,12 +155,12 @@ public class PopularityUpdaterTests {
                 .get(0).getPopularityUpdateList()) {
 
             if (popularityUpdate.getId().equals("sensor_id_put")) {
-                assertEquals(4, (long)popularityUpdate.getViewsInDefinedInterval());
+                assertEquals(6, (long)popularityUpdate.getViewsInDefinedInterval());
                 continue;
             }
 
             if (popularityUpdate.getId().equals("sensor_id2_put")) {
-                assertEquals(4, (long) popularityUpdate.getViewsInDefinedInterval());
+                assertEquals(6, (long) popularityUpdate.getViewsInDefinedInterval());
                 continue;
             }
 
@@ -191,7 +191,7 @@ public class PopularityUpdaterTests {
                 .get(1).getPopularityUpdateList()) {
 
             if (popularityUpdate.getId().equals("sensor_id2_put")) {
-                assertEquals(8, (long) popularityUpdate.getViewsInDefinedInterval());
+                assertEquals(12, (long) popularityUpdate.getViewsInDefinedInterval());
                 continue;
             }
 
@@ -202,10 +202,13 @@ public class PopularityUpdaterTests {
     }
 
     private NotificationMessage createSuccessfulAttemptsMessage() {
-        ArrayList<Date> dateList = new ArrayList<Date>();
+        ArrayList<Date> dateList = new ArrayList<>();
+        Date futureDate = new Date();
+        futureDate.setTime(futureDate.getTime() + 1000000);
         dateList.add(new Date(1000));
-        dateList.add(new Date(1400));
+        dateList.add(new Date(1500));
         dateList.add(new Date(20000));
+        dateList.add(futureDate);
 
         SuccessfulAccessMessageInfo successfulAttempts1 = new SuccessfulAccessMessageInfo();
         successfulAttempts1.setSymbIoTeId("sensor_id_put");

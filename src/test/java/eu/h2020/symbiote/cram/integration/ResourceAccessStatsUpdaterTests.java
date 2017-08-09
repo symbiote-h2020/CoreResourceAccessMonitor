@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by vasgl on 7/3/2017.
@@ -157,6 +158,7 @@ public class ResourceAccessStatsUpdaterTests {
         CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals(1, (long) cramResource.getViewsInSubIntervals().size());
 
+        accessNotificationListener.setScheduledUpdateOngoing(false);
         assertEquals(false, accessNotificationListener.getScheduledUpdateOngoing());
 
         // Sleep for one update
@@ -179,21 +181,25 @@ public class ResourceAccessStatsUpdaterTests {
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
         assertEquals(4, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
+        assertNotEquals(6, (int) cramResource.getViewsInDefinedInterval());
 
         cramResource = resourceRepo.findOne("sensor_id2_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
         assertEquals(4, (long) cramResource.getViewsInSubIntervals().get(0).getViews());
         assertEquals(0, (long) cramResource.getViewsInSubIntervals().get(1).getViews());
+        assertNotEquals(6, (int) cramResource.getViewsInDefinedInterval());
 
         assertEquals(0, accessNotificationListener.getNotificationMessageList().size());
 
     }
 
     private NotificationMessage createSuccessfulAttemptsMessage() {
-        ArrayList<Date> dateList = new ArrayList<Date>();
+        ArrayList<Date> dateList = new ArrayList<>();
+        Date futureDate = new Date();
+        futureDate.setTime(futureDate.getTime() + 1000000);
         dateList.add(new Date(1000));
-        dateList.add(new Date(1400));
-        dateList.add(new Date(20000));
+        dateList.add(new Date(1500));
+        dateList.add(futureDate);
 
         SuccessfulAccessMessageInfo successfulAttempts1 = new SuccessfulAccessMessageInfo();
         successfulAttempts1.setSymbIoTeId("sensor_id_rasut");

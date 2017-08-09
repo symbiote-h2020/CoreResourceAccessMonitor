@@ -7,8 +7,8 @@ import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -62,20 +62,21 @@ public class CramResource extends Resource {
     public List<SubIntervalViews> getViewsInSubIntervals() { return viewsInSubIntervals; }
     public void setViewsInSubIntervals(List<SubIntervalViews> listOfViews) { this.viewsInSubIntervals = listOfViews; }
 
-    public void addViewsInSubIntervals(List<Date> timestamps) {
+    public void addViewsInSubIntervals(List<Date> timestamps, Long noSubIntervals, Long subIntervalDuration) {
 
-        for (Iterator timestampsIter = timestamps.iterator(); timestampsIter.hasNext();) {
-            Date timestamp = (Date) timestampsIter.next();
-            addSingleViewInSubIntervals(timestamp);
+        for (Date timestamp : timestamps) {
+            if (!addSingleViewInSubIntervals(timestamp)) {
+                if (timestamp.before(new Date())) {
+                    SubIntervalViews newSubIntervalViews = new SubIntervalViews(new Date(timestamp.getTime()),
+                            new Date(timestamp.getTime() + subIntervalDuration), 1);
+                    addNextSubIntervalView(newSubIntervalViews, noSubIntervals);
+                }
+            }
         }
     }
 
     public boolean addSingleViewInSubIntervals(Date timestamp) {
         boolean foundSubInterval = false;
-
-        // Todo: what happens when an old notification comes
-        // Todo: what happens when a future notification comes
-        // Todo: what happens if a notification comes, which neither old nor future and there is no subinterval
 
         for (SubIntervalViews subIntervalViews : viewsInSubIntervals) {
 
@@ -93,26 +94,41 @@ public class CramResource extends Resource {
     public void scheduleUpdateInResourceAccessStats(Long noSubIntervals, Long subIntervalDuration) {
 
         log.debug("Update STARTED for resource with id = " + getId());
-        int sizeOfViewList = (viewsInSubIntervals == null) ? 0 : viewsInSubIntervals.size();
+        int currentSizeOfViewList = 0;
 
-        SubIntervalViews nextSubIntervalView = createNextSubIntervalView(sizeOfViewList, subIntervalDuration);
-        viewsInSubIntervals.add(nextSubIntervalView);
-
-        if(sizeOfViewList == noSubIntervals) {
-            viewsInDefinedInterval -= viewsInSubIntervals.get(0).getViews();
-            viewsInSubIntervals.remove(0);
+        if (viewsInSubIntervals == null) {
+            viewsInSubIntervals = new ArrayList<>();
+        } else {
+            currentSizeOfViewList = viewsInSubIntervals.size();
         }
+
+        SubIntervalViews nextSubIntervalViews = createNextSubIntervalView(currentSizeOfViewList, subIntervalDuration);
+        addNextSubIntervalView(nextSubIntervalViews, noSubIntervals);
 
         log.debug("Update ENDED for resource with id = " + getId());
 
     }
 
+    public void addNextSubIntervalView(SubIntervalViews nextSubIntervalViews, Long noSubIntervals) {
+        viewsInSubIntervals.add(nextSubIntervalViews);
+        viewsInDefinedInterval += nextSubIntervalViews.getViews();
+
+        while (viewsInSubIntervals.size() > noSubIntervals) {
+            viewsInDefinedInterval -= viewsInSubIntervals.get(0).getViews();
+            viewsInSubIntervals.remove(0);
+        }
+    }
+
     private SubIntervalViews createNextSubIntervalView(int sizeOfViewList, Long subIntervalDuration) {
-        Date newStartSubIntervalTime = new Date(new Date().getTime());
-        Date newEndSubIntervalTime = new Date(new Date().getTime());
+        Date newStartSubIntervalTime = new Date();
+        Date newEndSubIntervalTime = new Date();
         long newStartSubIntervalTime_ms = viewsInSubIntervals.get(sizeOfViewList - 1).getEndOfInterval().getTime();
         newStartSubIntervalTime.setTime(newStartSubIntervalTime_ms);
         newEndSubIntervalTime.setTime(newStartSubIntervalTime_ms + subIntervalDuration);
+        return createNextSubIntervalView(newStartSubIntervalTime, newEndSubIntervalTime);
+    }
+
+    private SubIntervalViews createNextSubIntervalView(Date newStartSubIntervalTime, Date newEndSubIntervalTime) {
         return new SubIntervalViews(newStartSubIntervalTime, newEndSubIntervalTime, 0);
     }
 }
