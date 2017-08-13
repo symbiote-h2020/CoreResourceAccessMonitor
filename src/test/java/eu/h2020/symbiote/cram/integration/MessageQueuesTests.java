@@ -51,9 +51,9 @@ import static org.junit.Assert.assertEquals;
 @ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
 @SpringBootTest(properties = {"eureka.client.enabled=false",
                               "spring.sleuth.enabled=false",
-                              "subIntervalDuration=100000",
-                              "intervalDuration=310000",
-                              "informSearchInterval=1000000",
+                              "subIntervalDuration=P0-0-0T1:0:0",
+                              "intervalDuration=P0-0-0T2:0:0",
+                              "informSearchInterval=P0-0-0T1:0:0",
                               "symbiote.core.cram.database=symbiote-core-cram-database-mqt",
                               "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-mqt",
                               "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-mqt",

@@ -1,26 +1,24 @@
 package eu.h2020.symbiote.cram;
 
-import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
-import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.context.annotation.Bean;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
-
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 
 import java.util.Date;
@@ -30,6 +28,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.h2020.symbiote.security.InternalSecurityHandler;
 import eu.h2020.symbiote.security.session.AAM;
+
+import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
+import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import eu.h2020.symbiote.util.IntervalFormatter;
 
 @EnableDiscoveryClient
 @EnableRabbit
@@ -60,7 +62,7 @@ public class CoreResourceAccessMonitorApplication {
     private String intervalDurationString;
 
     @Value("${informSearchInterval}")
-    private String informSearchInterval;
+    private String informSearchIntervalString;
 
     @Value("${rabbit.exchange.search.name}")
     private String searchExchange;
@@ -94,12 +96,14 @@ public class CoreResourceAccessMonitorApplication {
 
     @Bean(name="subIntervalDuration")
     public Long subIntervalDuration() {
-	    return Long.parseLong(subIntervalDurationString);
+        IntervalFormatter subInterval = new IntervalFormatter(subIntervalDurationString);
+	    return subInterval.getMillis();
     }
 
     @Bean(name="intervalDuration")
     public Long intervalDuration() {
-        return Long.parseLong(intervalDurationString);
+        IntervalFormatter interval = new IntervalFormatter(intervalDurationString);
+        return interval.getMillis();
     }
 
     @Bean(name="noSubIntervals")
@@ -112,7 +116,8 @@ public class CoreResourceAccessMonitorApplication {
 
     @Bean(name="informSearchInterval")
     public Long informSearchInterval() {
-        return Long.parseLong(informSearchInterval);
+        IntervalFormatter informSearchInterval = new IntervalFormatter(informSearchIntervalString);
+        return informSearchInterval.getMillis();
     }
 
     @Bean

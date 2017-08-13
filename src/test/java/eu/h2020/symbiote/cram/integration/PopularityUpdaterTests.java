@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -48,9 +47,9 @@ import static org.junit.Assert.fail;
         "symbiote.testaam" + ".url=http://localhost:8080",
         "symbiote.coreaam.url=http://localhost:8080",
         "platform.aam.url=http://localhost:8080",
-        "subIntervalDuration=100000",
-        "intervalDuration=2000000",
-        "informSearchInterval=1000",
+        "subIntervalDuration=P0-0-0T1:0:0",
+        "intervalDuration=P0-0-0T2:0:0",
+        "informSearchInterval=P0-0-0T0:0:1",
         "symbiote.core.cram.database=symbiote-core-cram-database-put",
         "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-put",
         "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-put",
