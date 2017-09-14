@@ -115,12 +115,12 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         CramResource resource1 = new CramResource();
         resource1.setId("sensor_id");
-        resource1.setInterworkingServiceURL(platformAAMUrl);
+        resource1.setResourceUrl(platformAAMUrl);
 
 
         CramResource resource2 = new CramResource();
         resource2.setId("sensor_id2");
-        resource2.setInterworkingServiceURL(platformAAMUrl);
+        resource2.setResourceUrl(platformAAMUrl);
 
         platformRepo.save(platform);
         resourceRepo.save(resource1);

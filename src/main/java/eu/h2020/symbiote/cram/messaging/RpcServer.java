@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.messaging;
 
+import eu.h2020.symbiote.cram.model.CramResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class RpcServer {
    * the specified resources.
    *
    * 
-   * @param resourceIdList The list of resource ids
+   * @param resourceUrlsRequest The list of resource ids
    * @return A map containing urls of the resources specified in the ResourceUrlsRequest
    */
     public HashMap<String, String> getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) throws Exception {
@@ -175,13 +176,13 @@ public class RpcServer {
         HashMap<String, String> ids = new HashMap<String, String>();
 
         while (iterator.hasNext()) {
-            Resource resource = resourceRepository.findOne(iterator.next());
+            CramResource resource = resourceRepository.findOne(iterator.next());
             if (resource != null){
 
-                String url = resource.getInterworkingServiceURL();
-                ids.put(resource.getId(), url.toString());
+                String url = resource.getResourceUrl();
+                ids.put(resource.getId(), url);
                 log.info("AccessController found a resource with id " + resource.getId() +
-                     " and url " + url.toString());
+                     " and url " + url);
             }
             else {
                 log.info("The resource with specified id was not found");
