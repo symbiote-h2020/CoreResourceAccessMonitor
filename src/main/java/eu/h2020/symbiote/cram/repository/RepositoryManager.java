@@ -79,7 +79,7 @@ public class RepositoryManager {
    )
    public static void savePlatform(Platform platform) {
        platformRepository.save(platform);
-       log.info("CRAM saved platform with id: " + platform.getPlatformId());
+       log.info("CRAM saved platform with id: " + platform.getId());
    }
 
    /**
@@ -99,12 +99,12 @@ public class RepositoryManager {
    )
    public static void updatePlatform(Platform platform) {
        try {
-            if (platformRepository.findOne(platform.getPlatformId()) == null) 
+            if (platformRepository.findOne(platform.getId()) == null)
                 throw new EntityNotFoundException ("Received an update message for "
-                    + "platform with id = " + platform.getPlatformId() + " which does not exist.");
+                    + "platform with id = " + platform.getId() + " which does not exist.");
 
             platformRepository.save(platform);
-            log.info("CRAM updated platform with id: " + platform.getPlatformId());
+            log.info("CRAM updated platform with id: " + platform.getId());
        } catch (EntityNotFoundException e) {
            log.info(e);
            throw e;
@@ -130,13 +130,13 @@ public class RepositoryManager {
    )
    public static void deletePlatform(Platform platform) {
        try {
-            if (platformRepository.findOne(platform.getPlatformId()) == null) 
+            if (platformRepository.findOne(platform.getId()) == null)
 
                 throw new EntityNotFoundException ("Received an unregistration message for "
-                    + "platform with id = " + platform.getPlatformId() + " which does not exist.");
+                    + "platform with id = " + platform.getId() + " which does not exist.");
 
-            platformRepository.delete(platform.getPlatformId());
-            log.info("CRAM deleted platform with id: " + platform.getPlatformId());
+            platformRepository.delete(platform.getId());
+            log.info("CRAM deleted platform with id: " + platform.getId());
        } catch (EntityNotFoundException e) {
            log.info(e);
            throw e;
@@ -279,13 +279,9 @@ public class RepositoryManager {
             case SERVICE:
                return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
                       +  "/rap/Services('" + resource.getId() + "')";
-            case ACTUATING_SERVICE:
-               return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
-                      +  "/rap/ActuatingServices('" + resource.getId() + "')";
             case STATIONARY_SENSOR:
             case MOBILE_SENSOR:
-            case MOBILE_DEVICE:
-            case STATIONARY_DEVICE:
+            case DEVICE:
             default:
                return resource.getInterworkingServiceURL().replaceAll("(/rap)?/*$", "")
                       +  "/rap/Sensors('" + resource.getId() + "')"; 
