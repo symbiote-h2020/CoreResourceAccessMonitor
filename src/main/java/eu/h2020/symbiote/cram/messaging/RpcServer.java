@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.messaging;
 
+import eu.h2020.symbiote.cram.model.CramResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,9 +154,9 @@ public class RpcServer {
                 if (resource != null){
 
                     String url = resource.getResourceUrl();
-                    ids.put(resource.getId(), url.toString());
+                    ids.put(resource.getId(), url);
                     log.info("AccessController found a resource with id " + resource.getId() +
-                         " and url " + url.toString());
+                         " and url " + url);
                 }
                 else {
                     log.info("The resource with specified id was not found");
@@ -164,13 +165,13 @@ public class RpcServer {
         }
         catch (TokenValidationException e) { 
             log.error("Token could not be verified");
-            HashMap<String, String> error = new HashMap<String, String>();
+            HashMap<String, String> error = new HashMap<>();
             error.put("error", e.toString());
             return error;
         }
         catch (SecurityHandlerException e) {
             log.info(e); 
-            HashMap<String, String> error = new HashMap<String, String>();
+            HashMap<String, String> error = new HashMap<>();
             error.put("error", e.toString());
             return error;
         }
