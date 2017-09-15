@@ -22,12 +22,8 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 
 import java.util.Date;
-import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import eu.h2020.symbiote.security.InternalSecurityHandler;
-import eu.h2020.symbiote.security.session.AAM;
 
 import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
@@ -199,14 +195,4 @@ public class CoreResourceAccessMonitorApplication {
         return asyncRabbitTemplate;
     }
 
-    @Bean HashMap<String, AAM> aamsMap() {
-        return new HashMap<String, AAM>();
-    }
-
-    @Bean
-    public InternalSecurityHandler securityHandler(HashMap<String, AAM> aamsMap) {
-
-        InternalSecurityHandler securityHandler = new InternalSecurityHandler(symbioteCoreInterfaceAddress, rabbitMQHostIP, rabbitMQUsername, rabbitMQPassword);
-        return securityHandler;
-    }
 }
