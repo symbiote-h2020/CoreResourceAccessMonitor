@@ -1,4 +1,4 @@
-package eu.h2020.symbiote.cram.model;
+package eu.h2020.symbiote.cram.model.authorization;
 
 /**
  * Created by mateuszl on 12.06.2017.

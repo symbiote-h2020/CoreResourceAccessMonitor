@@ -1,10 +1,18 @@
 package eu.h2020.symbiote.cram.integration;
 
 
+import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
+import eu.h2020.symbiote.core.model.internal.CoreResource;
+import eu.h2020.symbiote.core.model.InterworkingService;
+import eu.h2020.symbiote.core.model.Platform;
+import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
-import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.cram.repository.PlatformRepository;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +24,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,15 +40,6 @@ import java.util.Random;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-
-import eu.h2020.symbiote.cram.repository.ResourceRepository;
-import eu.h2020.symbiote.cram.repository.PlatformRepository;
-import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
-import eu.h2020.symbiote.core.model.internal.CoreResource;
-import eu.h2020.symbiote.core.model.internal.CoreResourceType;
-
-import eu.h2020.symbiote.cram.model.CramResource;
 
 import static org.junit.Assert.assertEquals;
 
@@ -60,6 +61,7 @@ import static org.junit.Assert.assertEquals;
                               "rabbit.queueName.cram.accessNotifications=accessNotifications-mqt",
                               "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt",
                               "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-mqt"})
+@ActiveProfiles("test")
 public class MessageQueuesTests {
 
     private static Logger log = LoggerFactory
@@ -73,9 +75,6 @@ public class MessageQueuesTests {
 
     @Autowired
     private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
-
-    @Autowired
-    private CramPersistentVariablesRepository cramPersistentVariablesRepository;
 
     @Autowired
     private AccessNotificationListener accessNotificationListener;
@@ -134,9 +133,9 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        Platform result = platformRepo.findOne(platform.getPlatformId());
-        log.info("platform.id = " + platform.getPlatformId());
-        assertEquals(platform.getName(), result.getName());
+        Platform result = platformRepo.findOne(platform.getId());
+        log.info("platform.id = " + platform.getId());
+        assertEquals(platform.getLabels().get(0), result.getLabels().get(0));
     }
 
     @Test
@@ -148,15 +147,17 @@ public class MessageQueuesTests {
         platformRepo.save(platform);
 
         String newName = "platform" + rand.nextInt(50000);
-        platform.setName(newName);
+        List<String> newLabels = new ArrayList<>();
+        newLabels.add(newName);
+        platform.setLabels(newLabels);
 
         sendPlatformMessage(platformExchangeName, platformUpdatedRoutingKey, platform);
 
         // Sleep to make sure that the platform has been updated in the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        Platform result = platformRepo.findOne(platform.getPlatformId());
-        assertEquals(newName, result.getName());
+        Platform result = platformRepo.findOne(platform.getId());
+        assertEquals(newName, result.getLabels().get(0));
     }
 
     @Test
@@ -172,7 +173,7 @@ public class MessageQueuesTests {
         // Sleep to make sure that the platform has been removed from the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        Platform result = platformRepo.findOne(platform.getPlatformId());
+        Platform result = platformRepo.findOne(platform.getId());
         assertEquals(null, result);
 
 	}
@@ -184,17 +185,17 @@ public class MessageQueuesTests {
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        CoreResource resource1 = createResource(platform);
-        CoreResource resource2 = createResource(platform);
-        CoreResource resource3 = createResource(platform);
-        CoreResource resource4 = createResource(platform);
-        CoreResource resource5 = createResource(platform);
+        CoreResource resource1 = createResource();
+        CoreResource resource2 = createResource();
+        CoreResource resource3 = createResource();
+        CoreResource resource4 = createResource();
+        CoreResource resource5 = createResource();
 
         resource1.setType(CoreResourceType.ACTUATOR);
         resource2.setType(CoreResourceType.SERVICE);
-        resource3.setType(CoreResourceType.ACTUATING_SERVICE);
+        resource3.setType(CoreResourceType.DEVICE);
         resource4.setType(CoreResourceType.STATIONARY_SENSOR);
-        resource5.setType(CoreResourceType.MOBILE_DEVICE);
+        resource5.setType(CoreResourceType.MOBILE_SENSOR);
 
         CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         ArrayList<CoreResource> resources = new ArrayList<>();
@@ -203,7 +204,7 @@ public class MessageQueuesTests {
         resources.add(resource3);
         resources.add(resource4);
         resources.add(resource5);
-        regMessage.setPlatformId(platform.getPlatformId());
+        regMessage.setPlatformId(platform.getId());
         regMessage.setResources(resources);
 
         sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
@@ -224,7 +225,7 @@ public class MessageQueuesTests {
                + "')", result.getResourceUrl());
 
         result = resourceRepo.findOne(resource3.getId());
-        assertEquals(platformUrl + "rap/ActuatingServices('" + resource3.getId()
+        assertEquals(platformUrl + "rap/Sensors('" + resource3.getId()
                + "')", result.getResourceUrl());
 
 
@@ -245,10 +246,10 @@ public class MessageQueuesTests {
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        CoreResource coreResource1 = createResource(platform);
+        CoreResource coreResource1 = createResource();
         CramResource cramResource1 = new CramResource(coreResource1);
         resourceRepo.save(cramResource1);
-        CoreResource coreResource2 = createResource(platform);
+        CoreResource coreResource2 = createResource();
         CramResource cramResource2 = new CramResource(coreResource2);
         resourceRepo.save(cramResource2);
 
@@ -271,7 +272,7 @@ public class MessageQueuesTests {
         ArrayList<CoreResource> resources = new ArrayList<>();
         resources.add(newCoreResource1);
         resources.add(newCoreResource2);
-        updMessage.setPlatformId(platform.getPlatformId());
+        updMessage.setPlatformId(platform.getId());
         updMessage.setResources(resources);
 
         sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, updMessage);
@@ -295,10 +296,10 @@ public class MessageQueuesTests {
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        CoreResource coreResource1 = createResource(platform);
+        CoreResource coreResource1 = createResource();
         CramResource resource1 = new CramResource(coreResource1);
         resourceRepo.save(resource1);
-        CoreResource coreResource2 = createResource(platform);
+        CoreResource coreResource2 = createResource();
         CramResource resource2 = new CramResource(coreResource2);
         resourceRepo.save(resource2);
         ArrayList<String> resources = new ArrayList<>();
@@ -323,17 +324,26 @@ public class MessageQueuesTests {
         Platform platform = new Platform ();
         String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
+        List<String> labels = new ArrayList<>();
+        List<String> comments = new ArrayList<>();
+        List<InterworkingService> interworkingServices = new ArrayList<>();
+        InterworkingService interworkingService = new InterworkingService();
 
-        platform.setPlatformId(platformId);
-        platform.setName(name);
-        platform.setDescription("platform_description");
-        platform.setUrl(platformUrl);
-        platform.setInformationModelId("platform_info_model");
+        labels.add(name);
+        comments.add("platform_description");
+        interworkingService.setUrl(platformUrl);
+        interworkingService.setInformationModelId("platform_description");
+        interworkingServices.add(interworkingService);
+
+        platform.setId(platformId);
+        platform.setLabels(labels);
+        platform.setComments(comments);
+        platform.setInterworkingServices(interworkingServices);
 
         return platform;
     }
 
-    private CoreResource createResource(Platform platform) {
+    private CoreResource createResource() {
 
         CoreResource resource = new CoreResource();
         String resourceId = Integer.toString(rand.nextInt(50000));
@@ -344,6 +354,7 @@ public class MessageQueuesTests {
         resource.setLabels(labels);
         resource.setComments(comments);
         resource.setInterworkingServiceURL(platformUrl);
+
         return resource;
     }
 

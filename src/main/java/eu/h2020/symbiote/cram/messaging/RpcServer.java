@@ -1,8 +1,10 @@
 package eu.h2020.symbiote.cram.messaging;
 
+import eu.h2020.symbiote.core.internal.ResourceUrlsResponse;
 import eu.h2020.symbiote.cram.managers.AuthorizationManager;
-import eu.h2020.symbiote.cram.model.AuthorizationResult;
+import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,6 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 
 import java.util.List;
-import java.util.Iterator;
 import java.util.HashMap;
 
 import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
@@ -70,7 +71,7 @@ public class RpcServer {
                     internal = "${rabbit.exchange.cram.internal}", type = "${rabbit.exchange.cram.type}"),
             key = "${rabbit.routingKey.cram.getResourceUrls}")
     )
-    public HashMap<String, String> getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) {
+    public ResourceUrlsResponse getResourcesUrls(ResourceUrlsRequest resourceUrlsRequest) {
 
         List<String> resourceList = resourceUrlsRequest.getBody();
         HashMap<String, String> ids = new HashMap<>();
@@ -78,26 +79,42 @@ public class RpcServer {
         log.info("CRAM received a request for the following ids: " + resourceList);
 
         AuthorizationResult authorizationResult = authorizationManager.checkAccess(resourceUrlsRequest.getSecurityRequest());
+        ServiceResponseResult serviceResponseResult = authorizationManager.generateServiceResponse();
 
         if (authorizationResult.isValidated()) {
             log.debug("The Security Request is validated!");
 
-            for (String resourceId : resourceList) {
-                CramResource resource = resourceRepository.findOne(resourceId);
-                if (resource != null) {
+            if (serviceResponseResult.isCreatedSuccessfully()) {
+                log.debug("The Service Response was created successfully");
+                for (String resourceId : resourceList) {
+                    CramResource resource = resourceRepository.findOne(resourceId);
+                    if (resource != null) {
 
-                    String url = resource.getResourceUrl();
-                    ids.put(resource.getId(), url);
-                    log.info("AccessController found a resource with id " + resource.getId() +
-                            " and url " + url);
-                } else {
-                    log.info("The resource with specified id was not found");
+                        String url = resource.getResourceUrl();
+                        ids.put(resource.getId(), url);
+                        log.info("AccessController found a resource with id " + resource.getId() +
+                                " and url " + url);
+                    } else {
+                        log.info("The resource with specified id was not found");
+                    }
                 }
+            } else {
+                String message = "The Service Response was NOT created successfully";
+                log.debug(message);
+                return new ResourceUrlsResponse(500, message, ids);
             }
+
         } else {
-            log.debug("The Security Request was NOT validated!");
+            String message = "The Security Request was NOT validated!";
+            log.debug(message);
+            return new ResourceUrlsResponse(403, message, ids);
         }
 
-        return ids;
+        String message = "Success!";
+        log.debug(message);
+        ResourceUrlsResponse response = new ResourceUrlsResponse(200, message, ids);
+        response.setServiceResponse(serviceResponseResult.getServiceResponse());
+
+        return response;
     }
 }

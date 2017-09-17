@@ -48,7 +48,7 @@ public class CoreResourceAccessMonitorApplication {
     @Value("${rabbit.password}") 
     private String rabbitMQPassword;
 
-    @Value("${symbiote.coreaam.url}") 
+    @Value("${aam.environment.aamAddress}")
     private String symbioteCoreInterfaceAddress;
 
     @Value("${subIntervalDuration}")

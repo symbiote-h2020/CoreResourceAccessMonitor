@@ -7,10 +7,9 @@ import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
-import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
-
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,18 +17,17 @@ import org.junit.runner.RunWith;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -51,6 +49,7 @@ import static org.junit.Assert.assertEquals;
         "rabbit.queueName.cram.accessNotifications=accessNotifications-anlt",
         "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-anlt",
         "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-anlt"})
+@ActiveProfiles("test")
 public class AccessNotificationListenerTests {
 
     private static Logger log = LoggerFactory
@@ -66,21 +65,6 @@ public class AccessNotificationListenerTests {
     private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
 
     @Autowired
-    private CramPersistentVariablesRepository cramPersistentVariablesRepository;
-
-    @Autowired
-    @Qualifier("subIntervalDuration")
-    private Long subIntervalDuration;
-
-    @Autowired
-    @Qualifier("intervalDuration")
-    private Long intervalDuration;
-
-    @Autowired
-    @Qualifier("noSubIntervals")
-    private Long noSubIntervals;
-
-    @Autowired
     private AccessNotificationListener accessNotificationListener;
 
     @Value("${rabbit.exchange.cram.name}")
@@ -92,7 +76,6 @@ public class AccessNotificationListenerTests {
     @Before
     public void setup() {
         resourceAccessStatsUpdater.cancelTimer();
-        List<String> observedProperties = Arrays.asList("temp", "air");
 
         CramResource resource1 = new CramResource();
         resource1.setId("sensor_id");

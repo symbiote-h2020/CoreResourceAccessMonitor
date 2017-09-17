@@ -14,7 +14,7 @@ import java.util.Date;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by vasgl on 6/29/2017.
+ * @author Vasileios Glykantzis (ICOM)
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CramResourceTests {
@@ -33,8 +33,8 @@ public class CramResourceTests {
 
     @Test
     public void addViewsInSubIntervalsTest() {
-        Long subIntervalDuration_ms = new Long(1000);
-        Long noSubIntervals = new Long(3);
+        Long subIntervalDuration_ms = 1000L;
+        Long noSubIntervals = 3L;
         CramResource cramResource = createCramResourceWithIntervals();
         ArrayList<Date> DateList = new ArrayList<>();
 
@@ -55,8 +55,8 @@ public class CramResourceTests {
     public void scheduleUpDateInResourceAccessStatsTest() {
         CramResource cramResource = new CramResource();
         cramResource.setViewsInDefinedInterval(0);
-        Long subIntervalDuration_ms = new Long(1000);
-        Long noSubIntervals = new Long(3);
+        Long subIntervalDuration_ms = 1000L;
+        Long noSubIntervals = 3L;
 
         // Create a single subInterval
         SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(1000 + subIntervalDuration_ms), 0);
@@ -74,7 +74,7 @@ public class CramResourceTests {
         cramResource.scheduleUpdateInResourceAccessStats(noSubIntervals, subIntervalDuration_ms);
         assertEquals(3, cramResource.getViewsInSubIntervals().size());
 
-        ArrayList<Date> DateList = new ArrayList<Date>();
+        ArrayList<Date> DateList = new ArrayList<>();
         DateList.add(new Date(1000));
         DateList.add(new Date(1500));
         DateList.add(new Date(2000));
@@ -126,8 +126,8 @@ public class CramResourceTests {
         cramResource.getViewsInSubIntervals().get(1).setViews(5);
         cramResource.setViewsInDefinedInterval(10);
 
-        Long subIntervalDuration_ms = new Long(1000);
-        Long noSubIntervals = new Long(4);
+        Long subIntervalDuration_ms = 1000L;
+        Long noSubIntervals = 4L;
         ArrayList<Date> dateList = new ArrayList<>();
         dateList.add(new Date(5010));
 
@@ -178,17 +178,17 @@ public class CramResourceTests {
     @Test
     public void futureNotificationsTest() {
         CramResource cramResource = createCramResourceWithIntervals();
-        Long subIntervalDuration_ms = new Long(1000);
-        Long noSubIntervals = new Long(4);
+        Long subIntervalDuration_ms = 1000L;
+        Long noSubIntervals = 4L;
         ArrayList<Date> dateList = new ArrayList<>();
 
-        Date notif1 = new Date();
-        notif1.setTime(notif1.getTime() + 100000);
-        Date notif2 = new Date();
-        notif2.setTime(notif1.getTime() + 200000);
+        Date notification1 = new Date();
+        notification1.setTime(notification1.getTime() + 100000);
+        Date notification2 = new Date();
+        notification2.setTime(notification1.getTime() + 200000);
 
-        dateList.add(notif1);
-        dateList.add(notif2);
+        dateList.add(notification1);
+        dateList.add(notification2);
 
         cramResource.addViewsInSubIntervals(dateList, noSubIntervals, subIntervalDuration_ms);
 
@@ -212,7 +212,7 @@ public class CramResourceTests {
         SubIntervalViews subInterval1 = new SubIntervalViews(new Date(1000), new Date(2000), 0);
         SubIntervalViews subInterval2 = new SubIntervalViews(new Date(2000), new Date(3000), 0);
         SubIntervalViews subInterval3 = new SubIntervalViews(new Date(3000), new Date(4000), 0);
-        ArrayList<SubIntervalViews> subIntervals = new ArrayList<SubIntervalViews>();
+        ArrayList<SubIntervalViews> subIntervals = new ArrayList<>();
         CramResource cramResource = new CramResource();
 
         subIntervals.add(subInterval1);

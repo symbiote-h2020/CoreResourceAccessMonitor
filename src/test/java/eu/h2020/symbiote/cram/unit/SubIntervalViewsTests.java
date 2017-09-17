@@ -1,8 +1,5 @@
 package eu.h2020.symbiote.cram.unit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -14,15 +11,11 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 
-
 /**
- * Created by vasgl on 6/29/2017.
+ * @author Vasileios Glykantzis (ICOM)
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SubIntervalViewsTests {
-
-    private static Logger log = LoggerFactory
-            .getLogger(SubIntervalViewsTests.class);
 
     @Test
     public void belongsToSubIntervalDateTest(){

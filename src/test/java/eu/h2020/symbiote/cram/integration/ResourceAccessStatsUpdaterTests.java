@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -44,7 +45,7 @@ import static org.junit.Assert.assertNotEquals;
         "eureka.client.enabled=false",
         "spring.sleuth.enabled=false",
         "symbiote.testaam" + ".url=http://localhost:8080",
-        "symbiote.coreaam.url=http://localhost:8080",
+        "aam.environment.aamAddress=http://localhost:8080",
         "platform.aam.url=http://localhost:8080",
         "subIntervalDuration=P0-0-0T0:0:0.1",
         "intervalDuration=P0-0-0T0:0:0.2",
@@ -59,6 +60,7 @@ import static org.junit.Assert.assertNotEquals;
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
+@ActiveProfiles("test")
 public class ResourceAccessStatsUpdaterTests {
 
 

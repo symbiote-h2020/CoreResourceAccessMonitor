@@ -23,8 +23,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -45,7 +47,7 @@ import static org.junit.Assert.fail;
         "eureka.client.enabled=false",
         "spring.sleuth.enabled=false",
         "symbiote.testaam" + ".url=http://localhost:8080",
-        "symbiote.coreaam.url=http://localhost:8080",
+        "aam.environment.aamAddress=http://localhost:8080",
         "platform.aam.url=http://localhost:8080",
         "subIntervalDuration=P0-0-0T1:0:0",
         "intervalDuration=P0-0-0T2:0:0",
@@ -55,11 +57,13 @@ import static org.junit.Assert.fail;
         "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-put",
         "rabbit.queueName.cram.accessNotifications=accessNotifications-put",
         "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-put",
-        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-put"})
+        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-put",
+        "authManager.name=authManager-put"})
 @ContextConfiguration
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
+@ActiveProfiles("test")
 public class PopularityUpdaterTests {
 
 
