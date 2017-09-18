@@ -100,7 +100,7 @@ public class AuthorizationManager {
             log.debug("checkAccess: Security is disabled");
 
             //if security is disabled in properties
-            return new AuthorizationResult("security disabled", true);
+            return new AuthorizationResult("security disabled", false);
         }
     }
 

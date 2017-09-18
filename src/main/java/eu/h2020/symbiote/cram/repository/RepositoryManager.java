@@ -173,6 +173,7 @@ public class RepositoryManager {
 
                 cramResource.setResourceUrl(generateResourceURL(cramResource));
                 cramResource.setViewsInDefinedInterval(0);
+                cramResource.setPlatformId(message.getPlatformId());
 
                 ArrayList<SubIntervalViews>  subIntervalList = new ArrayList<>();
                 Date startDate = new Date(new Date().getTime());
@@ -215,11 +216,18 @@ public class RepositoryManager {
                     + ", but the platform " + "with id = " + message.getPlatformId() 
                     + " which owns the resources does not exist.");
             for (CoreResource coreResource : message.getResources()) {
-                if (resourceRepository.findOne(coreResource.getId()) == null)
+                CramResource cramResource = resourceRepository.findOne(coreResource.getId());
+                if (cramResource == null)
                     throw new EntityNotFoundException ("Received an update message for "
                         + "resource with id = " + coreResource.getId() + ", but the resource does "
                         + "not exist");
-                CramResource cramResource = new CramResource(coreResource);
+
+                cramResource.setId(coreResource.getId());
+                cramResource.setLabels(coreResource.getLabels());
+                cramResource.setComments(coreResource.getComments());
+                cramResource.setInterworkingServiceURL(coreResource.getInterworkingServiceURL());
+                cramResource.setType(coreResource.getType());
+                cramResource.setPlatformId(message.getPlatformId());
                 cramResource.setResourceUrl(generateResourceURL(cramResource));
                 resourceRepository.save(cramResource);
                 log.info("CRAM updated resource with id: " + cramResource.getId());

@@ -218,24 +218,29 @@ public class MessageQueuesTests {
         assertEquals(0, (long) result.getViewsInDefinedInterval());
         assertEquals((long) subIntervalDuration,  result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
                 result.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
+        assertEquals(platform.getId(), result.getPlatformId());
 
 
         result = resourceRepo.findOne(resource2.getId());
         assertEquals(platformUrl + "rap/Services('" + resource2.getId()
                + "')", result.getResourceUrl());
+        assertEquals(platform.getId(), result.getPlatformId());
 
         result = resourceRepo.findOne(resource3.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource3.getId()
                + "')", result.getResourceUrl());
+        assertEquals(platform.getId(), result.getPlatformId());
 
 
         result = resourceRepo.findOne(resource4.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource4.getId()
                + "')", result.getResourceUrl());
+        assertEquals(platform.getId(), result.getPlatformId());
 
         result = resourceRepo.findOne(resource5.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource5.getId()
                + "')", result.getResourceUrl());
+        assertEquals(platform.getId(), result.getPlatformId());
 
 	}
 
@@ -283,9 +288,11 @@ public class MessageQueuesTests {
 
         CramResource result = resourceRepo.findOne(coreResource1.getId());
         assertEquals(resourceNewLabel, result.getLabels().get(2));
+        assertEquals(platform.getId(), result.getPlatformId());
 
         result = resourceRepo.findOne(coreResource2.getId());
         assertEquals(resourceNewLabel, result.getLabels().get(2));
+        assertEquals(platform.getId(), result.getPlatformId());
 
 	}
 

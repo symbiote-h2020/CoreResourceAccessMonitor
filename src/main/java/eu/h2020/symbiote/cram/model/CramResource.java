@@ -29,6 +29,7 @@ public class CramResource extends Resource {
     private String resourceUrl;
     private Integer viewsInDefinedInterval;
     private List<SubIntervalViews> viewsInSubIntervals;
+    private String platformId;
 
     public CramResource() {
         // Empty constructor
@@ -61,6 +62,9 @@ public class CramResource extends Resource {
 
     public List<SubIntervalViews> getViewsInSubIntervals() { return viewsInSubIntervals; }
     public void setViewsInSubIntervals(List<SubIntervalViews> listOfViews) { this.viewsInSubIntervals = listOfViews; }
+
+    public String getPlatformId() { return platformId; }
+    public void setPlatformId(String platformId) { this.platformId = platformId; }
 
     public void addViewsInSubIntervals(List<Date> timestamps, Long noSubIntervals, Long subIntervalDuration) {
 
