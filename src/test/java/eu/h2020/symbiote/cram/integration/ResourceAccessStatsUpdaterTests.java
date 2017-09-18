@@ -177,7 +177,7 @@ public class ResourceAccessStatsUpdaterTests {
 
         accessNotificationListener.getNotificationMessageList().add(createSuccessfulAttemptsMessage());
         assertEquals(1, accessNotificationListener.getNotificationMessageList().size());
-        TimeUnit.MILLISECONDS.sleep( (long) (1.2 * subIntervalDuration));
+        TimeUnit.MILLISECONDS.sleep( (long) (1.5 * subIntervalDuration));
 
         CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
