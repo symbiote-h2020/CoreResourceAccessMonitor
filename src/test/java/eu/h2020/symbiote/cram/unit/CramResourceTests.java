@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.unit;
 
+import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -9,6 +10,7 @@ import eu.h2020.symbiote.cram.model.SubIntervalViews;
 import eu.h2020.symbiote.cram.model.CramResource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -206,6 +208,37 @@ public class CramResourceTests {
 
         assertEquals(0, (int) cramResource.getViewsInDefinedInterval());
 
+    }
+
+    @Test
+    public void equals() {
+        CramResource cramResource1 = new CramResource();
+        cramResource1.setId("id1");
+        cramResource1.setLabels(Arrays.asList("label1", "label2"));
+        cramResource1.setComments(Arrays.asList("comment1", "comment2"));
+        cramResource1.setInterworkingServiceURL("resource1.com");
+        cramResource1.setPlatformId("p1");
+        cramResource1.setResourceUrl("url");
+        cramResource1.setType(CoreResourceType.ACTUATOR);
+        cramResource1.setViewsInDefinedInterval(5);
+        cramResource1.setViewsInSubIntervals(Arrays.asList(new SubIntervalViews(new Date(0), new Date(4), 4),
+                new SubIntervalViews(new Date(0), new Date(4), 6)));
+
+        CramResource cramResource2 = new CramResource(cramResource1);
+
+        CramResource cramResource3 = new CramResource(cramResource1);
+        cramResource3.setType(CoreResourceType.DEVICE);
+
+        CramResource cramResource4 = new CramResource(cramResource1);
+        cramResource4.getLabels().set(1, "label3");
+
+        CramResource cramResource5 = new CramResource(cramResource1);
+        cramResource5.getViewsInSubIntervals().set(1, new SubIntervalViews(new Date(0), new Date(4), 4));
+
+        assertEquals(true, cramResource1.equals(cramResource2));
+        assertEquals(false, cramResource1.equals(cramResource3));
+        assertEquals(false, cramResource1.equals(cramResource4));
+        assertEquals(false, cramResource1.equals(cramResource5));
     }
 
     private CramResource createCramResourceWithIntervals() {

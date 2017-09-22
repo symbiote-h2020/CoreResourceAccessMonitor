@@ -175,7 +175,7 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test
     public void testGetResourcesUrlsSuccess() throws Exception {
 
-        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager).checkAccess(any());
+        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager).checkAccess(any(), any());
         doReturn(new ServiceResponseResult("Service Response", true))
                 .when(authorizationManager).generateServiceResponse();
 
@@ -223,7 +223,9 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test
     public void testGetResourcesUrlsInvalidSecurityRequest() throws Exception {
 
-        doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager).checkAccess(any());
+        doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager).checkAccess(any(), any());
+        doReturn(new ServiceResponseResult("Service Response", true))
+                .when(authorizationManager).generateServiceResponse();
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<>();
@@ -259,7 +261,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         while(!future.isDone())
             TimeUnit.MILLISECONDS.sleep(100);
 
-        assertEquals("The Security Request was NOT validated!", resultRef.get().getMessage());
+        assertEquals("The Security Request was NOT validated for any of resource!", resultRef.get().getMessage());
         assertEquals(HttpStatus.SC_FORBIDDEN, resultRef.get().getStatus());
         assertEquals(0, resultRef.get().getBody().size());
     }
@@ -268,7 +270,6 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test
     public void testGetResourcesUrlsServiceResponseNotCreated() throws Exception {
 
-        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager).checkAccess(any());
         doReturn(new ServiceResponseResult("Service Response", false))
                 .when(authorizationManager).generateServiceResponse();
 
@@ -311,6 +312,59 @@ public class CoreResourceAccessMonitorApplicationTests {
         assertEquals(0, resultRef.get().getBody().size());
     }
 
+    @Test
+    public void testGetResourcesUrlsNotAuthorizedNotFound() throws Exception {
+
+        CramResource cramResource1 = resourceRepo.findOne("sensor_id");
+        CramResource cramResource2 = resourceRepo.findOne("sensor_id2");
+
+        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
+                .checkAccess(eq(cramResource1), any());
+        doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager)
+                .checkAccess(eq(cramResource2), any());
+        doReturn(new ServiceResponseResult("Service Response", true))
+                .when(authorizationManager).generateServiceResponse();
+
+        ResourceUrlsRequest query = new ResourceUrlsRequest();
+        ArrayList<String> idList = new ArrayList<>();
+        final AtomicReference<ResourceUrlsResponse> resultRef = new AtomicReference<>();
+
+        idList.add("sensor_id");
+        idList.add("sensor_id2");
+        idList.add("sensor_id3");
+        query.setBody(idList);
+
+        log.info("Before sending the message");
+
+        RabbitConverterFuture<ResourceUrlsResponse> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
+
+        log.info("After sending the message");
+
+        future.addCallback(new ListenableFutureCallback<ResourceUrlsResponse>() {
+
+            @Override
+            public void onSuccess(ResourceUrlsResponse result) {
+
+                log.info("Successully received resource urls: " + result);
+                resultRef.set(result);
+
+            }
+
+            @Override
+            public void onFailure(Throwable ex) {
+                fail("Accessed the element which does not exist");
+            }
+
+        });
+
+        while(!future.isDone())
+            TimeUnit.MILLISECONDS.sleep(100);
+
+        assertEquals("Security Request not valid for all the resourceIds [sensor_id2]." +
+                " Not all the resources were found [sensor_id3].", resultRef.get().getMessage());
+        assertEquals(HttpStatus.SC_PARTIAL_CONTENT, resultRef.get().getStatus());
+        assertEquals(1, resultRef.get().getBody().size());
+    }
 
     @Test
     public void NextPopularityUpdateTest() {

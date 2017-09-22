@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
 * <h1>CramResource</h1>
@@ -37,10 +38,22 @@ public class CramResource extends Resource {
 
     public CramResource(CoreResource coreResource) {
         setId(coreResource.getId());
-        setLabels(coreResource.getLabels());
-        setComments(coreResource.getComments());
+        setLabels(new ArrayList<>(coreResource.getLabels()));
+        setComments(new ArrayList<>(coreResource.getComments()));
         setInterworkingServiceURL(coreResource.getInterworkingServiceURL());
         setType(coreResource.getType());
+    }
+
+    public CramResource(CramResource cramResource) {
+        setId(cramResource.getId());
+        setLabels(new ArrayList<>(cramResource.getLabels()));
+        setComments(new ArrayList<>(cramResource.getComments()));
+        setInterworkingServiceURL(cramResource.getInterworkingServiceURL());
+        setType(cramResource.getType());
+        setResourceUrl(cramResource.getResourceUrl());
+        setViewsInDefinedInterval(cramResource.getViewsInDefinedInterval());
+        setPlatformId(cramResource.getPlatformId());
+        setViewsInSubIntervals(new ArrayList<>(cramResource.getViewsInSubIntervals()));
     }
 
     public CoreResourceType getType() {
@@ -134,5 +147,34 @@ public class CramResource extends Resource {
 
     private SubIntervalViews createNextSubIntervalView(Date newStartSubIntervalTime, Date newEndSubIntervalTime) {
         return new SubIntervalViews(newStartSubIntervalTime, newEndSubIntervalTime, 0);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        // self check
+        if (this == o)
+            return true;
+
+        // null check
+        if (o == null)
+            return false;
+
+        // type check and cast
+        if (!(o instanceof CramResource))
+            return false;
+
+        CramResource cramResource = (CramResource) o;
+
+        // field comparison
+        return Objects.equals(this.getId(), cramResource.getId())
+                && Objects.equals(this.getLabels(), cramResource.getLabels())
+                && Objects.equals(this.getComments(), cramResource.getComments())
+                && Objects.equals(this.getInterworkingServiceURL(), cramResource.getInterworkingServiceURL())
+                && Objects.equals(this.getType(), cramResource.getType())
+                && Objects.equals(this.getResourceUrl(), cramResource.getResourceUrl())
+                && Objects.equals(this.getPlatformId(), cramResource.getPlatformId())
+                && Objects.equals(this.getViewsInDefinedInterval(), cramResource.getViewsInDefinedInterval())
+                && Objects.equals(this.getViewsInSubIntervals(), cramResource.getViewsInSubIntervals());
     }
 }

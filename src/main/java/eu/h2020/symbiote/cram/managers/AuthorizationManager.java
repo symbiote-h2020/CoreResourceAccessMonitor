@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.managers;
 
+import eu.h2020.symbiote.cram.model.CramResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,7 +45,6 @@ public class AuthorizationManager {
     private Boolean securityEnabled;
 
     private IComponentSecurityHandler componentSecurityHandler;
-    private Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
     @Autowired
     public AuthorizationManager(@Value("${aam.deployment.owner.username}") String componentOwnerName,
@@ -81,7 +81,7 @@ public class AuthorizationManager {
             enableSecurity();
     }
 
-    public AuthorizationResult checkAccess(SecurityRequest securityRequest) {
+    public AuthorizationResult checkAccess(CramResource resource, SecurityRequest securityRequest) {
         if (securityEnabled) {
             log.info("Received SecurityRequest to verification: (" + securityRequest + ")");
 
@@ -89,7 +89,15 @@ public class AuthorizationManager {
                 return new AuthorizationResult("SecurityRequest is null", false);
             }
 
-            Set<String> checkedPolicies = checkSingleLocalHomeTokenAccessPolicy(securityRequest);
+
+            Set<String> checkedPolicies = null;
+            try {
+                checkedPolicies = checkSingleLocalHomeTokenAccessPolicy(resource, securityRequest);
+            } catch (InvalidArgumentsException e) {
+                e.printStackTrace();
+                return new AuthorizationResult(e.getErrorMessage(), false);
+
+            }
 
             if (checkedPolicies.size() == 1) {
                 return new AuthorizationResult("ok", true);
@@ -120,7 +128,7 @@ public class AuthorizationManager {
 
     }
 
-    public void enableSecurity() throws InvalidArgumentsException, SecurityHandlerException {
+    private void enableSecurity() throws SecurityHandlerException {
         securityEnabled = true;
         componentSecurityHandler = ComponentSecurityHandlerFactory.getComponentSecurityHandler(
                 aamAddress,
@@ -132,10 +140,14 @@ public class AuthorizationManager {
                 componentOwnerName,
                 componentOwnerPassword);
 
-        accessPoliciesMap.put("SingleLocalHomeTokenAccessPolicy",
-                new SingleLocalHomeTokenAccessPolicy(SecurityConstants.CORE_AAM_INSTANCE_ID, null));
     }
-    private Set<String> checkSingleLocalHomeTokenAccessPolicy(SecurityRequest securityRequest) {
+
+    private Set<String> checkSingleLocalHomeTokenAccessPolicy(CramResource resource, SecurityRequest securityRequest)
+            throws InvalidArgumentsException {
+        Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
+
+        accessPoliciesMap.put("SingleLocalHomeTokenAccessPolicy",
+                new SingleLocalHomeTokenAccessPolicy(resource.getPlatformId(), null));
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 

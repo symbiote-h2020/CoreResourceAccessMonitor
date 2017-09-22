@@ -1,6 +1,7 @@
 package eu.h2020.symbiote.cram.model;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Created by vasgl on 6/29/2017.
@@ -41,5 +42,27 @@ public class SubIntervalViews {
 
     public boolean belongsToSubInterval (long time) {
         return time >= startOfInterval.getTime() && time < endOfInterval.getTime();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        // self check
+        if (this == o)
+            return true;
+
+        // null check
+        if (o == null)
+            return false;
+
+        // type check and cast
+        if (!(o instanceof SubIntervalViews))
+            return false;
+
+        SubIntervalViews subIntervalViews = (SubIntervalViews) o;
+
+        // field comparison
+        return Objects.equals(this.getStartOfInterval(), subIntervalViews.getStartOfInterval())
+                && Objects.equals(this.getEndOfInterval(), subIntervalViews.getEndOfInterval())
+                && Objects.equals(this.getViews(), subIntervalViews.getViews());
     }
 }

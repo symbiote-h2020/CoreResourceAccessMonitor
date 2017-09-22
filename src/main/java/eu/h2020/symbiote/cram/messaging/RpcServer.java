@@ -7,6 +7,7 @@ import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -16,6 +17,7 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 
@@ -75,46 +77,88 @@ public class RpcServer {
 
         List<String> resourceList = resourceUrlsRequest.getBody();
         HashMap<String, String> ids = new HashMap<>();
+        List<String> notAuthorized = new ArrayList<>();
+        List<String> notFound = new ArrayList<>();
 
         log.info("CRAM received a request for the following ids: " + resourceList);
 
-        AuthorizationResult authorizationResult = authorizationManager.checkAccess(resourceUrlsRequest.getSecurityRequest());
         ServiceResponseResult serviceResponseResult = authorizationManager.generateServiceResponse();
 
-        if (authorizationResult.isValidated()) {
-            log.debug("The Security Request is validated!");
-
-            if (serviceResponseResult.isCreatedSuccessfully()) {
-                log.debug("The Service Response was created successfully");
-                for (String resourceId : resourceList) {
-                    CramResource resource = resourceRepository.findOne(resourceId);
-                    if (resource != null) {
-
-                        String url = resource.getResourceUrl();
-                        ids.put(resource.getId(), url);
-                        log.info("AccessController found a resource with id " + resource.getId() +
-                                " and url " + url);
-                    } else {
-                        log.info("The resource with specified id was not found");
-                    }
-                }
-            } else {
-                String message = "The Service Response was NOT created successfully";
-                log.debug(message);
-                return new ResourceUrlsResponse(500, message, ids);
-            }
+        if (serviceResponseResult.isCreatedSuccessfully()) {
+            log.debug("The Service Response was created successfully");
 
         } else {
-            String message = "The Security Request was NOT validated!";
+            String message = "The Service Response was NOT created successfully";
             log.debug(message);
-            return new ResourceUrlsResponse(403, message, ids);
+            return new ResourceUrlsResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, message, ids);
         }
 
-        String message = "Success!";
-        log.debug(message);
-        ResourceUrlsResponse response = new ResourceUrlsResponse(200, message, ids);
-        response.setServiceResponse(serviceResponseResult.getServiceResponse());
+        for (String resourceId : resourceList) {
+            CramResource resource = resourceRepository.findOne(resourceId);
+            if (resource != null) {
 
-        return response;
+                AuthorizationResult authorizationResult = authorizationManager.checkAccess(resource,
+                        resourceUrlsRequest.getSecurityRequest());
+
+                if (authorizationResult.isValidated()) {
+                    log.debug("The Security Request is validated!");
+
+                    String url = resource.getResourceUrl();
+                    ids.put(resource.getId(), url);
+                    log.debug("AccessController found a resource with id " + resourceId +
+                            " and url " + url);
+                } else {
+                    String message = "The Security Request was NOT validated for resource " + resourceId;
+                    log.debug(message);
+                    notAuthorized.add(resourceId);
+                }
+            } else {
+                log.info("The resource with id " + resourceId + " was not found");
+                notFound.add(resourceId);
+            }
+        }
+
+        String message = "";
+
+        if (notAuthorized.size() == resourceList.size()) {
+            message = "The Security Request was NOT validated for any of resource!";
+            log.debug(message);
+            ResourceUrlsResponse response = new ResourceUrlsResponse(HttpStatus.SC_FORBIDDEN, message, ids);
+            response.setServiceResponse(serviceResponseResult.getServiceResponse());
+            return response;
+
+        } else if (notAuthorized.size() > 0) {
+            message += "Security Request not valid for all the resourceIds [";
+            for (String id : notAuthorized) {
+                message += id + ", ";
+            }
+            message = message.substring(0, message.length() - 2);
+            message += "]. ";
+
+        }
+
+        if (notFound.size() > 0) {
+            message += "Not all the resources were found [";
+            for (String id : notFound) {
+                message += id + ", ";
+            }
+            message = message.substring(0, message.length() - 2);
+            message += "].";
+
+        }
+
+        if (message.isEmpty()) {
+            message = "Success!";
+            log.debug(message);
+            ResourceUrlsResponse response = new ResourceUrlsResponse(HttpStatus.SC_OK, message, ids);
+            response.setServiceResponse(serviceResponseResult.getServiceResponse());
+            return response;
+        } else {
+            log.debug(message);
+            ResourceUrlsResponse response = new ResourceUrlsResponse(HttpStatus.SC_PARTIAL_CONTENT, message, ids);
+            response.setServiceResponse(serviceResponseResult.getServiceResponse());
+            return response;
+        }
+
     }
 }
