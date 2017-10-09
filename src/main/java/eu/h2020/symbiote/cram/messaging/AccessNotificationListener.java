@@ -37,7 +37,7 @@ public class AccessNotificationListener {
         this.resourceRepository = resourceRepository;
 
         scheduledUpdateOngoing = false;
-        notificationMessageList = new ArrayList<NotificationMessage>();
+        notificationMessageList = new ArrayList<>();
     }
 
     public Boolean getScheduledUpdateOngoing() { return this.scheduledUpdateOngoing; }
