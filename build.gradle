@@ -42,7 +42,7 @@ repositories {
     maven { url "https://jitpack.io" }
     maven {
         url 'https://repo.spring.io/libs-snapshot'
-}
+    }
 }
 
 // Spring related configs

@@ -49,7 +49,7 @@ public class AuthorizationManager {
     @Autowired
     public AuthorizationManager(@Value("${aam.deployment.owner.username}") String componentOwnerName,
                                 @Value("${aam.deployment.owner.password}") String componentOwnerPassword,
-                                @Value("${aam.environment.aamAddress}") String aamAddress,
+                                @Value("${aam.environment.coreInterfaceAddress}") String aamAddress,
                                 @Value("${aam.environment.clientId}") String clientId,
                                 @Value("${aam.environment.keystoreName}") String keystoreName,
                                 @Value("${aam.environment.keystorePass}") String keystorePass,

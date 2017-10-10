@@ -47,7 +47,7 @@ import static org.junit.Assert.fail;
         "eureka.client.enabled=false",
         "spring.sleuth.enabled=false",
         "symbiote.testaam" + ".url=http://localhost:8080",
-        "aam.environment.aamAddress=http://localhost:8080",
+        "aam.environment.coreInterfaceAddress=http://localhost:8080",
         "platform.aam.url=http://localhost:8080",
         "subIntervalDuration=P0-0-0T1:0:0",
         "intervalDuration=P0-0-0T2:0:0",
