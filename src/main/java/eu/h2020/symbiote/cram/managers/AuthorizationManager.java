@@ -1,6 +1,7 @@
 package eu.h2020.symbiote.cram.managers;
 
 import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.security.accesspolicies.common.SingleTokenAccessPolicyFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -11,10 +12,8 @@ import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
-import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleLocalHomeTokenAccessPolicy;
 import eu.h2020.symbiote.security.ComponentSecurityHandlerFactory;
 import eu.h2020.symbiote.security.accesspolicies.IAccessPolicy;
-import eu.h2020.symbiote.security.commons.SecurityConstants;
 import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
 import eu.h2020.symbiote.security.commons.exceptions.custom.SecurityHandlerException;
 import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
@@ -90,9 +89,9 @@ public class AuthorizationManager {
             }
 
 
-            Set<String> checkedPolicies = null;
+            Set<String> checkedPolicies;
             try {
-                checkedPolicies = checkSingleLocalHomeTokenAccessPolicy(resource, securityRequest);
+                checkedPolicies = checkPolicy(resource, securityRequest);
             } catch (InvalidArgumentsException e) {
                 e.printStackTrace();
                 return new AuthorizationResult(e.getErrorMessage(), false);
@@ -142,12 +141,14 @@ public class AuthorizationManager {
 
     }
 
-    private Set<String> checkSingleLocalHomeTokenAccessPolicy(CramResource resource, SecurityRequest securityRequest)
+    private Set<String> checkPolicy(CramResource resource, SecurityRequest securityRequest)
             throws InvalidArgumentsException {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
-        accessPoliciesMap.put("SingleLocalHomeTokenAccessPolicy",
-                new SingleLocalHomeTokenAccessPolicy(resource.getPlatformId(), null));
+        // Construct policy
+        IAccessPolicy policy = SingleTokenAccessPolicyFactory.getSingleTokenAccessPolicy(resource.getPolicySpecifier());
+        accessPoliciesMap.put(resource.getId(), policy);
+
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 

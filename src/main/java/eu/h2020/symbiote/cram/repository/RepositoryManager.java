@@ -201,7 +201,7 @@ public class RepositoryManager {
    * @param message The message of the newly updated resources
    */
    @RabbitListener(bindings = @QueueBinding(
-           value = @Queue(value = "resourceUpdatedd", durable = "${rabbit.exchange.resource.durable}",
+           value = @Queue(value = "resourceUpdated", durable = "${rabbit.exchange.resource.durable}",
                    autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
            exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
                    durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",

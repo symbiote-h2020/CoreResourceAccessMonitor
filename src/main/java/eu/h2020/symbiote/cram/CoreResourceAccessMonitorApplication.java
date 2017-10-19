@@ -154,14 +154,6 @@ public class CoreResourceAccessMonitorApplication {
     Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
-
-        /**
-         * It is necessary to register the GeoJsonModule, otherwise the GeoJsonPoint cannot
-         * be deserialized by Jackson2JsonMessageConverter.
-         */
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new GeoJsonModule());
-        converter.setJsonObjectMapper(mapper);
         return converter;
     }
 

@@ -12,6 +12,8 @@ import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
+import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
+import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -34,20 +35,18 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.core.MessageDeliveryMode;
 
 import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
-import java.util.Random;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 
 /**
  * This file tests the PlatformRepository and ResourceRepository
  */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
 @SpringBootTest(properties = {"eureka.client.enabled=false",
@@ -219,28 +218,32 @@ public class MessageQueuesTests {
         assertEquals((long) subIntervalDuration,  result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
                 result.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
         assertEquals(platform.getId(), result.getPlatformId());
-
+        assertNotNull(result.getPolicySpecifier());
 
         result = resourceRepo.findOne(resource2.getId());
         assertEquals(platformUrl + "rap/Services('" + resource2.getId()
                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
 
         result = resourceRepo.findOne(resource3.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource3.getId()
                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
 
 
         result = resourceRepo.findOne(resource4.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource4.getId()
                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
 
         result = resourceRepo.findOne(resource5.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource5.getId()
                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
 
 	}
 
@@ -361,6 +364,15 @@ public class MessageQueuesTests {
         resource.setLabels(labels);
         resource.setComments(comments);
         resource.setInterworkingServiceURL(platformUrl);
+
+        try {
+            resource.setPolicySpecifier(new SingleTokenAccessPolicySpecifier(
+                    SingleTokenAccessPolicySpecifier.SingleTokenAccessPolicyType.PUBLIC,
+                    new HashMap<>()));
+        } catch (InvalidArgumentsException e) {
+            e.printStackTrace();
+            fail("Could not create IAccessPolicy");
+        }
 
         return resource;
     }
