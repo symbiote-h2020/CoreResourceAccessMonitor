@@ -44,13 +44,23 @@ public class SubIntervalViewsTests {
     }
 
     @Test
-    public void increaseViewsTest(){
+    public void increaseViewsTest() {
         SubIntervalViews subInterval = new SubIntervalViews();
 
         subInterval.setViews(1000);
         subInterval.increaseViews(5);
 
         assertEquals(new Integer(1005), subInterval.getViews());
+    }
+
+    @Test
+    public void equals() {
+        SubIntervalViews subIntervalViews1 = new SubIntervalViews(new Date(0), new Date(4), 4);
+        SubIntervalViews subIntervalViews2 = new SubIntervalViews(new Date(0), new Date(4), 4);
+        SubIntervalViews subIntervalViews3 = new SubIntervalViews(new Date(1), new Date(4), 4);
+
+        assertEquals(true, subIntervalViews1.equals(subIntervalViews2));
+        assertEquals(false, subIntervalViews1.equals(subIntervalViews3));
     }
 
 }

@@ -1,5 +1,7 @@
 package eu.h2020.symbiote.cram.managers;
 
+import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.security.accesspolicies.common.SingleTokenAccessPolicyFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -10,10 +12,8 @@ import org.springframework.util.Assert;
 
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
-import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleLocalHomeTokenAccessPolicy;
 import eu.h2020.symbiote.security.ComponentSecurityHandlerFactory;
 import eu.h2020.symbiote.security.accesspolicies.IAccessPolicy;
-import eu.h2020.symbiote.security.commons.SecurityConstants;
 import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
 import eu.h2020.symbiote.security.commons.exceptions.custom.SecurityHandlerException;
 import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
@@ -44,7 +44,6 @@ public class AuthorizationManager {
     private Boolean securityEnabled;
 
     private IComponentSecurityHandler componentSecurityHandler;
-    private Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
     @Autowired
     public AuthorizationManager(@Value("${aam.deployment.owner.username}") String componentOwnerName,
@@ -81,7 +80,7 @@ public class AuthorizationManager {
             enableSecurity();
     }
 
-    public AuthorizationResult checkAccess(SecurityRequest securityRequest) {
+    public AuthorizationResult checkAccess(CramResource resource, SecurityRequest securityRequest) {
         if (securityEnabled) {
             log.info("Received SecurityRequest to verification: (" + securityRequest + ")");
 
@@ -89,7 +88,15 @@ public class AuthorizationManager {
                 return new AuthorizationResult("SecurityRequest is null", false);
             }
 
-            Set<String> checkedPolicies = checkSingleLocalHomeTokenAccessPolicy(securityRequest);
+
+            Set<String> checkedPolicies;
+            try {
+                checkedPolicies = checkPolicy(resource, securityRequest);
+            } catch (InvalidArgumentsException e) {
+                e.printStackTrace();
+                return new AuthorizationResult(e.getErrorMessage(), false);
+
+            }
 
             if (checkedPolicies.size() == 1) {
                 return new AuthorizationResult("ok", true);
@@ -120,7 +127,7 @@ public class AuthorizationManager {
 
     }
 
-    public void enableSecurity() throws InvalidArgumentsException, SecurityHandlerException {
+    private void enableSecurity() throws SecurityHandlerException {
         securityEnabled = true;
         componentSecurityHandler = ComponentSecurityHandlerFactory.getComponentSecurityHandler(
                 aamAddress,
@@ -132,10 +139,16 @@ public class AuthorizationManager {
                 componentOwnerName,
                 componentOwnerPassword);
 
-        accessPoliciesMap.put("SingleLocalHomeTokenAccessPolicy",
-                new SingleLocalHomeTokenAccessPolicy(SecurityConstants.CORE_AAM_INSTANCE_ID, null));
     }
-    private Set<String> checkSingleLocalHomeTokenAccessPolicy(SecurityRequest securityRequest) {
+
+    private Set<String> checkPolicy(CramResource resource, SecurityRequest securityRequest)
+            throws InvalidArgumentsException {
+        Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
+
+        // Construct policy
+        IAccessPolicy policy = SingleTokenAccessPolicyFactory.getSingleTokenAccessPolicy(resource.getPolicySpecifier());
+        accessPoliciesMap.put(resource.getId(), policy);
+
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 

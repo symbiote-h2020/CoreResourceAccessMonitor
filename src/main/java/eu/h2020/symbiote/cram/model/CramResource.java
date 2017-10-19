@@ -4,12 +4,15 @@ package eu.h2020.symbiote.cram.model;
 import eu.h2020.symbiote.core.model.resources.Resource;
 import eu.h2020.symbiote.core.model.internal.CoreResource;
 import eu.h2020.symbiote.core.model.internal.CoreResourceType;
+import eu.h2020.symbiote.security.accesspolicies.IAccessPolicy;
+import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
 * <h1>CramResource</h1>
@@ -30,6 +33,7 @@ public class CramResource extends Resource {
     private Integer viewsInDefinedInterval;
     private List<SubIntervalViews> viewsInSubIntervals;
     private String platformId;
+    private SingleTokenAccessPolicySpecifier policySpecifier;
 
     public CramResource() {
         // Empty constructor
@@ -37,10 +41,24 @@ public class CramResource extends Resource {
 
     public CramResource(CoreResource coreResource) {
         setId(coreResource.getId());
-        setLabels(coreResource.getLabels());
-        setComments(coreResource.getComments());
+        setLabels(new ArrayList<>(coreResource.getLabels()));
+        setComments(new ArrayList<>(coreResource.getComments()));
         setInterworkingServiceURL(coreResource.getInterworkingServiceURL());
         setType(coreResource.getType());
+        setPolicySpecifier(coreResource.getPolicySpecifier());
+    }
+
+    public CramResource(CramResource cramResource) {
+        setId(cramResource.getId());
+        setLabels(new ArrayList<>(cramResource.getLabels()));
+        setComments(new ArrayList<>(cramResource.getComments()));
+        setInterworkingServiceURL(cramResource.getInterworkingServiceURL());
+        setType(cramResource.getType());
+        setResourceUrl(cramResource.getResourceUrl());
+        setViewsInDefinedInterval(cramResource.getViewsInDefinedInterval());
+        setPlatformId(cramResource.getPlatformId());
+        setViewsInSubIntervals(new ArrayList<>(cramResource.getViewsInSubIntervals()));
+        setPolicySpecifier(cramResource.getPolicySpecifier());
     }
 
     public CoreResourceType getType() {
@@ -65,6 +83,9 @@ public class CramResource extends Resource {
 
     public String getPlatformId() { return platformId; }
     public void setPlatformId(String platformId) { this.platformId = platformId; }
+
+    public SingleTokenAccessPolicySpecifier getPolicySpecifier() { return policySpecifier; }
+    public void setPolicySpecifier(SingleTokenAccessPolicySpecifier policySpecifier) { this.policySpecifier = policySpecifier; }
 
     public void addViewsInSubIntervals(List<Date> timestamps, Long noSubIntervals, Long subIntervalDuration) {
 
@@ -134,5 +155,34 @@ public class CramResource extends Resource {
 
     private SubIntervalViews createNextSubIntervalView(Date newStartSubIntervalTime, Date newEndSubIntervalTime) {
         return new SubIntervalViews(newStartSubIntervalTime, newEndSubIntervalTime, 0);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        // self check
+        if (this == o)
+            return true;
+
+        // null check
+        if (o == null)
+            return false;
+
+        // type check and cast
+        if (!(o instanceof CramResource))
+            return false;
+
+        CramResource cramResource = (CramResource) o;
+
+        // field comparison
+        return Objects.equals(this.getId(), cramResource.getId())
+                && Objects.equals(this.getLabels(), cramResource.getLabels())
+                && Objects.equals(this.getComments(), cramResource.getComments())
+                && Objects.equals(this.getInterworkingServiceURL(), cramResource.getInterworkingServiceURL())
+                && Objects.equals(this.getType(), cramResource.getType())
+                && Objects.equals(this.getResourceUrl(), cramResource.getResourceUrl())
+                && Objects.equals(this.getPlatformId(), cramResource.getPlatformId())
+                && Objects.equals(this.getViewsInDefinedInterval(), cramResource.getViewsInDefinedInterval())
+                && Objects.equals(this.getViewsInSubIntervals(), cramResource.getViewsInSubIntervals());
     }
 }
