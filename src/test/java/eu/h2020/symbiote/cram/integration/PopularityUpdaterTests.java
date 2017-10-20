@@ -3,10 +3,13 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulPushesMessageInfo;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.core.internal.popularity.PopularityUpdate;
 import eu.h2020.symbiote.cram.aams.SearchEngineListener;
+import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
+import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.PopularityUpdater;
 
@@ -38,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Created by vasgl on 7/3/2017.
@@ -86,6 +91,9 @@ public class PopularityUpdaterTests {
     @Autowired
     private PopularityUpdater popularityUpdater;
 
+    @Autowired
+    private AuthorizationManager authorizationManager;
+
     @Value("${rabbit.exchange.cram.name}")
     private String cramExchangeName;
 
@@ -124,6 +132,9 @@ public class PopularityUpdaterTests {
         resourceRepo.save(resource2);
 
         popularityUpdater.restartTimer();
+
+        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
+                .checkNotificationSecured(any(), any());
     }
 
     @After
@@ -136,7 +147,7 @@ public class PopularityUpdaterTests {
     public void testPopularityUpdate() throws Exception {
         log.info("testPopularityUpdate STARTED");
 
-        NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
+        NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
         // Sleep to make sure that message has been received
@@ -171,8 +182,8 @@ public class PopularityUpdaterTests {
         }
 
         // Repeat without sending notifications for sensor_id_put
-        notificationMessage.getSuccessfulAttempts().remove(0);
-        notificationMessage.getSuccessfulPushes().remove(0);
+        notificationMessage.getBody().getSuccessfulAttempts().remove(0);
+        notificationMessage.getBody().getSuccessfulPushes().remove(0);
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
         // Sleep to make sure that message has been received
@@ -204,7 +215,7 @@ public class PopularityUpdaterTests {
         log.info("testPopularityUpdate ENDED");
     }
 
-    private NotificationMessage createSuccessfulAttemptsMessage() {
+    private NotificationMessageSecured createSuccessfulAttemptsMessage() {
         ArrayList<Date> dateList = new ArrayList<>();
         Date futureDate = new Date();
         futureDate.setTime(futureDate.getTime() + 1000000);
@@ -235,7 +246,10 @@ public class PopularityUpdaterTests {
         notificationMessage.addSuccessfulPush(successfulPushes1);
         notificationMessage.addSuccessfulPush(successfulPushes2);
 
-        return notificationMessage;
+        NotificationMessageSecured notificationMessageSecured = new NotificationMessageSecured();
+        notificationMessageSecured.setBody(notificationMessage);
+
+        return notificationMessageSecured;
     }
 }
 

@@ -4,18 +4,19 @@ import eu.h2020.symbiote.core.cci.accessNotificationMessages.MessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulPushesMessageInfo;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
+import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 
+import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  * Created by vasgl on 7/2/2017.
@@ -29,10 +30,11 @@ public class ScheduledUpdate extends TimerTask {
     private static Long subIntervalDuration;
     private static AccessNotificationListener accessNotificationListener;
     private static PopularityUpdater popularityUpdater;
+    private static AuthorizationManager authorizationManager;
 
-    public ScheduledUpdate(ResourceRepository resourceRepository, Long noSubIntervals,
+    ScheduledUpdate(ResourceRepository resourceRepository, Long noSubIntervals,
                            Long subIntervalDuration, AccessNotificationListener accessNotificationListener,
-                           PopularityUpdater popularityUpdater) {
+                           PopularityUpdater popularityUpdater, AuthorizationManager authorizationManager) {
         Assert.notNull(resourceRepository,"Resource repository can not be null!");
         this.resourceRepository = resourceRepository;
 
@@ -47,57 +49,68 @@ public class ScheduledUpdate extends TimerTask {
 
         Assert.notNull(popularityUpdater,"popularityUpdater can not be null!");
         this.popularityUpdater = popularityUpdater;
+
+        Assert.notNull(authorizationManager,"authorizationManager can not be null!");
+        this.authorizationManager = authorizationManager;
     }
 
     public void run() {
-        log.debug("Periodic resource popularity update STARTED :" + new Date(new Date().getTime()));
+        log.trace("Periodic resource popularity update STARTED :" + new Date(new Date().getTime()));
         accessNotificationListener.setScheduledUpdateOngoing(true);
 
         List<CramResource> listOfCramResources = resourceRepository.findAll();
 
-        for(Iterator iter = listOfCramResources.iterator(); iter.hasNext();){
-            CramResource cramResource = (CramResource) iter.next();
+        log.debug("resourdeRepo size = " + resourceRepository.findAll().size());
+
+        for(CramResource cramResource : listOfCramResources) {
             cramResource.scheduleUpdateInResourceAccessStats(noSubIntervals, subIntervalDuration);
         }
 
         resourceRepository.save(listOfCramResources);
         accessNotificationListener.setScheduledUpdateOngoing(false);
-        log.debug("Periodic resource popularity update ENDED :" + new Date());
-
         updateResourcesWithQueuedNotifications(accessNotificationListener.getNotificationMessageList());
+
+        log.trace("Periodic resource popularity update ENDED :" + new Date());
     }
 
-    private void updateResourcesWithQueuedNotifications(List<NotificationMessage> notificationMessageList) {
-        log.debug("updateResourcesWithQueuedNotifications STARTED" );
+    private void updateResourcesWithQueuedNotifications(List<NotificationMessageSecured> notificationMessageList) {
+        log.trace("updateResourcesWithQueuedNotifications STARTED" );
 
-        for (NotificationMessage notificationMessage : notificationMessageList) {
-            updateSuccessfulAttemptsMessage(notificationMessage);
-            notificationMessageList.remove(notificationMessage);
+        ArrayList<NotificationMessageSecured> messagesToRemove = new ArrayList<>();
+        for (NotificationMessageSecured messageSecured : notificationMessageList) {
+            updateSuccessfulAttemptsMessage(messageSecured);
+            messagesToRemove.add(messageSecured);
         }
+        notificationMessageList.removeAll(messagesToRemove);
 
-        log.debug("updateResourcesWithQueuedNotifications ENDED" );
+        log.trace("updateResourcesWithQueuedNotifications ENDED" );
     }
 
-    public static void updateSuccessfulAttemptsMessage(NotificationMessage message) {
-        for(SuccessfulAccessMessageInfo successfulAttempts : message.getSuccessfulAttempts())
-            updateResourceViews(successfulAttempts, "SuccessfulAccessMessageInfo");
+    public static void updateSuccessfulAttemptsMessage(NotificationMessageSecured message) {
+        for(SuccessfulAccessMessageInfo successfulAttempts : message.getBody().getSuccessfulAttempts())
+            updateResourceViews(successfulAttempts, message.getSecurityRequest(), "SuccessfulAccessMessageInfo");
 
-        for(SuccessfulPushesMessageInfo successfulPushes : message.getSuccessfulPushes())
-            updateResourceViews(successfulPushes, "SuccessfulPushesMessageInfo");
+        for(SuccessfulPushesMessageInfo successfulPushes : message.getBody().getSuccessfulPushes())
+            updateResourceViews(successfulPushes, message.getSecurityRequest(), "SuccessfulPushesMessageInfo");
     }
 
-    private static void updateResourceViews(MessageInfo messageInfo, String typeOfMessage) {
-        log.debug("Updating views due to " + typeOfMessage);
+    private static void updateResourceViews(MessageInfo messageInfo, SecurityRequest securityRequest,
+                                            String typeOfMessage) {
+        log.trace("Updating views due to " + typeOfMessage);
 
         CramResource cramResource = resourceRepository.findOne(messageInfo.getSymbIoTeId());
+        AuthorizationResult authorizationResult = authorizationManager.checkNotificationSecured(cramResource, securityRequest);
 
-        if (cramResource != null){
-            log.debug("The views of the resource with id = " + messageInfo.getSymbIoTeId() + " were updated");
+        if (cramResource != null && authorizationResult.isValidated()) {
             cramResource.addViewsInSubIntervals(messageInfo.getTimestamps(), noSubIntervals, subIntervalDuration);
             popularityUpdater.addToPopularityUpdatesMap(cramResource);
             resourceRepository.save(cramResource);
+
+            log.debug("The views of the resource with id = " + messageInfo.getSymbIoTeId() + " were updated");
         }
-        else
+        else if (cramResource == null)
             log.debug("The resource with id = " + messageInfo.getSymbIoTeId() + " was not found");
+        else if (!authorizationResult.isValidated())
+            log.debug(authorizationResult.getMessage());
     }
 }

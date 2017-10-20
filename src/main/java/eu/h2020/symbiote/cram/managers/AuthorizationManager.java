@@ -2,6 +2,8 @@ package eu.h2020.symbiote.cram.managers;
 
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.security.accesspolicies.common.SingleTokenAccessPolicyFactory;
+import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleLocalHomeTokenAccessPolicy;
+import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -80,9 +82,9 @@ public class AuthorizationManager {
             enableSecurity();
     }
 
-    public AuthorizationResult checkAccess(CramResource resource, SecurityRequest securityRequest) {
+    public AuthorizationResult checkResourceUrlRequest(CramResource resource, SecurityRequest securityRequest) {
         if (securityEnabled) {
-            log.info("Received SecurityRequest to verification: (" + securityRequest + ")");
+            log.debug("Received SecurityRequest to verification: (" + securityRequest + ")");
 
             if (securityRequest == null) {
                 return new AuthorizationResult("SecurityRequest is null", false);
@@ -91,7 +93,7 @@ public class AuthorizationManager {
 
             Set<String> checkedPolicies;
             try {
-                checkedPolicies = checkPolicy(resource, securityRequest);
+                checkedPolicies = checkStoredResourcePolicy(resource, securityRequest);
             } catch (InvalidArgumentsException e) {
                 e.printStackTrace();
                 return new AuthorizationResult(e.getErrorMessage(), false);
@@ -101,13 +103,46 @@ public class AuthorizationManager {
             if (checkedPolicies.size() == 1) {
                 return new AuthorizationResult("ok", true);
             } else {
-                return new AuthorizationResult("The SingleLocalHomeTokenAccessPolicy was not satisfied", false);
+                return new AuthorizationResult("The stored resource access policy was not satisfied",
+                        false);
             }
         } else {
             log.debug("checkAccess: Security is disabled");
 
             //if security is disabled in properties
-            return new AuthorizationResult("security disabled", false);
+            return new AuthorizationResult("Security disabled", true);
+        }
+    }
+
+    public AuthorizationResult checkNotificationSecured(CramResource resource, SecurityRequest securityRequest) {
+        if (securityEnabled) {
+            log.debug("Received SecurityRequest to verification: (" + securityRequest + ")");
+
+            if (securityRequest == null) {
+                return new AuthorizationResult("SecurityRequest is null", false);
+            }
+
+
+            Set<String> checkedPolicies;
+            try {
+                checkedPolicies = checkSingleLocalHomeTokenAccessPolicy(resource, securityRequest);
+            } catch (InvalidArgumentsException e) {
+                e.printStackTrace();
+                return new AuthorizationResult(e.getErrorMessage(), false);
+
+            }
+
+            if (checkedPolicies.size() == 1) {
+                return new AuthorizationResult("ok", true);
+            } else {
+                return new AuthorizationResult("The SingleLocalHomeTokenAccessPolicy was not satisfied",
+                        false);
+            }
+        } else {
+            log.debug("checkAccess: Security is disabled");
+
+            //if security is disabled in properties
+            return new AuthorizationResult("security disabled", true);
         }
     }
 
@@ -141,7 +176,7 @@ public class AuthorizationManager {
 
     }
 
-    private Set<String> checkPolicy(CramResource resource, SecurityRequest securityRequest)
+    private Set<String> checkStoredResourcePolicy(CramResource resource, SecurityRequest securityRequest)
             throws InvalidArgumentsException {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
@@ -152,6 +187,14 @@ public class AuthorizationManager {
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 
+    private Set<String> checkSingleLocalHomeTokenAccessPolicy(CramResource resource, SecurityRequest securityRequest)
+            throws InvalidArgumentsException {
+        Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
+
+        accessPoliciesMap.put("SingleLocalHomeTokenAccessPolicy",
+                new SingleLocalHomeTokenAccessPolicy(resource.getPlatformId(), null));
+        return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
+    }
 
     /**
      * Setters and Getters

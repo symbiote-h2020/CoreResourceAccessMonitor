@@ -1,7 +1,7 @@
 package eu.h2020.symbiote.cram.integration;
 
-import eu.h2020.symbiote.core.internal.ResourceUrlsRequest;
-import eu.h2020.symbiote.core.internal.ResourceUrlsResponse;
+import eu.h2020.symbiote.core.internal.cram.ResourceUrlsRequest;
+import eu.h2020.symbiote.core.internal.cram.ResourceUrlsResponse;
 import eu.h2020.symbiote.core.model.Platform;
 import eu.h2020.symbiote.core.model.InterworkingService;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
@@ -175,7 +175,8 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test
     public void testGetResourcesUrlsSuccess() throws Exception {
 
-        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager).checkAccess(any(), any());
+        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
+                .checkResourceUrlRequest(any(), any());
         doReturn(new ServiceResponseResult("Service Response", true))
                 .when(authorizationManager).generateServiceResponse();
 
@@ -223,7 +224,8 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test
     public void testGetResourcesUrlsInvalidSecurityRequest() throws Exception {
 
-        doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager).checkAccess(any(), any());
+        doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager)
+                .checkResourceUrlRequest(any(), any());
         doReturn(new ServiceResponseResult("Service Response", true))
                 .when(authorizationManager).generateServiceResponse();
 
@@ -319,9 +321,9 @@ public class CoreResourceAccessMonitorApplicationTests {
         CramResource cramResource2 = resourceRepo.findOne("sensor_id2");
 
         doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
-                .checkAccess(eq(cramResource1), any());
+                .checkResourceUrlRequest(eq(cramResource1), any());
         doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager)
-                .checkAccess(eq(cramResource2), any());
+                .checkResourceUrlRequest(eq(cramResource2), any());
         doReturn(new ServiceResponseResult("Service Response", true))
                 .when(authorizationManager).generateServiceResponse();
 

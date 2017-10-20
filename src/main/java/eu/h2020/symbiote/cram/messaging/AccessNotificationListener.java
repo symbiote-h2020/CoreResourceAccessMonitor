@@ -1,6 +1,7 @@
 package eu.h2020.symbiote.cram.messaging;
 
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ScheduledUpdate;
 import org.apache.commons.logging.Log;
@@ -28,7 +29,7 @@ public class AccessNotificationListener {
     private static ResourceRepository resourceRepository;
 
     private Boolean scheduledUpdateOngoing;
-    private List<NotificationMessage> notificationMessageList;
+    private List<NotificationMessageSecured> notificationMessageList;
 
     @Autowired
     public AccessNotificationListener(ResourceRepository resourceRepository) {
@@ -43,14 +44,14 @@ public class AccessNotificationListener {
     public Boolean getScheduledUpdateOngoing() { return this.scheduledUpdateOngoing; }
     public void setScheduledUpdateOngoing(Boolean value) { this.scheduledUpdateOngoing = value; }
 
-    public List<NotificationMessage> getNotificationMessageList() { return this.notificationMessageList; }
-    public void setNotificationMessageList(List<NotificationMessage> list) { this.notificationMessageList = list; }
+    public List<NotificationMessageSecured> getNotificationMessageList() { return this.notificationMessageList; }
+    public void setNotificationMessageList(List<NotificationMessageSecured> list) { this.notificationMessageList = list; }
 
     /**
      * Spring AMQP Listener for Access Notification Requests. This component listens to Access Notification Requests
      * coming from Resource Access Proxy and updates the resource statistics in the local repository.
      *
-     * @param message Contains resource access updates coming from the Resource Access Proxy
+     * @param messageSecured Contains resource access updates coming from the Resource Access Proxy along with the Security Request
      */
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "${rabbit.queueName.cram.accessNotifications}", durable = "${rabbit.exchange.cram.durable}",
@@ -60,23 +61,24 @@ public class AccessNotificationListener {
                     internal = "${rabbit.exchange.cram.internal}", type = "${rabbit.exchange.cram.type}"),
             key = "${rabbit.routingKey.cram.accessNotifications}")
     )
-    public void listenAndUpdateResourceViewStats(NotificationMessage message) {
+    public void listenAndUpdateResourceViewStats(NotificationMessageSecured messageSecured) {
 
         log.info("NotificationMessage was received.");
-
+        NotificationMessage message = messageSecured.getBody();
         try {
-            if ((message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
+            if (message != null &&
+                    (message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
                     (message.getSuccessfulPushes() != null && message.getSuccessfulPushes().size() != 0)) {
 
                 if (this.scheduledUpdateOngoing) {
                     log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");
-                    notificationMessageList.add(message);
+                    notificationMessageList.add(messageSecured);
                 } else if (notificationMessageList.size() != 0){
                     log.info("Currently, the queued updates are process. The notifications will be queued there.");
-                    notificationMessageList.add(message);
+                    notificationMessageList.add(messageSecured);
                 } else {
                     log.info("Successfully updated");
-                    ScheduledUpdate.updateSuccessfulAttemptsMessage(message);
+                    ScheduledUpdate.updateSuccessfulAttemptsMessage(messageSecured);
                 }
             }
         } catch (Exception e) {

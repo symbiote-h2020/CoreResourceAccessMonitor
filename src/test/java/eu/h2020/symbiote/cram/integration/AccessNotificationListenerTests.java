@@ -3,13 +3,17 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.FailedAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
+import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
+import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 
+import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +35,8 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Created by vasgl on 7/7/2017.
@@ -67,6 +73,9 @@ public class AccessNotificationListenerTests {
     @Autowired
     private AccessNotificationListener accessNotificationListener;
 
+    @Autowired
+    private AuthorizationManager authorizationManager;
+
     @Value("${rabbit.exchange.cram.name}")
     private String cramExchangeName;
 
@@ -92,6 +101,9 @@ public class AccessNotificationListenerTests {
 
         resourceRepo.save(resource1);
         resourceRepo.save(resource2);
+
+        doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
+                .checkNotificationSecured(any(), any());
     }
 
     @After
@@ -104,7 +116,7 @@ public class AccessNotificationListenerTests {
     @Test
     public void noUpdateTest() throws Exception {
 
-        NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
+        NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
         // Sleep to make sure that message has been received
@@ -128,7 +140,7 @@ public class AccessNotificationListenerTests {
     @Test
     public void whileUpdatingTest() throws Exception {
 
-        NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
+        NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
         accessNotificationListener.setScheduledUpdateOngoing(true);
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
@@ -146,14 +158,17 @@ public class AccessNotificationListenerTests {
         // Check that the resources were queued
         assertEquals(1, accessNotificationListener.getNotificationMessageList().size());
         assertEquals(2, accessNotificationListener.getNotificationMessageList().get(0)
-                .getSuccessfulAttempts().size());
+                .getBody().getSuccessfulAttempts().size());
     }
 
     @Test
     public void nonEmptyNotificationMessageList() throws Exception {
 
-        NotificationMessage notificationMessage = createSuccessfulAttemptsMessage();
-        accessNotificationListener.getNotificationMessageList().add(new NotificationMessage());
+        NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
+        NotificationMessageSecured emptyNotificationMessage = new NotificationMessageSecured();
+        emptyNotificationMessage.setBody(new NotificationMessage());
+
+        accessNotificationListener.getNotificationMessageList().add(emptyNotificationMessage);
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
         // Sleep to make sure that message has been received
@@ -170,9 +185,9 @@ public class AccessNotificationListenerTests {
         // Check that the resources were queued
         assertEquals(2, accessNotificationListener.getNotificationMessageList().size());
         assertEquals(0, accessNotificationListener.getNotificationMessageList().get(0)
-                .getSuccessfulAttempts().size());
+                .getBody().getSuccessfulAttempts().size());
         assertEquals(2, accessNotificationListener.getNotificationMessageList().get(1)
-                .getSuccessfulAttempts().size());
+                .getBody().getSuccessfulAttempts().size());
     }
 
     @Test
@@ -216,7 +231,7 @@ public class AccessNotificationListenerTests {
         assertEquals(0, accessNotificationListener.getNotificationMessageList().size());
     }
 
-    private NotificationMessage createSuccessfulAttemptsMessage() {
+    private NotificationMessageSecured createSuccessfulAttemptsMessage() {
         ArrayList<Date> dateList = new ArrayList<>();
         Date futureDate = new Date();
         futureDate.setTime(futureDate.getTime() + 1000000);
@@ -242,6 +257,9 @@ public class AccessNotificationListenerTests {
         notificationMessage.addSuccessfulAttempt(successfulAttempts2);
         notificationMessage.addFailedAttempt(failedAccessMessageInfo);
 
-        return notificationMessage;
+        NotificationMessageSecured notificationMessageSecured = new NotificationMessageSecured();
+        notificationMessageSecured.setBody(notificationMessage);
+
+        return notificationMessageSecured;
     }
 }

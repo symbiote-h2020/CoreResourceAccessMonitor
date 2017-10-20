@@ -1,5 +1,6 @@
 package eu.h2020.symbiote.cram.util;
 
+import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import org.apache.commons.logging.Log;
@@ -30,13 +31,14 @@ public class ResourceAccessStatsUpdater {
     private Timer timer;
     private ScheduledUpdate scheduledUpdate;
     private PopularityUpdater popularityUpdater;
+    private AuthorizationManager authorizationManager;
 
     @Autowired
     public ResourceAccessStatsUpdater(ResourceRepository resourceRepository, NextPopularityUpdate nextPopularityUpdate,
                                       @Qualifier("subIntervalDuration") Long subIntervalDuration,
                                       @Qualifier("noSubIntervals") Long noSubIntervals,
                                       AccessNotificationListener accessNotificationListener,
-                                      PopularityUpdater popularityUpdater) {
+                                      PopularityUpdater popularityUpdater, AuthorizationManager authorizationManager) {
         Assert.notNull(resourceRepository,"Resource repository can not be null!");
         this.resourceRepository = resourceRepository;
 
@@ -55,6 +57,9 @@ public class ResourceAccessStatsUpdater {
         Assert.notNull(popularityUpdater,"PopularityUpdater can not be null!");
         this.popularityUpdater = popularityUpdater;
 
+        Assert.notNull(authorizationManager,"AuthorizationManager can not be null!");
+        this.authorizationManager = authorizationManager;
+
         this.timer = new Timer();
         startTimer();
     }
@@ -69,14 +74,22 @@ public class ResourceAccessStatsUpdater {
 
     public void startTimer() {
         timer = new Timer();
-        scheduledUpdate = new ScheduledUpdate(this.resourceRepository, this.noSubIntervals,
-                this.subIntervalDuration, this.accessNotificationListener, this.popularityUpdater);
-        timer.schedule(scheduledUpdate, nextPopularityUpdate.getNextUpdate(), this.subIntervalDuration);
+        scheduledUpdate = new ScheduledUpdate(resourceRepository, noSubIntervals,
+                subIntervalDuration, accessNotificationListener, popularityUpdater, authorizationManager);
+        timer.schedule(scheduledUpdate, nextPopularityUpdate.getNextUpdate(), subIntervalDuration);
     }
 
     public void cancelTimer() {
         timer.cancel();
         timer.purge();
         scheduledUpdate.cancel();
+    }
+
+    public NextPopularityUpdate getNextPopularityUpdate() {
+        return nextPopularityUpdate;
+    }
+
+    public void setNextPopularityUpdate(NextPopularityUpdate nextPopularityUpdate) {
+        this.nextPopularityUpdate = nextPopularityUpdate;
     }
 }
