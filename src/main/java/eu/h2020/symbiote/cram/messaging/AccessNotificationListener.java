@@ -4,6 +4,7 @@ import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ScheduledUpdate;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -67,8 +68,8 @@ public class AccessNotificationListener {
         NotificationMessage message = messageSecured.getBody();
         try {
             if (message != null &&
-                    (message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
-                    (message.getSuccessfulPushes() != null && message.getSuccessfulPushes().size() != 0)) {
+                    ((message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
+                    (message.getSuccessfulPushes() != null && message.getSuccessfulPushes().size() != 0))) {
 
                 if (this.scheduledUpdateOngoing) {
                     log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");

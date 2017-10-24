@@ -2,31 +2,31 @@ package eu.h2020.symbiote.cram.integration;
 
 import eu.h2020.symbiote.core.internal.cram.ResourceUrlsRequest;
 import eu.h2020.symbiote.core.internal.cram.ResourceUrlsResponse;
-import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.InterworkingService;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
-import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
-import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 
+import eu.h2020.symbiote.model.mim.InterworkingService;
+import eu.h2020.symbiote.model.mim.Platform;
 import org.apache.http.HttpStatus;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.mockito.InjectMocks;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.junit.After;
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.runner.RunWith;
 
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate.RabbitConverterFuture;
@@ -34,20 +34,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -131,13 +131,12 @@ public class CoreResourceAccessMonitorApplicationTests {
     public void setUp() throws Exception {
         resourceAccessStatsUpdater.cancelTimer();;
 
-        List<String> labels = new ArrayList<>();
-        List<String> comments = new ArrayList<>();
+        List<String> descriptions = new ArrayList<>();
         List<InterworkingService> interworkingServiceList = new ArrayList<>();
+        String platformName = "platform_name";
 
         resourceUrl = platformAAMUrl + "/rap";
-        labels.add("platform_name");
-        comments.add("platform_description");
+        descriptions.add("platform_description");
         InterworkingService interworkingService = new InterworkingService();
         interworkingService.setUrl("http://www.symbIoTe.com");
         interworkingService.setInformationModelId("platform_info_model");
@@ -145,8 +144,8 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         Platform platform = new Platform();
         platform.setId("platform_id");
-        platform.setLabels(labels);
-        platform.setComments(comments);
+        platform.setName(platformName);
+        platform.setDescription(descriptions);
         platform.setInterworkingServices(interworkingServiceList);
 
         CramResource resource1 = new CramResource();

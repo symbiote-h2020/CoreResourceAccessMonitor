@@ -1,47 +1,44 @@
 package eu.h2020.symbiote.cram.integration;
 
 
+import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
-import eu.h2020.symbiote.core.model.internal.CoreResource;
-import eu.h2020.symbiote.core.model.InterworkingService;
-import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.internal.CoreResourceType;
+import eu.h2020.symbiote.core.internal.CoreResourceType;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
+import eu.h2020.symbiote.model.mim.InterworkingService;
+import eu.h2020.symbiote.model.mim.Platform;
 import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
 import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.runner.RunWith;
-
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.core.MessageDeliveryMode;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 
 /**
@@ -134,7 +131,7 @@ public class MessageQueuesTests {
 
         Platform result = platformRepo.findOne(platform.getId());
         log.info("platform.id = " + platform.getId());
-        assertEquals(platform.getLabels().get(0), result.getLabels().get(0));
+        assertEquals(platform.getName(), result.getName());
     }
 
     @Test
@@ -146,9 +143,7 @@ public class MessageQueuesTests {
         platformRepo.save(platform);
 
         String newName = "platform" + rand.nextInt(50000);
-        List<String> newLabels = new ArrayList<>();
-        newLabels.add(newName);
-        platform.setLabels(newLabels);
+        platform.setName(newName);
 
         sendPlatformMessage(platformExchangeName, platformUpdatedRoutingKey, platform);
 
@@ -156,7 +151,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(1);
 
         Platform result = platformRepo.findOne(platform.getId());
-        assertEquals(newName, result.getLabels().get(0));
+        assertEquals(newName, result.getName());
     }
 
     @Test
@@ -261,18 +256,17 @@ public class MessageQueuesTests {
         CramResource cramResource2 = new CramResource(coreResource2);
         resourceRepo.save(cramResource2);
 
-        String resourceNewLabel = "label3";
-        List<String> labels = Arrays.asList("label1", "label2", resourceNewLabel);
+        String resourceNewName = "name3";
 
         CoreResource newCoreResource1 = new CoreResource();
         newCoreResource1.setId(coreResource1.getId());
-        newCoreResource1.setLabels(labels);
+        newCoreResource1.setName(resourceNewName);
         newCoreResource1.setInterworkingServiceURL(coreResource1.getInterworkingServiceURL());
         newCoreResource1.setType(CoreResourceType.ACTUATOR);
 
         CoreResource newCoreResource2 = new CoreResource();
         newCoreResource2.setId(coreResource2.getId());
-        newCoreResource2.setLabels(labels);
+        newCoreResource2.setName(resourceNewName);
         newCoreResource2.setInterworkingServiceURL(coreResource2.getInterworkingServiceURL());
         newCoreResource2.setType(CoreResourceType.ACTUATOR);
 
@@ -290,11 +284,11 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(1);
 
         CramResource result = resourceRepo.findOne(coreResource1.getId());
-        assertEquals(resourceNewLabel, result.getLabels().get(2));
+        assertEquals(resourceNewName, result.getName());
         assertEquals(platform.getId(), result.getPlatformId());
 
         result = resourceRepo.findOne(coreResource2.getId());
-        assertEquals(resourceNewLabel, result.getLabels().get(2));
+        assertEquals(resourceNewName, result.getName());
         assertEquals(platform.getId(), result.getPlatformId());
 
 	}
@@ -334,20 +328,18 @@ public class MessageQueuesTests {
         Platform platform = new Platform ();
         String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
-        List<String> labels = new ArrayList<>();
-        List<String> comments = new ArrayList<>();
+        List<String> descriptions = new ArrayList<>();
         List<InterworkingService> interworkingServices = new ArrayList<>();
         InterworkingService interworkingService = new InterworkingService();
 
-        labels.add(name);
-        comments.add("platform_description");
+        descriptions.add("platform_description");
         interworkingService.setUrl(platformUrl);
         interworkingService.setInformationModelId("platform_description");
         interworkingServices.add(interworkingService);
 
         platform.setId(platformId);
-        platform.setLabels(labels);
-        platform.setComments(comments);
+        platform.setName(name);
+        platform.setDescription(descriptions);
         platform.setInterworkingServices(interworkingServices);
 
         return platform;
@@ -358,11 +350,10 @@ public class MessageQueuesTests {
         CoreResource resource = new CoreResource();
         String resourceId = Integer.toString(rand.nextInt(50000));
         resource.setId(resourceId);
+        resource.setName("name1");
 
-        List<String> labels = Arrays.asList("label1", "label2");
-        List<String> comments = Arrays.asList("comment1", "comment2");
-        resource.setLabels(labels);
-        resource.setComments(comments);
+        List<String> descriptions = Arrays.asList("comment1", "comment2");
+        resource.setDescription(descriptions);
         resource.setInterworkingServiceURL(platformUrl);
 
         try {

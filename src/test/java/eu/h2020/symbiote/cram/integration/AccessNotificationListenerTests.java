@@ -13,7 +13,6 @@ import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 
-import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

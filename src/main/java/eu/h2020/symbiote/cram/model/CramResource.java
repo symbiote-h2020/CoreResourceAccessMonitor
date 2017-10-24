@@ -1,11 +1,11 @@
 package eu.h2020.symbiote.cram.model;
 
 
-import eu.h2020.symbiote.core.model.resources.Resource;
-import eu.h2020.symbiote.core.model.internal.CoreResource;
-import eu.h2020.symbiote.core.model.internal.CoreResourceType;
-import eu.h2020.symbiote.security.accesspolicies.IAccessPolicy;
+import eu.h2020.symbiote.core.internal.CoreResource;
+import eu.h2020.symbiote.core.internal.CoreResourceType;
+import eu.h2020.symbiote.model.cim.Resource;
 import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +41,8 @@ public class CramResource extends Resource {
 
     public CramResource(CoreResource coreResource) {
         setId(coreResource.getId());
-        setLabels(new ArrayList<>(coreResource.getLabels()));
-        setComments(new ArrayList<>(coreResource.getComments()));
+        setName(coreResource.getName());
+        setDescription(new ArrayList<>(coreResource.getDescription()));
         setInterworkingServiceURL(coreResource.getInterworkingServiceURL());
         setType(coreResource.getType());
         setPolicySpecifier(coreResource.getPolicySpecifier());
@@ -50,8 +50,8 @@ public class CramResource extends Resource {
 
     public CramResource(CramResource cramResource) {
         setId(cramResource.getId());
-        setLabels(new ArrayList<>(cramResource.getLabels()));
-        setComments(new ArrayList<>(cramResource.getComments()));
+        setName(cramResource.getName());
+        setDescription(new ArrayList<>(cramResource.getDescription()));
         setInterworkingServiceURL(cramResource.getInterworkingServiceURL());
         setType(cramResource.getType());
         setResourceUrl(cramResource.getResourceUrl());
@@ -176,8 +176,8 @@ public class CramResource extends Resource {
 
         // field comparison
         return Objects.equals(this.getId(), cramResource.getId())
-                && Objects.equals(this.getLabels(), cramResource.getLabels())
-                && Objects.equals(this.getComments(), cramResource.getComments())
+                && Objects.equals(this.getName(), cramResource.getName())
+                && Objects.equals(this.getDescription(), cramResource.getDescription())
                 && Objects.equals(this.getInterworkingServiceURL(), cramResource.getInterworkingServiceURL())
                 && Objects.equals(this.getType(), cramResource.getType())
                 && Objects.equals(this.getResourceUrl(), cramResource.getResourceUrl())

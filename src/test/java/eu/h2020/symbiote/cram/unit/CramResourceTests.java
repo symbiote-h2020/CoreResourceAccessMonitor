@@ -1,13 +1,13 @@
 package eu.h2020.symbiote.cram.unit;
 
-import eu.h2020.symbiote.core.model.internal.CoreResourceType;
+import eu.h2020.symbiote.core.internal.CoreResourceType;
+import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.cram.model.SubIntervalViews;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import eu.h2020.symbiote.cram.model.SubIntervalViews;
-import eu.h2020.symbiote.cram.model.CramResource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -214,8 +214,8 @@ public class CramResourceTests {
     public void equals() {
         CramResource cramResource1 = new CramResource();
         cramResource1.setId("id1");
-        cramResource1.setLabels(Arrays.asList("label1", "label2"));
-        cramResource1.setComments(Arrays.asList("comment1", "comment2"));
+        cramResource1.setName("Name");
+        cramResource1.setDescription(Arrays.asList("comment1", "comment2"));
         cramResource1.setInterworkingServiceURL("resource1.com");
         cramResource1.setPlatformId("p1");
         cramResource1.setResourceUrl("url");
@@ -230,7 +230,7 @@ public class CramResourceTests {
         cramResource3.setType(CoreResourceType.DEVICE);
 
         CramResource cramResource4 = new CramResource(cramResource1);
-        cramResource4.getLabels().set(1, "label3");
+        cramResource4.setName("name4");
 
         CramResource cramResource5 = new CramResource(cramResource1);
         cramResource5.getViewsInSubIntervals().set(1, new SubIntervalViews(new Date(0), new Date(4), 4));

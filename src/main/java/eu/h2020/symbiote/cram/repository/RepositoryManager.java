@@ -1,6 +1,9 @@
 package eu.h2020.symbiote.cram.repository;
 
+import eu.h2020.symbiote.core.internal.CoreResource;
+import eu.h2020.symbiote.core.internal.CoreResourceType;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
+import eu.h2020.symbiote.model.mim.Platform;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -13,10 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 
-import eu.h2020.symbiote.core.model.Platform;
-import eu.h2020.symbiote.core.model.internal.CoreResourceType;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
-import eu.h2020.symbiote.core.model.internal.CoreResource;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -223,8 +223,8 @@ public class RepositoryManager {
                         + "not exist");
 
                 cramResource.setId(coreResource.getId());
-                cramResource.setLabels(coreResource.getLabels());
-                cramResource.setComments(coreResource.getComments());
+                cramResource.setName(coreResource.getName());
+                cramResource.setDescription(coreResource.getDescription());
                 cramResource.setInterworkingServiceURL(coreResource.getInterworkingServiceURL());
                 cramResource.setType(coreResource.getType());
                 cramResource.setPlatformId(message.getPlatformId());

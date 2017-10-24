@@ -129,21 +129,26 @@ public class RpcServer {
             return response;
 
         } else if (notAuthorized.size() > 0) {
-            message += "Security Request not valid for all the resourceIds [";
+            StringBuilder stringBuilder = new StringBuilder("Security Request not valid for all the resourceIds [");
+
             for (String id : notAuthorized) {
-                message += id + ", ";
+                stringBuilder.append(id).append(", ");
             }
-            message = message.substring(0, message.length() - 2);
+
+            message = stringBuilder.toString().substring(0, stringBuilder.toString().length() - 2);
             message += "]. ";
 
         }
 
         if (notFound.size() > 0) {
-            message += "Not all the resources were found [";
+            StringBuilder stringBuilder = new StringBuilder(message);
+            stringBuilder.append("Not all the resources were found [");
+
             for (String id : notFound) {
-                message += id + ", ";
+                stringBuilder.append(id).append(", ");
             }
-            message = message.substring(0, message.length() - 2);
+
+            message = stringBuilder.toString().substring(0, stringBuilder.toString().length() - 2);
             message += "].";
 
         }

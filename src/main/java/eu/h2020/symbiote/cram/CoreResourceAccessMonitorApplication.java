@@ -1,8 +1,19 @@
 package eu.h2020.symbiote.cram;
 
+import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
+import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
+import eu.h2020.symbiote.util.IntervalFormatter;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,22 +23,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.data.mongodb.core.geo.GeoJsonModule;
 
 import java.util.Date;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
-import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
-import eu.h2020.symbiote.util.IntervalFormatter;
 
 @EnableDiscoveryClient
 @EnableRabbit

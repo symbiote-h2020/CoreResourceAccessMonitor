@@ -1,7 +1,6 @@
 package eu.h2020.symbiote.cram.util;
 
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.MessageInfo;
-import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulPushesMessageInfo;
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
@@ -10,10 +9,11 @@ import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
-
 import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.util.Assert;
 
 import java.util.*;
