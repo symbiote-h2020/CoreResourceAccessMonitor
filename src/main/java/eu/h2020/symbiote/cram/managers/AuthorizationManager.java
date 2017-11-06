@@ -2,8 +2,7 @@ package eu.h2020.symbiote.cram.managers;
 
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.security.accesspolicies.common.SingleTokenAccessPolicyFactory;
-import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleLocalHomeTokenAccessPolicy;
-import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
+import eu.h2020.symbiote.security.accesspolicies.common.singletoken.ComponentHomeTokenAccessPolicy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,6 +35,7 @@ import java.util.Set;
 public class AuthorizationManager {
 
     private static Log log = LogFactory.getLog(AuthorizationManager.class);
+    private static final String RAP_IDENTIFIER = "rap";
 
     private String componentOwnerName;
     private String componentOwnerPassword;
@@ -125,7 +125,7 @@ public class AuthorizationManager {
 
             Set<String> checkedPolicies;
             try {
-                checkedPolicies = checkSingleLocalHomeTokenAccessPolicy(resource, securityRequest);
+                checkedPolicies = checkComponentHomeTokenAccessPolicy(resource, securityRequest);
             } catch (InvalidArgumentsException e) {
                 e.printStackTrace();
                 return new AuthorizationResult(e.getErrorMessage(), false);
@@ -187,12 +187,12 @@ public class AuthorizationManager {
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 
-    private Set<String> checkSingleLocalHomeTokenAccessPolicy(CramResource resource, SecurityRequest securityRequest)
+    private Set<String> checkComponentHomeTokenAccessPolicy(CramResource resource, SecurityRequest securityRequest)
             throws InvalidArgumentsException {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
-        accessPoliciesMap.put("SingleLocalHomeTokenAccessPolicy",
-                new SingleLocalHomeTokenAccessPolicy(resource.getPlatformId(), null));
+        accessPoliciesMap.put("ComponentHomeTokenAccessPolicy",
+                new ComponentHomeTokenAccessPolicy(resource.getPlatformId(), RAP_IDENTIFIER,  new HashMap<>()));
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 
