@@ -64,7 +64,7 @@ public class AccessNotificationListener {
     )
     public void listenAndUpdateResourceViewStats(NotificationMessageSecured messageSecured) {
 
-        log.info("NotificationMessage was received.");
+        log.trace("NotificationMessage was received.");
         NotificationMessage message = messageSecured.getBody();
         try {
             if (message != null &&
@@ -72,13 +72,13 @@ public class AccessNotificationListener {
                     (message.getSuccessfulPushes() != null && message.getSuccessfulPushes().size() != 0))) {
 
                 if (this.scheduledUpdateOngoing) {
-                    log.info("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");
+                    log.debug("Currently, the resource views are under updating, so the SuccessfulAttemptsMessage are queued.");
                     notificationMessageList.add(messageSecured);
                 } else if (notificationMessageList.size() != 0){
-                    log.info("Currently, the queued updates are process. The notifications will be queued there.");
+                    log.debug("Currently, the queued updates are process. The notifications will be queued there.");
                     notificationMessageList.add(messageSecured);
                 } else {
-                    log.info("Successfully updated");
+                    log.debug("Successfully updated");
                     ScheduledUpdate.updateSuccessfulAttemptsMessage(messageSecured);
                 }
             }

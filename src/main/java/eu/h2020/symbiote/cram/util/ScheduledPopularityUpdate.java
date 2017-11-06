@@ -37,7 +37,7 @@ public class ScheduledPopularityUpdate extends TimerTask {
     }
 
     public void run() {
-        log.debug("Periodic sending of popularity updates to search engine STARTED at:" + new Date(new Date().getTime()));
+        log.trace("Periodic sending of popularity updates to search engine STARTED at:" + new Date(new Date().getTime()));
 
         PopularityUpdatesMessage popularityUpdatesMessage = new PopularityUpdatesMessage();
 
@@ -51,10 +51,10 @@ public class ScheduledPopularityUpdate extends TimerTask {
         popularityUpdatesMap.clear();
 
         // Informing Search Engine
-        log.debug("Sending message to exchange = " + searchExchange + " with key = " + searchPopularityUpdatesRoutingKey);
+        log.trace("Sending message to exchange = " + searchExchange + " with key = " + searchPopularityUpdatesRoutingKey);
         if (popularityUpdatesMessage.getPopularityUpdateList() != null &&
                 popularityUpdatesMessage.getPopularityUpdateList().size() > 0)
         rabbitTemplate.convertAndSend(searchExchange, searchPopularityUpdatesRoutingKey, popularityUpdatesMessage);
-        log.debug("Periodic sending of popularity updates to search engine ENDED at:" + new Date(new Date().getTime()));
+        log.trace("Periodic sending of popularity updates to search engine ENDED at:" + new Date(new Date().getTime()));
     }
 }

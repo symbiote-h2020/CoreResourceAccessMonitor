@@ -81,7 +81,7 @@ public class RpcServer {
         List<String> notAuthorized = new ArrayList<>();
         List<String> notFound = new ArrayList<>();
 
-        log.info("CRAM received a request for the following ids: " + resourceList);
+        log.debug("CRAM received a request for the following ids: " + resourceList);
 
         ServiceResponseResult serviceResponseResult = authorizationManager.generateServiceResponse();
 
