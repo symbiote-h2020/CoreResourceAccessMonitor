@@ -5,6 +5,7 @@ import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ScheduledUpdate;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,7 +65,7 @@ public class AccessNotificationListener {
     )
     public void listenAndUpdateResourceViewStats(NotificationMessageSecured messageSecured) {
 
-        log.trace("NotificationMessage was received.");
+        log.trace("NotificationMessage was received: " + ReflectionToStringBuilder.toString(messageSecured));
         NotificationMessage message = messageSecured.getBody();
         try {
             if (message != null &&
@@ -78,7 +79,7 @@ public class AccessNotificationListener {
                     log.debug("Currently, the queued updates are process. The notifications will be queued there.");
                     notificationMessageList.add(messageSecured);
                 } else {
-                    log.debug("Successfully updated");
+                    log.debug("Update will happen immediately");
                     ScheduledUpdate.updateSuccessfulAttemptsMessage(messageSecured);
                 }
             }
