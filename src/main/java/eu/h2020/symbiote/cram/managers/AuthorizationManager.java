@@ -84,7 +84,7 @@ public class AuthorizationManager {
 
     public AuthorizationResult checkResourceUrlRequest(CramResource resource, SecurityRequest securityRequest) {
         if (securityEnabled) {
-            log.debug("Received SecurityRequest to verification: (" + securityRequest + ")");
+            log.debug("Received SecurityRequest of ResourceUrlsRequest to be verified: (" + securityRequest + ")");
 
             if (securityRequest == null) {
                 return new AuthorizationResult("SecurityRequest is null", false);
@@ -94,9 +94,9 @@ public class AuthorizationManager {
             Set<String> checkedPolicies;
             try {
                 checkedPolicies = checkStoredResourcePolicy(resource, securityRequest);
-            } catch (InvalidArgumentsException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                return new AuthorizationResult(e.getErrorMessage(), false);
+                return new AuthorizationResult(e.getMessage(), false);
 
             }
 
@@ -116,7 +116,7 @@ public class AuthorizationManager {
 
     public AuthorizationResult checkNotificationSecured(CramResource resource, SecurityRequest securityRequest) {
         if (securityEnabled) {
-            log.debug("Received SecurityRequest to verification: (" + securityRequest + ")");
+            log.debug("Received SecurityRequest of NotificationMessageSecured to be verified: (" + securityRequest + ")");
 
             if (securityRequest == null) {
                 return new AuthorizationResult("SecurityRequest is null", false);
@@ -126,9 +126,9 @@ public class AuthorizationManager {
             Set<String> checkedPolicies;
             try {
                 checkedPolicies = checkComponentHomeTokenAccessPolicy(resource, securityRequest);
-            } catch (InvalidArgumentsException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                return new AuthorizationResult(e.getErrorMessage(), false);
+                return new AuthorizationResult(e.getMessage(), false);
 
             }
 
@@ -177,7 +177,7 @@ public class AuthorizationManager {
     }
 
     private Set<String> checkStoredResourcePolicy(CramResource resource, SecurityRequest securityRequest)
-            throws InvalidArgumentsException {
+            throws Exception {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
         // Construct policy
@@ -188,7 +188,7 @@ public class AuthorizationManager {
     }
 
     private Set<String> checkComponentHomeTokenAccessPolicy(CramResource resource, SecurityRequest securityRequest)
-            throws InvalidArgumentsException {
+            throws Exception {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
         accessPoliciesMap.put("ComponentHomeTokenAccessPolicy",
