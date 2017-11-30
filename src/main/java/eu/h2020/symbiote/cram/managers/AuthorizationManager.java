@@ -43,6 +43,7 @@ public class AuthorizationManager {
     private String clientId;
     private String keystoreName;
     private String keystorePass;
+    private Boolean alwaysUseLocalAAMForValidation;
     private Boolean securityEnabled;
 
     private IComponentSecurityHandler componentSecurityHandler;
@@ -54,7 +55,8 @@ public class AuthorizationManager {
                                 @Value("${aam.environment.clientId}") String clientId,
                                 @Value("${aam.environment.keystoreName}") String keystoreName,
                                 @Value("${aam.environment.keystorePass}") String keystorePass,
-                                @Value("${cram.security.enabled}") Boolean securityEnabled)
+                                @Value("${cram.security.enabled}") Boolean securityEnabled,
+                                @Value("${symbIoTe.validation.localaam}") Boolean alwaysUseLocalAAMForValidation)
             throws SecurityHandlerException, InvalidArgumentsException {
 
         Assert.notNull(componentOwnerName,"componentOwnerName can not be null!");
@@ -74,6 +76,9 @@ public class AuthorizationManager {
 
         Assert.notNull(keystorePass,"keystorePass can not be null!");
         this.keystorePass = keystorePass;
+
+        Assert.notNull(alwaysUseLocalAAMForValidation,"alwaysUseLocalAAMForValidation can not be null!");
+        this.alwaysUseLocalAAMForValidation = alwaysUseLocalAAMForValidation;
 
         Assert.notNull(securityEnabled,"securityEnabled can not be null!");
         this.securityEnabled = securityEnabled;
@@ -170,7 +175,7 @@ public class AuthorizationManager {
                 keystorePass,
                 clientId,
                 aamAddress,
-                false,
+                alwaysUseLocalAAMForValidation,
                 componentOwnerName,
                 componentOwnerPassword);
 
