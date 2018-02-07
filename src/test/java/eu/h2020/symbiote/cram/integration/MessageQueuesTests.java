@@ -12,17 +12,15 @@ import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import eu.h2020.symbiote.model.mim.InterworkingService;
 import eu.h2020.symbiote.model.mim.Platform;
+import eu.h2020.symbiote.security.accesspolicies.common.AccessPolicyType;
 import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
 import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -358,7 +356,7 @@ public class MessageQueuesTests {
 
         try {
             resource.setPolicySpecifier(new SingleTokenAccessPolicySpecifier(
-                    SingleTokenAccessPolicySpecifier.SingleTokenAccessPolicyType.PUBLIC,
+                    AccessPolicyType.PUBLIC,
                     new HashMap<>()));
         } catch (InvalidArgumentsException e) {
             e.printStackTrace();

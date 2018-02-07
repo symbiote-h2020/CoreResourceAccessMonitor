@@ -1,7 +1,7 @@
 package eu.h2020.symbiote.cram.managers;
 
 import eu.h2020.symbiote.cram.model.CramResource;
-import eu.h2020.symbiote.security.accesspolicies.common.SingleTokenAccessPolicyFactory;
+import eu.h2020.symbiote.security.accesspolicies.common.AccessPolicyFactory;
 import eu.h2020.symbiote.security.accesspolicies.common.singletoken.ComponentHomeTokenAccessPolicy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -186,7 +186,7 @@ public class AuthorizationManager {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
         // Construct policy
-        IAccessPolicy policy = SingleTokenAccessPolicyFactory.getSingleTokenAccessPolicy(resource.getPolicySpecifier());
+        IAccessPolicy policy = AccessPolicyFactory.getAccessPolicy(resource.getPolicySpecifier());
         accessPoliciesMap.put(resource.getId(), policy);
 
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);

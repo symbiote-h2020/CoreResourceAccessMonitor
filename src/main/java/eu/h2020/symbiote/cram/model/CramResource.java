@@ -4,7 +4,7 @@ package eu.h2020.symbiote.cram.model;
 import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
 import eu.h2020.symbiote.model.cim.Resource;
-import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
+import eu.h2020.symbiote.security.accesspolicies.common.IAccessPolicySpecifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class CramResource extends Resource {
     private Integer viewsInDefinedInterval;
     private List<SubIntervalViews> viewsInSubIntervals;
     private String platformId;
-    private SingleTokenAccessPolicySpecifier policySpecifier;
+    private IAccessPolicySpecifier policySpecifier;
 
     public CramResource() {
         // Empty constructor
@@ -84,8 +84,8 @@ public class CramResource extends Resource {
     public String getPlatformId() { return platformId; }
     public void setPlatformId(String platformId) { this.platformId = platformId; }
 
-    public SingleTokenAccessPolicySpecifier getPolicySpecifier() { return policySpecifier; }
-    public void setPolicySpecifier(SingleTokenAccessPolicySpecifier policySpecifier) { this.policySpecifier = policySpecifier; }
+    public IAccessPolicySpecifier getPolicySpecifier() { return policySpecifier; }
+    public void setPolicySpecifier(IAccessPolicySpecifier policySpecifier) { this.policySpecifier = policySpecifier; }
 
     public void addViewsInSubIntervals(List<Date> timestamps, Long noSubIntervals, Long subIntervalDuration) {
 
