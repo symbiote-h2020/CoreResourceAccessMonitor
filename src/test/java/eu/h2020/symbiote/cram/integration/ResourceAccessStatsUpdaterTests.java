@@ -162,6 +162,7 @@ public class ResourceAccessStatsUpdaterTests {
         cramPersistentVariablesRepository.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getNotificationMessageList().clear();
+        resourceAccessStatsUpdater.cancelTimer();
     }
 
     @Test

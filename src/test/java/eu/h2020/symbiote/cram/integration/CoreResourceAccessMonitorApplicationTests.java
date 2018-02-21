@@ -169,6 +169,7 @@ public class CoreResourceAccessMonitorApplicationTests {
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getNotificationMessageList().clear();
+        resourceAccessStatsUpdater.cancelTimer();
     }
 
     @Test

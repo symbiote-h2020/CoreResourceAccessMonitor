@@ -114,6 +114,7 @@ public class MessageQueuesTests {
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getNotificationMessageList().clear();
+        resourceAccessStatsUpdater.cancelTimer();
     }
 
     @Test
