@@ -60,7 +60,7 @@ public class ScheduledUpdate extends TimerTask {
 
         List<CramResource> listOfCramResources = resourceRepository.findAll();
 
-        log.debug("resourdeRepo size = " + resourceRepository.findAll().size());
+        log.debug("resourdeRepo size = " + listOfCramResources.size());
 
         for(CramResource cramResource : listOfCramResources) {
             cramResource.scheduleUpdateInResourceAccessStats(noSubIntervals, subIntervalDuration);
@@ -103,7 +103,6 @@ public class ScheduledUpdate extends TimerTask {
 
         if (cramResource != null && authorizationResult.isValidated()) {
             cramResource.addViewsInSubIntervals(messageInfo.getTimestamps(), noSubIntervals, subIntervalDuration);
-            popularityUpdater.addToPopularityUpdatesMap(cramResource);
             resourceRepository.save(cramResource);
 
             log.debug("The views of the resource with id = " + messageInfo.getSymbIoTeId() + " were updated");

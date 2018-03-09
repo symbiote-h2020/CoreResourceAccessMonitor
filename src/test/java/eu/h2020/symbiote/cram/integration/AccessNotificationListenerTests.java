@@ -110,6 +110,7 @@ public class AccessNotificationListenerTests {
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getNotificationMessageList().clear();
+        resourceAccessStatsUpdater.cancelTimer();
     }
 
     @Test

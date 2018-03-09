@@ -13,6 +13,7 @@ import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.PopularityUpdater;
 
+import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,7 @@ import static org.mockito.Mockito.doReturn;
         "platform.aam.url=http://localhost:8080",
         "subIntervalDuration=P0-0-0T1:0:0",
         "intervalDuration=P0-0-0T2:0:0",
-        "informSearchInterval=P0-0-0T0:0:1",
+        "informSearchInterval=P0-0-0T0:0:0.5",
         "symbiote.core.cram.database=symbiote-core-cram-database-put",
         "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-put",
         "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-put",
@@ -92,6 +93,9 @@ public class PopularityUpdaterTests {
     private PopularityUpdater popularityUpdater;
 
     @Autowired
+    private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
+
+    @Autowired
     private AuthorizationManager authorizationManager;
 
     @Value("${rabbit.exchange.cram.name}")
@@ -108,7 +112,7 @@ public class PopularityUpdaterTests {
     // Execute the Setup method before the test.
     @Before
     public void setUp() {
-        List<String> observedProperties = Arrays.asList("temp", "air");
+        resourceAccessStatsUpdater.cancelTimer();
         resourceUrl = platformAAMUrl + "/rap";
 
         CramResource resource1 = new CramResource();
@@ -141,6 +145,7 @@ public class PopularityUpdaterTests {
     public void clearSetup() {
         resourceRepo.deleteAll();
         searchEngineListener.clearRequestsReceivedByListener();
+        resourceAccessStatsUpdater.cancelTimer();
     }
 
     @Test
@@ -150,23 +155,17 @@ public class PopularityUpdaterTests {
         NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
-        // Sleep to make sure that message has been received
-        TimeUnit.MILLISECONDS.sleep((long) (0.55 * informSearchInterval));
-
-        assertEquals(2, popularityUpdater.getPopularityUpdatesMap().size());
-
-        while(searchEngineListener.popularityUpdatesMessagesReceived() < 1) {
+        while(searchEngineListener.popularityUpdatesMessagesReceived() < 3) {
             TimeUnit.MILLISECONDS.sleep(100);
         }
         // Added extra delay to make sure that the message is handled
         TimeUnit.MILLISECONDS.sleep(100);
 
-        assertEquals(0, popularityUpdater.getPopularityUpdatesMap().size());
-        assertEquals(1, searchEngineListener.popularityUpdatesMessagesReceived());
-        assertEquals(2, searchEngineListener.getPopularityUpdatesMessages().get(0).getPopularityUpdateList().size());
+        assertEquals(3, searchEngineListener.popularityUpdatesMessagesReceived());
+        assertEquals(2, searchEngineListener.getPopularityUpdatesMessages().get(2).getPopularityUpdateList().size());
 
         for (PopularityUpdate popularityUpdate : searchEngineListener.getPopularityUpdatesMessages()
-                .get(0).getPopularityUpdateList()) {
+                .get(2).getPopularityUpdateList()) {
 
             if (popularityUpdate.getId().equals("sensor_id_put")) {
                 assertEquals(6, (long)popularityUpdate.getViewsInDefinedInterval());
@@ -186,23 +185,22 @@ public class PopularityUpdaterTests {
         notificationMessage.getBody().getSuccessfulPushes().remove(0);
         rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
 
-        // Sleep to make sure that message has been received
-        TimeUnit.MILLISECONDS.sleep((long) (0.55 * informSearchInterval));
-
-        assertEquals(1, popularityUpdater.getPopularityUpdatesMap().size());
-
-        while(searchEngineListener.popularityUpdatesMessagesReceived() < 2) {
+        while(searchEngineListener.popularityUpdatesMessagesReceived() < 7) {
             TimeUnit.MILLISECONDS.sleep(100);
         }
         // Added extra delay to make sure that the message is handled
         TimeUnit.MILLISECONDS.sleep(100);
 
-        assertEquals(0, popularityUpdater.getPopularityUpdatesMap().size());
-        assertEquals(2, searchEngineListener.popularityUpdatesMessagesReceived());
-        assertEquals(1, searchEngineListener.getPopularityUpdatesMessages().get(1).getPopularityUpdateList().size());
+        assertEquals(7, searchEngineListener.popularityUpdatesMessagesReceived());
+        assertEquals(2, searchEngineListener.getPopularityUpdatesMessages().get(6).getPopularityUpdateList().size());
 
         for (PopularityUpdate popularityUpdate : searchEngineListener.getPopularityUpdatesMessages()
-                .get(1).getPopularityUpdateList()) {
+                .get(6).getPopularityUpdateList()) {
+
+            if (popularityUpdate.getId().equals("sensor_id_put")) {
+                assertEquals(6, (long)popularityUpdate.getViewsInDefinedInterval());
+                continue;
+            }
 
             if (popularityUpdate.getId().equals("sensor_id2_put")) {
                 assertEquals(12, (long) popularityUpdate.getViewsInDefinedInterval());

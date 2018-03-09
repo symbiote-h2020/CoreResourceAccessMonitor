@@ -2,6 +2,8 @@ package eu.h2020.symbiote.cram.util;
 
 import eu.h2020.symbiote.core.internal.popularity.PopularityUpdate;
 import eu.h2020.symbiote.core.internal.popularity.PopularityUpdatesMessage;
+import eu.h2020.symbiote.cram.model.CramResource;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,17 +19,17 @@ public class ScheduledPopularityUpdate extends TimerTask {
     private static Log log = LogFactory.getLog(ScheduledPopularityUpdate.class);
 
     private RabbitTemplate rabbitTemplate;
-    private Map<String, Integer> popularityUpdatesMap;
+    private static ResourceRepository resourceRepository;
     private String searchExchange;
     private String searchPopularityUpdatesRoutingKey;
 
-    public ScheduledPopularityUpdate(RabbitTemplate rabbitTemplate,  Map<String, Integer> popularityUpdatesMap,
+    public ScheduledPopularityUpdate(RabbitTemplate rabbitTemplate,  ResourceRepository resourceRepository,
                                      String searchExchange, String searchPopularityUpdatesRoutingKey) {
         Assert.notNull(rabbitTemplate,"RabbitTemplate can not be null!");
         this.rabbitTemplate = rabbitTemplate;
 
-        Assert.notNull(popularityUpdatesMap,"popularityUpdatesMap can not be null!");
-        this.popularityUpdatesMap = popularityUpdatesMap;
+        Assert.notNull(resourceRepository,"resourceRepository can not be null!");
+        this.resourceRepository = resourceRepository;
 
         Assert.notNull(searchExchange,"searchExchange can not be null!");
         this.searchExchange = searchExchange;
@@ -41,14 +43,16 @@ public class ScheduledPopularityUpdate extends TimerTask {
 
         PopularityUpdatesMessage popularityUpdatesMessage = new PopularityUpdatesMessage();
 
-        for (Map.Entry<String, Integer> entry : popularityUpdatesMap.entrySet()) {
+        List<CramResource> listOfCramResources = resourceRepository.findAll();
+
+        log.debug("resourdeRepo size = " + listOfCramResources.size());
+
+        for(CramResource cramResource : listOfCramResources) {
             PopularityUpdate popularityUpdate = new PopularityUpdate();
-            popularityUpdate.setId(entry.getKey());
-            popularityUpdate.setViewsInDefinedInterval(entry.getValue());
+            popularityUpdate.setId(cramResource.getId());
+            popularityUpdate.setViewsInDefinedInterval(cramResource.getViewsInDefinedInterval());
             popularityUpdatesMessage.addToPopularityUpdateList(popularityUpdate);
         }
-
-        popularityUpdatesMap.clear();
 
         // Informing Search Engine
         log.trace("Sending message to exchange = " + searchExchange + " with key = " + searchPopularityUpdatesRoutingKey);
