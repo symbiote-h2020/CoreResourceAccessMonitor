@@ -1,8 +1,8 @@
 // initial extensions to gradle
 buildscript {
     ext {
-        springBootVersion = '1.5.8.RELEASE'
-        springCloudVersion = 'Dalston.SR4'
+        springBootVersion = '1.5.10.RELEASE'
+        springCloudVersion = 'Dalston.SR5'
     }
     repositories {
         mavenCentral()
@@ -77,7 +77,7 @@ dependencies {
             4) never commit build.gradle which has project dependencies active as it will break CI builds
     */
 
-    compile('com.github.symbiote-h2020:SymbIoTeLibraries:5.+') { changing = true }
+    compile('com.github.symbiote-h2020:SymbIoTeLibraries:5.8+') { changing = true }
 
     // Spring
     compile('org.springframework.cloud:spring-cloud-starter-config')
