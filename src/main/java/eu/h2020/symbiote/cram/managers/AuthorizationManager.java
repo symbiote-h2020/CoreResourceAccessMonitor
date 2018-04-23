@@ -1,24 +1,21 @@
 package eu.h2020.symbiote.cram.managers;
 
 import eu.h2020.symbiote.cram.model.CramResource;
-import eu.h2020.symbiote.security.accesspolicies.common.AccessPolicyFactory;
-import eu.h2020.symbiote.security.accesspolicies.common.singletoken.ComponentHomeTokenAccessPolicy;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.security.ComponentSecurityHandlerFactory;
 import eu.h2020.symbiote.security.accesspolicies.IAccessPolicy;
-import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
+import eu.h2020.symbiote.security.accesspolicies.common.AccessPolicyFactory;
+import eu.h2020.symbiote.security.accesspolicies.common.singletoken.ComponentHomeTokenAccessPolicy;
 import eu.h2020.symbiote.security.commons.exceptions.custom.SecurityHandlerException;
 import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
 import eu.h2020.symbiote.security.handler.IComponentSecurityHandler;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +32,7 @@ import java.util.Set;
 public class AuthorizationManager {
 
     private static Log log = LogFactory.getLog(AuthorizationManager.class);
-    private static final String RAP_IDENTIFIER = "rap";
+    private static final String MONITORING_IDENTIFIER = "monitoring";
 
     private String componentOwnerName;
     private String componentOwnerPassword;
@@ -55,7 +52,7 @@ public class AuthorizationManager {
                                 @Value("${aam.environment.keystoreName}") String keystoreName,
                                 @Value("${aam.environment.keystorePass}") String keystorePass,
                                 @Value("${cram.security.enabled}") Boolean securityEnabled)
-            throws SecurityHandlerException, InvalidArgumentsException {
+            throws SecurityHandlerException {
 
         Assert.notNull(componentOwnerName,"componentOwnerName can not be null!");
         this.componentOwnerName = componentOwnerName;
@@ -189,7 +186,7 @@ public class AuthorizationManager {
         Map<String, IAccessPolicy> accessPoliciesMap = new HashMap<>();
 
         accessPoliciesMap.put("ComponentHomeTokenAccessPolicy",
-                new ComponentHomeTokenAccessPolicy(resource.getPlatformId(), RAP_IDENTIFIER,  new HashMap<>()));
+                new ComponentHomeTokenAccessPolicy(resource.getPlatformId(), MONITORING_IDENTIFIER,  new HashMap<>()));
         return componentSecurityHandler.getSatisfiedPoliciesIdentifiers(accessPoliciesMap, securityRequest);
     }
 
