@@ -1,7 +1,10 @@
 package eu.h2020.symbiote.cram.messaging;
 
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageResponseSecured;
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
+import eu.h2020.symbiote.cram.managers.AuthorizationManager;
+import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ScheduledUpdate;
 
@@ -28,16 +31,18 @@ public class AccessNotificationListener {
 
     private static Log log = LogFactory.getLog(AccessNotificationListener.class);
 
-    private static ResourceRepository resourceRepository;
+    private ResourceRepository resourceRepository;
+    private AuthorizationManager authorizationManager;
 
     private Boolean scheduledUpdateOngoing;
     private List<NotificationMessageSecured> notificationMessageList;
 
     @Autowired
-    public AccessNotificationListener(ResourceRepository resourceRepository) {
+    public AccessNotificationListener(ResourceRepository resourceRepository,
+                                      AuthorizationManager authorizationManager) {
 
-        Assert.notNull(resourceRepository,"Resource repository can not be null!");
         this.resourceRepository = resourceRepository;
+        this.authorizationManager = authorizationManager;
 
         scheduledUpdateOngoing = false;
         notificationMessageList = new ArrayList<>();
@@ -63,10 +68,12 @@ public class AccessNotificationListener {
                     internal = "${rabbit.exchange.cram.internal}", type = "${rabbit.exchange.cram.type}"),
             key = "${rabbit.routingKey.cram.accessNotifications}")
     )
-    public void listenAndUpdateResourceViewStats(NotificationMessageSecured messageSecured) {
+    public NotificationMessageResponseSecured listenAndUpdateResourceViewStats(NotificationMessageSecured messageSecured) {
 
         log.trace("NotificationMessage was received: " + ReflectionToStringBuilder.toString(messageSecured));
         NotificationMessage message = messageSecured.getBody();
+        NotificationMessageResponseSecured responseSecured = new NotificationMessageResponseSecured();
+
         try {
             if (message != null &&
                     ((message.getSuccessfulAttempts() != null && message.getSuccessfulAttempts().size() != 0) ||
@@ -83,8 +90,14 @@ public class AccessNotificationListener {
                     ScheduledUpdate.updateSuccessfulAttemptsMessage(messageSecured);
                 }
             }
-        } catch (Exception e) {
+            // Return the service response
+            ServiceResponseResult serviceResponseResult = authorizationManager.generateServiceResponse();
+            responseSecured.setServiceResponse(serviceResponseResult.getServiceResponse());
+
+        } catch (Throwable e) {
             log.info(e.toString());
         }
+
+        return responseSecured;
     }
 }

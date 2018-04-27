@@ -3,6 +3,7 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.FailedAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageResponseSecured;
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.managers.AuthorizationManager;
@@ -10,6 +11,7 @@ import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
+import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 
@@ -81,6 +83,8 @@ public class AccessNotificationListenerTests {
     @Value("${rabbit.routingKey.cram.accessNotifications}")
     private String cramAccessNotificationsRoutingKey;
 
+    private String serviceResponse = "exampleServiceResponse";
+
     @Before
     public void setup() {
         resourceAccessStatsUpdater.cancelTimer();
@@ -103,6 +107,8 @@ public class AccessNotificationListenerTests {
 
         doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
                 .checkNotificationSecured(any(), any());
+        doReturn(new ServiceResponseResult(serviceResponse, true))
+                .when(authorizationManager).generateServiceResponse();
     }
 
     @After
@@ -117,7 +123,7 @@ public class AccessNotificationListenerTests {
     public void noUpdateTest() throws Exception {
 
         NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessage);
 
         // Sleep to make sure that message has been received
         TimeUnit.MILLISECONDS.sleep(500);
@@ -142,7 +148,7 @@ public class AccessNotificationListenerTests {
 
         NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
         accessNotificationListener.setScheduledUpdateOngoing(true);
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessage);
 
         // Sleep to make sure that message has been received
         TimeUnit.MILLISECONDS.sleep(500);
@@ -169,7 +175,7 @@ public class AccessNotificationListenerTests {
         emptyNotificationMessage.setBody(new NotificationMessage());
 
         accessNotificationListener.getNotificationMessageList().add(emptyNotificationMessage);
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessage);
 
         // Sleep to make sure that message has been received
         TimeUnit.MILLISECONDS.sleep(500);
@@ -193,6 +199,9 @@ public class AccessNotificationListenerTests {
     @Test
     public void checkFailedNotificationsAreDiscarded() throws Exception {
         NotificationMessage notificationMessage = new NotificationMessage();
+        NotificationMessageSecured notificationMessageSecured = new NotificationMessageSecured();
+        notificationMessageSecured.setBody(notificationMessage);
+
         accessNotificationListener.setScheduledUpdateOngoing(true);
 
         ArrayList<Date> dateList = new ArrayList<>();
@@ -206,23 +215,23 @@ public class AccessNotificationListenerTests {
         notificationMessage.addFailedAttempt(failedAccessMessageInfo);
 
         // Send Notification Message as created with just a FailedAccessMessageInfo
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessageSecured);
 
         notificationMessage.setSuccessfulAttempts(null);
         notificationMessage.setSuccessfulPushes(null);
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessageSecured);
 
         notificationMessage.setSuccessfulAttempts(new ArrayList<>());
         notificationMessage.setSuccessfulPushes(null);
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessageSecured);
 
         notificationMessage.setSuccessfulAttempts(null);
         notificationMessage.setSuccessfulPushes(new ArrayList<>());
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessageSecured);
 
         notificationMessage.setSuccessfulAttempts(new ArrayList<>());
         notificationMessage.setSuccessfulPushes(new ArrayList<>());
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        sendNotificationMessage(notificationMessageSecured);
 
         // Sleep to make sure that message has been received
         TimeUnit.MILLISECONDS.sleep(500);
@@ -261,5 +270,12 @@ public class AccessNotificationListenerTests {
         notificationMessageSecured.setBody(notificationMessage);
 
         return notificationMessageSecured;
+    }
+
+    private void sendNotificationMessage(NotificationMessageSecured notificationMessage) {
+        NotificationMessageResponseSecured responseSecured = (NotificationMessageResponseSecured) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        assertEquals(serviceResponse, responseSecured.getServiceResponse());
     }
 }

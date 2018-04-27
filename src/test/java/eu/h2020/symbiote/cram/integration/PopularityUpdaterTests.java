@@ -3,6 +3,7 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulPushesMessageInfo;
+import eu.h2020.symbiote.core.internal.cram.NotificationMessageResponseSecured;
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
 import eu.h2020.symbiote.core.internal.popularity.PopularityUpdate;
 import eu.h2020.symbiote.cram.aams.SearchEngineListener;
@@ -10,9 +11,9 @@ import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
+import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.PopularityUpdater;
-
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import org.junit.After;
 import org.junit.Before;
@@ -20,14 +21,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,9 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -108,6 +105,7 @@ public class PopularityUpdaterTests {
     private String platformAAMUrl;
 
     private String resourceUrl;
+    private String serviceResponse = "exampleServiceResponse";
 
     // Execute the Setup method before the test.
     @Before
@@ -139,6 +137,8 @@ public class PopularityUpdaterTests {
 
         doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
                 .checkNotificationSecured(any(), any());
+        doReturn(new ServiceResponseResult(serviceResponse, true))
+                .when(authorizationManager).generateServiceResponse();
     }
 
     @After
@@ -153,7 +153,10 @@ public class PopularityUpdaterTests {
         log.info("testPopularityUpdate STARTED");
 
         NotificationMessageSecured notificationMessage = createSuccessfulAttemptsMessage();
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        NotificationMessageResponseSecured responseSecured = (NotificationMessageResponseSecured) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        assertEquals(serviceResponse, responseSecured.getServiceResponse());
 
         while(searchEngineListener.popularityUpdatesMessagesReceived() < 3) {
             TimeUnit.MILLISECONDS.sleep(100);
@@ -183,13 +186,17 @@ public class PopularityUpdaterTests {
         // Repeat without sending notifications for sensor_id_put
         notificationMessage.getBody().getSuccessfulAttempts().remove(0);
         notificationMessage.getBody().getSuccessfulPushes().remove(0);
-        rabbitTemplate.convertAndSend(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+        responseSecured = (NotificationMessageResponseSecured) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramAccessNotificationsRoutingKey, notificationMessage);
+
+        assertEquals(serviceResponse, responseSecured.getServiceResponse());
 
         while(searchEngineListener.popularityUpdatesMessagesReceived() < 7) {
             TimeUnit.MILLISECONDS.sleep(100);
         }
         // Added extra delay to make sure that the message is handled
         TimeUnit.MILLISECONDS.sleep(100);
+
 
         assertEquals(7, searchEngineListener.popularityUpdatesMessagesReceived());
         assertEquals(2, searchEngineListener.getPopularityUpdatesMessages().get(6).getPopularityUpdateList().size());
