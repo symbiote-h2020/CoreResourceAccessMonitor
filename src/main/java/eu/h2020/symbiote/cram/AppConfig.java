@@ -13,6 +13,8 @@ import java.util.Collection;
 @Configuration
 @EnableMongoRepositories
 class AppConfig extends AbstractMongoConfiguration {
+    @Value("${symbiote.core.cram.databaseHost}")
+    private String databaseHost;
 
     @Value("${symbiote.core.cram.database}")
     private String databaseName;
@@ -24,7 +26,7 @@ class AppConfig extends AbstractMongoConfiguration {
 
     @Override
     public Mongo mongo() throws Exception {
-        return new MongoClient();
+        return new MongoClient(this.databaseHost);
     }
 
     @Override
