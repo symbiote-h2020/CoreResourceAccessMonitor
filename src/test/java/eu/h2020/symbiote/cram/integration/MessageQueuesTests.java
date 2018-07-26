@@ -43,23 +43,24 @@ import static org.junit.Assert.*;
  * This file tests the PlatformRepository and ResourceRepository
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
+@ContextConfiguration(classes = {CoreResourceAccessMonitorApplication.class})
 @SpringBootTest(properties = {"eureka.client.enabled=false",
-                              "spring.sleuth.enabled=false",
-                              "subIntervalDuration=P0-0-0T1:0:0",
-                              "intervalDuration=P0-0-0T2:0:0",
-                              "informSearchInterval=P0-0-0T1:0:0",
-                              "symbiote.core.cram.database=symbiote-core-cram-database-mqt",
-                              "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-mqt",
-                              "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-mqt",
-                              "rabbit.queueName.cram.accessNotifications=accessNotifications-mqt",
-                              "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt",
-                              "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-mqt"})
+        "spring.sleuth.enabled=false",
+        "subIntervalDuration=P0-0-0T1:0:0",
+        "intervalDuration=P0-0-0T2:0:0",
+        "informSearchInterval=P0-0-0T1:0:0",
+        "symbiote.core.cram.databaseHost=localhost",
+        "symbiote.core.cram.database=symbiote-core-cram-database-mqt",
+        "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-mqt",
+        "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-mqt",
+        "rabbit.queueName.cram.accessNotifications=accessNotifications-mqt",
+        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt",
+        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-mqt"})
 @ActiveProfiles("test")
 public class MessageQueuesTests {
 
     private static Logger log = LoggerFactory
-                          .getLogger(MessageQueuesTests.class);
+            .getLogger(MessageQueuesTests.class);
 
     @Autowired
     private ResourceRepository resourceRepo;
@@ -169,7 +170,7 @@ public class MessageQueuesTests {
         Platform result = platformRepo.findOne(platform.getId());
         assertEquals(null, result);
 
-	}
+    }
 
     @Test
     public void SensorCreatedTest() throws Exception {
@@ -207,39 +208,39 @@ public class MessageQueuesTests {
 
         CramResource result = resourceRepo.findOne(resource1.getId());
         assertEquals(platformUrl + "rap/Actuators('" + resource1.getId()
-               + "')", result.getResourceUrl());
+                + "')", result.getResourceUrl());
         assertEquals(0, (long) result.getViewsInDefinedInterval());
-        assertEquals((long) subIntervalDuration,  result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
+        assertEquals((long) subIntervalDuration, result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
                 result.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
         result = resourceRepo.findOne(resource2.getId());
         assertEquals(platformUrl + "rap/Services('" + resource2.getId()
-               + "')", result.getResourceUrl());
+                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
         result = resourceRepo.findOne(resource3.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource3.getId()
-               + "')", result.getResourceUrl());
+                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
 
         result = resourceRepo.findOne(resource4.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource4.getId()
-               + "')", result.getResourceUrl());
+                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
         result = resourceRepo.findOne(resource5.getId());
         assertEquals(platformUrl + "rap/Sensors('" + resource5.getId()
-               + "')", result.getResourceUrl());
+                + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
-	}
+    }
 
     @Test
     public void SensorUpdatedTest() throws Exception {
@@ -290,7 +291,7 @@ public class MessageQueuesTests {
         assertEquals(resourceNewName, result.getName());
         assertEquals(platform.getId(), result.getPlatformId());
 
-	}
+    }
 
     @Test
     public void SensorDeletedTest() throws Exception {
@@ -324,7 +325,7 @@ public class MessageQueuesTests {
 
     private Platform createPlatform() {
 
-        Platform platform = new Platform ();
+        Platform platform = new Platform();
         String platformId = Integer.toString(rand.nextInt(50));
         String name = "platform" + rand.nextInt(50000);
         List<String> descriptions = new ArrayList<>();
@@ -367,34 +368,34 @@ public class MessageQueuesTests {
         return resource;
     }
 
-    private void sendPlatformMessage (String exchange, String key, Platform platform) throws Exception {
+    private void sendPlatformMessage(String exchange, String key, Platform platform) throws Exception {
 
         rabbitTemplate.convertAndSend(exchange, key, platform,
-            m -> {
+                m -> {
                     m.getMessageProperties().setContentType("application/json");
                     m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                     return m;
-                 });
+                });
     }
 
-    private void sendResourceMessage (String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) throws Exception {
+    private void sendResourceMessage(String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) throws Exception {
 
         rabbitTemplate.convertAndSend(exchange, key, resources,
-            m -> {
+                m -> {
                     m.getMessageProperties().setContentType("application/json");
                     m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                     return m;
-                 });
+                });
     }
 
-    private void sendResourceDeleteMessage (String exchange, String key, List<String> resources) throws Exception {
+    private void sendResourceDeleteMessage(String exchange, String key, List<String> resources) throws Exception {
 
         rabbitTemplate.convertAndSend(exchange, key, resources,
-            m -> {
+                m -> {
                     m.getMessageProperties().setContentType("application/json");
                     m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                     return m;
-                 });
+                });
     }
 
 }

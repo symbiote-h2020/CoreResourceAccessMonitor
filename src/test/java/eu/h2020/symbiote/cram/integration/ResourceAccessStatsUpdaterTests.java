@@ -58,6 +58,7 @@ import static org.mockito.Mockito.doAnswer;
         "subIntervalDuration=P0-0-0T0:0:0.2",
         "intervalDuration=P0-0-0T0:0:0.4",
         "informSearchInterval=P0-0-0T1:0:0",
+        "symbiote.core.cram.databaseHost=localhost",
         "symbiote.core.cram.database=symbiote-core-cram-database-rasut",
         "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-rasut",
         "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-rasut",
