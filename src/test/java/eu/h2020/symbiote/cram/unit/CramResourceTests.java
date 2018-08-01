@@ -3,10 +3,8 @@ package eu.h2020.symbiote.cram.unit;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;

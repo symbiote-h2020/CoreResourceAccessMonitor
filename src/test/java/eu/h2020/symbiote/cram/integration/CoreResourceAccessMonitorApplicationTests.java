@@ -13,80 +13,42 @@ import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
-
 import eu.h2020.symbiote.model.mim.InterworkingService;
 import eu.h2020.symbiote.model.mim.Platform;
 import org.apache.http.HttpStatus;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.InjectMocks;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
-import org.springframework.amqp.rabbit.AsyncRabbitTemplate.RabbitConverterFuture;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(
-        classes = CoreResourceAccessMonitorApplication.class,
-        webEnvironment = WebEnvironment.DEFINED_PORT,
-        properties = {
-                "eureka.client.enabled=false",
-                "spring.sleuth.enabled=false",
-                "symbiote.testaam" + ".url=http://localhost:8080",
-                "aam.environment.coreInterfaceAddress=http://localhost:8080",
-                "platform.aam.url=http://localhost:8080",
-                "subIntervalDuration=P0-0-0T1:0:0",
-                "intervalDuration=P0-0-0T3:0:0",
-                "informSearchInterval=P0-0-0T1:0:0",
-                "symbiote.core.cram.databaseHost=localhost",
-                "symbiote.core.cram.database=symbiote-core-cram-database-cramat",
-                "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-cramat",
-                "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-cramat",
-                "rabbit.queueName.cram.accessNotifications=accessNotifications-cramat",
-                "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-cramat",
-                "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-cramat"})
-@ContextConfiguration
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class CoreResourceAccessMonitorApplicationTests {
 
 
-    private static final Logger log = LoggerFactory
-                        .getLogger(CoreResourceAccessMonitorApplicationTests.class);
+    private static final Logger log = LoggerFactory.getLogger(CoreResourceAccessMonitorApplicationTests.class);
 
     @Autowired
-    private AsyncRabbitTemplate asyncRabbitTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private ResourceRepository resourceRepo;
@@ -129,8 +91,8 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     // Execute the Setup method before the test.
     @Before
-    public void setUp() throws Exception {
-        resourceAccessStatsUpdater.cancelTimer();;
+    public void setUp() {
+        clearSetup();
 
         List<String> descriptions = new ArrayList<>();
         List<InterworkingService> interworkingServiceList = new ArrayList<>();
@@ -174,7 +136,7 @@ public class CoreResourceAccessMonitorApplicationTests {
     }
 
     @Test
-    public void testGetResourcesUrlsSuccess() throws Exception {
+    public void testGetResourcesUrlsSuccess() {
 
         doReturn(new AuthorizationResult("Validated", true)).when(authorizationManager)
                 .checkResourceUrlRequest(any(), any());
@@ -183,7 +145,6 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<>();
-        final AtomicReference<ResourceUrlsResponse> resultRef = new AtomicReference<>();
 
         idList.add("sensor_id");
         idList.add("sensor_id2");
@@ -191,39 +152,18 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         log.info("Before sending the message");
 
-        RabbitConverterFuture<ResourceUrlsResponse> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
+        ResourceUrlsResponse result = (ResourceUrlsResponse) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
-        log.info("After sending the message");
-
-        future.addCallback(new ListenableFutureCallback<ResourceUrlsResponse>() {
-
-            @Override
-            public void onSuccess(ResourceUrlsResponse result) {
-
-                log.info("Successully received resource urls: " + result);
-                resultRef.set(result);
-
-            }
-
-            @Override
-            public void onFailure(Throwable ex) {
-                fail("Accessed the element which does not exist");
-            }
-
-        });
-
-        while(!future.isDone())
-            TimeUnit.MILLISECONDS.sleep(100);
-
-        assertEquals("Success!", resultRef.get().getMessage());
-        assertEquals(HttpStatus.SC_OK, resultRef.get().getStatus());
-        assertEquals(resourceUrl, resultRef.get().getBody().get("sensor_id"));
-        assertEquals(resourceUrl, resultRef.get().getBody().get("sensor_id2"));
+        assertEquals("Success!", result.getMessage());
+        assertEquals(HttpStatus.SC_OK, result.getStatus());
+        assertEquals(resourceUrl, result.getBody().get("sensor_id"));
+        assertEquals(resourceUrl, result.getBody().get("sensor_id2"));
     }
 
 
     @Test
-    public void testGetResourcesUrlsInvalidSecurityRequest() throws Exception {
+    public void testGetResourcesUrlsInvalidSecurityRequest() {
 
         doReturn(new AuthorizationResult("Invalid", false)).when(authorizationManager)
                 .checkResourceUrlRequest(any(), any());
@@ -232,7 +172,6 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<>();
-        final AtomicReference<ResourceUrlsResponse> resultRef = new AtomicReference<>();
 
         idList.add("sensor_id");
         idList.add("sensor_id2");
@@ -240,45 +179,23 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         log.info("Before sending the message");
 
-        RabbitConverterFuture<ResourceUrlsResponse> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
+        ResourceUrlsResponse result = (ResourceUrlsResponse) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
-        log.info("After sending the message");
-
-        future.addCallback(new ListenableFutureCallback<ResourceUrlsResponse>() {
-
-            @Override
-            public void onSuccess(ResourceUrlsResponse result) {
-
-                log.info("Successully received resource urls: " + result);
-                resultRef.set(result);
-
-            }
-
-            @Override
-            public void onFailure(Throwable ex) {
-                fail("Accessed the element which does not exist");
-            }
-
-        });
-
-        while(!future.isDone())
-            TimeUnit.MILLISECONDS.sleep(100);
-
-        assertEquals("The Security Request was NOT validated for any of resource!", resultRef.get().getMessage());
-        assertEquals(HttpStatus.SC_FORBIDDEN, resultRef.get().getStatus());
-        assertEquals(0, resultRef.get().getBody().size());
+        assertEquals("The Security Request was NOT validated for any of resource!", result.getMessage());
+        assertEquals(HttpStatus.SC_FORBIDDEN, result.getStatus());
+        assertEquals(0, result.getBody().size());
     }
 
 
     @Test
-    public void testGetResourcesUrlsServiceResponseNotCreated() throws Exception {
+    public void testGetResourcesUrlsServiceResponseNotCreated() {
 
         doReturn(new ServiceResponseResult("Service Response", false))
                 .when(authorizationManager).generateServiceResponse();
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<>();
-        final AtomicReference<ResourceUrlsResponse> resultRef = new AtomicReference<>();
 
         idList.add("sensor_id");
         idList.add("sensor_id2");
@@ -286,37 +203,16 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         log.info("Before sending the message");
 
-        RabbitConverterFuture<ResourceUrlsResponse> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
+        ResourceUrlsResponse result = (ResourceUrlsResponse) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
-        log.info("After sending the message");
-
-        future.addCallback(new ListenableFutureCallback<ResourceUrlsResponse>() {
-
-            @Override
-            public void onSuccess(ResourceUrlsResponse result) {
-
-                log.info("Successully received resource urls: " + result);
-                resultRef.set(result);
-
-            }
-
-            @Override
-            public void onFailure(Throwable ex) {
-                fail("Accessed the element which does not exist");
-            }
-
-        });
-
-        while(!future.isDone())
-            TimeUnit.MILLISECONDS.sleep(100);
-
-        assertEquals("The Service Response was NOT created successfully", resultRef.get().getMessage());
-        assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, resultRef.get().getStatus());
-        assertEquals(0, resultRef.get().getBody().size());
+        assertEquals("The Service Response was NOT created successfully", result.getMessage());
+        assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, result.getStatus());
+        assertEquals(0, result.getBody().size());
     }
 
     @Test
-    public void testGetResourcesUrlsNotAuthorizedNotFound() throws Exception {
+    public void testGetResourcesUrlsNotAuthorizedNotFound() {
 
         CramResource cramResource1 = resourceRepo.findOne("sensor_id");
         CramResource cramResource2 = resourceRepo.findOne("sensor_id2");
@@ -330,7 +226,6 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         ResourceUrlsRequest query = new ResourceUrlsRequest();
         ArrayList<String> idList = new ArrayList<>();
-        final AtomicReference<ResourceUrlsResponse> resultRef = new AtomicReference<>();
 
         idList.add("sensor_id");
         idList.add("sensor_id2");
@@ -339,34 +234,13 @@ public class CoreResourceAccessMonitorApplicationTests {
 
         log.info("Before sending the message");
 
-        RabbitConverterFuture<ResourceUrlsResponse> future = asyncRabbitTemplate.convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
-
-        log.info("After sending the message");
-
-        future.addCallback(new ListenableFutureCallback<ResourceUrlsResponse>() {
-
-            @Override
-            public void onSuccess(ResourceUrlsResponse result) {
-
-                log.info("Successully received resource urls: " + result);
-                resultRef.set(result);
-
-            }
-
-            @Override
-            public void onFailure(Throwable ex) {
-                fail("Accessed the element which does not exist");
-            }
-
-        });
-
-        while(!future.isDone())
-            TimeUnit.MILLISECONDS.sleep(100);
+        ResourceUrlsResponse result = (ResourceUrlsResponse) rabbitTemplate
+                .convertSendAndReceive(cramExchangeName, cramGetResourceUrlsRoutingKey, query);
 
         assertEquals("Security Request not valid for all the resourceIds [sensor_id2]." +
-                " Not all the resources were found [sensor_id3].", resultRef.get().getMessage());
-        assertEquals(HttpStatus.SC_PARTIAL_CONTENT, resultRef.get().getStatus());
-        assertEquals(1, resultRef.get().getBody().size());
+                " Not all the resources were found [sensor_id3].", result.getMessage());
+        assertEquals(HttpStatus.SC_PARTIAL_CONTENT, result.getStatus());
+        assertEquals(1, result.getBody().size());
     }
 
     @Test
@@ -382,16 +256,5 @@ public class CoreResourceAccessMonitorApplicationTests {
     @Test
     public void TestNoIntervals() {
         assertEquals(3, (long) noSubIntervals);
-    }
-
-    static public class DateUtil
-    {
-        public static Date addDays(Date date, int days)
-        {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            cal.add(Calendar.DATE, days); //minus number would decrement the days
-            return cal.getTime();
-        }
     }
 }

@@ -1,5 +1,7 @@
 package eu.h2020.symbiote.cram.model;
 
+import org.springframework.data.annotation.PersistenceConstructor;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -12,10 +14,7 @@ public class SubIntervalViews {
     private Date endOfInterval;
     private Integer views;
 
-    public SubIntervalViews() {
-        // empty constructor
-    }
-
+    @PersistenceConstructor
     public SubIntervalViews(Date startOfInterval, Date endOfInterval, Integer views) {
         this.startOfInterval = startOfInterval;
         this.endOfInterval = endOfInterval;

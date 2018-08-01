@@ -23,7 +23,7 @@ import java.util.Set;
 
 
 /**
- * Component responsible for dealing with Symbiote Tokens and checking access right for requests.
+ * Component responsible for dealing with symbIoTe Tokens and checking access right for requests.
  *
  * @author mateuszl
  * @author vasgl

@@ -9,7 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.TimerTask;
 
 /**
  * Created by vasgl on 7/2/2017.
@@ -19,7 +21,7 @@ public class ScheduledPopularityUpdate extends TimerTask {
     private static Log log = LogFactory.getLog(ScheduledPopularityUpdate.class);
 
     private RabbitTemplate rabbitTemplate;
-    private static ResourceRepository resourceRepository;
+    private ResourceRepository resourceRepository;
     private String searchExchange;
     private String searchPopularityUpdatesRoutingKey;
 

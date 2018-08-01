@@ -10,13 +10,14 @@ import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.security.communication.payloads.SecurityRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimerTask;
 
 /**
  * Created by vasgl on 7/2/2017.
@@ -29,7 +30,6 @@ public class ScheduledUpdate extends TimerTask {
     private static Long noSubIntervals;
     private static Long subIntervalDuration;
     private static AccessNotificationListener accessNotificationListener;
-    private static PopularityUpdater popularityUpdater;
     private static AuthorizationManager authorizationManager;
 
     ScheduledUpdate(ResourceRepository resourceRepository, Long noSubIntervals,
@@ -47,9 +47,6 @@ public class ScheduledUpdate extends TimerTask {
         Assert.notNull(accessNotificationListener,"accessNotificationListener can not be null!");
         this.accessNotificationListener = accessNotificationListener;
 
-        Assert.notNull(popularityUpdater,"popularityUpdater can not be null!");
-        this.popularityUpdater = popularityUpdater;
-
         Assert.notNull(authorizationManager,"authorizationManager can not be null!");
         this.authorizationManager = authorizationManager;
     }
@@ -60,7 +57,7 @@ public class ScheduledUpdate extends TimerTask {
 
         List<CramResource> listOfCramResources = resourceRepository.findAll();
 
-        log.debug("resourdeRepo size = " + listOfCramResources.size());
+        log.debug("resourceRepo size = " + listOfCramResources.size());
 
         for(CramResource cramResource : listOfCramResources) {
             cramResource.scheduleUpdateInResourceAccessStats(noSubIntervals, subIntervalDuration);

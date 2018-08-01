@@ -3,17 +3,15 @@ package eu.h2020.symbiote.cram.util;
 import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
+import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.Timer;
-
-import eu.h2020.symbiote.cram.repository.ResourceRepository;
 
 /**
  * Created by vasgl on 7/2/2017.
@@ -23,7 +21,7 @@ public class ResourceAccessStatsUpdater {
 
     private static Log log = LogFactory.getLog(ResourceAccessStatsUpdater.class);
 
-    private static ResourceRepository resourceRepository;
+    private ResourceRepository resourceRepository;
     private NextPopularityUpdate nextPopularityUpdate;
     private Long subIntervalDuration;
     private Long noSubIntervals;

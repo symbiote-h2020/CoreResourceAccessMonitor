@@ -5,7 +5,6 @@ import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
 import eu.h2020.symbiote.model.cim.Resource;
 import eu.h2020.symbiote.security.accesspolicies.common.IAccessPolicySpecifier;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +24,7 @@ import java.util.Objects;
 */
 public class CramResource extends Resource {
 
-    private static final Logger log = LoggerFactory
-            .getLogger(CramResource.class);
+    private static final Logger log = LoggerFactory.getLogger(CramResource.class);
 
     private CoreResourceType type;
     private String resourceUrl;

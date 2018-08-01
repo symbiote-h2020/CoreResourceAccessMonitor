@@ -1,11 +1,15 @@
 package eu.h2020.symbiote.cram.repository;
 
 import eu.h2020.symbiote.core.internal.CoreResource;
+import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
+import eu.h2020.symbiote.cram.exception.EntityNotFoundException;
+import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
 import eu.h2020.symbiote.model.mim.Platform;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -14,16 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-
-import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import eu.h2020.symbiote.cram.exception.EntityNotFoundException;
-import eu.h2020.symbiote.cram.model.CramResource;
 
 
 /**
@@ -44,9 +42,9 @@ public class RepositoryManager {
 
     private static Log log = LogFactory.getLog(RepositoryManager.class);
 
-    private static PlatformRepository platformRepository;
-    private static ResourceRepository resourceRepository;
-    private static Long subIntervalDuration;
+    private PlatformRepository platformRepository;
+    private ResourceRepository resourceRepository;
+    private Long subIntervalDuration;
 
     @Autowired
     public RepositoryManager(PlatformRepository platformRepository, ResourceRepository resourceRepository,
@@ -77,7 +75,7 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
            key = "${rabbit.routingKey.platform.created}")
    )
-   public static void savePlatform(Platform platform) {
+   public void savePlatform(Platform platform) {
        platformRepository.save(platform);
        log.info("CRAM saved platform with id: " + platform.getId());
    }
@@ -97,7 +95,7 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
            key = "${rabbit.routingKey.platform.modified}")
    )
-   public static void updatePlatform(Platform platform) {
+   public void updatePlatform(Platform platform) {
        try {
             if (platformRepository.findOne(platform.getId()) == null)
                 throw new EntityNotFoundException ("Received an update message for "
@@ -128,7 +126,7 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.platform.internal}", type = "${rabbit.exchange.platform.type}"),
            key = "${rabbit.routingKey.platform.removed}")
    )
-   public static void deletePlatform(Platform platform) {
+   public void deletePlatform(Platform platform) {
        try {
             if (platformRepository.findOne(platform.getId()) == null)
 
@@ -160,7 +158,7 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
            key = "${rabbit.routingKey.resource.created}")
    )
-   public static void saveResource(CoreResourceRegisteredOrModifiedEventPayload message)
+   public void saveResource(CoreResourceRegisteredOrModifiedEventPayload message)
            throws AmqpRejectAndDontRequeueException {
        try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
@@ -208,7 +206,7 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
            key = "${rabbit.routingKey.resource.modified}")
    )
-   public static void updatedResource(CoreResourceRegisteredOrModifiedEventPayload message)
+   public void updatedResource(CoreResourceRegisteredOrModifiedEventPayload message)
            throws AmqpRejectAndDontRequeueException {
        try {
             if (platformRepository.findOne(message.getPlatformId()) == null)
@@ -255,7 +253,7 @@ public class RepositoryManager {
                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
            key = "${rabbit.routingKey.resource.removed}")
    )
-   public static void deleteResource(List<String> resourcesIds) {
+   public void deleteResource(List<String> resourcesIds) {
        try {
             for (String id : resourcesIds) {
 
@@ -275,7 +273,7 @@ public class RepositoryManager {
        }
    }
 
-   private static String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
+   private String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
         CoreResourceType type = resource.getType();
         if (type == null)
           throw new AmqpRejectAndDontRequeueException("The resource type was not set");

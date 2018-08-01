@@ -12,33 +12,21 @@ import eu.h2020.symbiote.cram.model.SubIntervalViews;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
-
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -49,32 +37,14 @@ import static org.mockito.Mockito.doAnswer;
  * Created by vasgl on 7/3/2017.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(properties = {
-        "eureka.client.enabled=false",
-        "spring.sleuth.enabled=false",
-        "symbiote.testaam" + ".url=http://localhost:8080",
-        "aam.environment.coreInterfaceAddress=http://localhost:8080",
-        "platform.aam.url=http://localhost:8080",
-        "subIntervalDuration=P0-0-0T0:0:0.2",
-        "intervalDuration=P0-0-0T0:0:0.4",
-        "informSearchInterval=P0-0-0T1:0:0",
-        "symbiote.core.cram.databaseHost=localhost",
-        "symbiote.core.cram.database=symbiote-core-cram-database-rasut",
-        "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-rasut",
-        "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-rasut",
-        "rabbit.queueName.cram.accessNotifications=accessNotifications-rasut",
-        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-rasut",
-        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-rasut"})
-@ContextConfiguration
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootTest(
+        properties = {
+                "subIntervalDuration=P0-0-0T0:0:0.2",
+                "intervalDuration=P0-0-0T0:0:0.4"
+        })
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class ResourceAccessStatsUpdaterTests {
-
-
-    private static final Logger log = LoggerFactory
-            .getLogger(ResourceAccessStatsUpdaterTests.class);
 
     @Autowired
     private ResourceRepository resourceRepo;
@@ -117,9 +87,7 @@ public class ResourceAccessStatsUpdaterTests {
     // Execute the Setup method before the test.
     @Before
     public void setUp() {
-        resourceAccessStatsUpdater.cancelTimer();
-
-        List<String> observedProperties = Arrays.asList("temp", "air");
+        clearSetup();
         resourceUrl = platformAAMUrl + "/rap";
 
         CramResource resource1 = new CramResource();
@@ -142,18 +110,15 @@ public class ResourceAccessStatsUpdaterTests {
         resourceRepo.save(resource1);
         resourceRepo.save(resource2);
 
-        doAnswer(new Answer<AuthorizationResult>() {
-            @Override
-            public AuthorizationResult answer(InvocationOnMock invocation) throws Throwable {
+        doAnswer(invocation -> {
                 Object[] args = invocation.getArguments();
-                CramResource cramResource = CramResource.class.cast(args[0]);
+                CramResource cramResource = (CramResource) args[0];
 
                 if (!cramResource.getId().equals("sensor_id_invalid_rasut"))
                     return new AuthorizationResult("Validated", true);
                 else
                     return new AuthorizationResult("Do not own the resource", false);
-            }
-        }).when(authorizationManager).checkNotificationSecured(any(), any());
+            }).when(authorizationManager).checkNotificationSecured(any(), any());
 
     }
 
@@ -190,21 +155,17 @@ public class ResourceAccessStatsUpdaterTests {
     @Test
     public void testScheduledUpdateOngoing() throws Exception {
 
+        resourceAccessStatsUpdater.setNextPopularityUpdate(new NextPopularityUpdate(subIntervalDuration));
         resourceAccessStatsUpdater.startTimer();
 
         CramResource cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals(1, (long) cramResource.getViewsInSubIntervals().size());
 
-        accessNotificationListener.setScheduledUpdateOngoing(false);
-        assertEquals(false, accessNotificationListener.getScheduledUpdateOngoing());
-
         // Sleep for one update
-        TimeUnit.MILLISECONDS.sleep( (long) (1.3 * subIntervalDuration));
+        TimeUnit.MILLISECONDS.sleep( (long) (1.5 * subIntervalDuration));
 
         cramResource = resourceRepo.findOne("sensor_id_rasut");
         assertEquals(2, (long) cramResource.getViewsInSubIntervals().size());
-
-        assertEquals(false, accessNotificationListener.getScheduledUpdateOngoing());
     }
 
     @Test

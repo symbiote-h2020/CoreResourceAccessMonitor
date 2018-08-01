@@ -25,7 +25,7 @@ class AppConfig extends AbstractMongoConfiguration {
     }
 
     @Override
-    public Mongo mongo() throws Exception {
+    public Mongo mongo() {
         return new MongoClient(this.databaseHost);
     }
 

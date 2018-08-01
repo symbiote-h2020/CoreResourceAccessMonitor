@@ -7,12 +7,9 @@ import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.http.HttpStatus;
-
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -40,7 +37,7 @@ public class RpcServer {
 
     private static Log log = LogFactory.getLog(RpcServer.class);
 
-    private static ResourceRepository resourceRepository;
+    private ResourceRepository resourceRepository;
 
     private AuthorizationManager authorizationManager;
 

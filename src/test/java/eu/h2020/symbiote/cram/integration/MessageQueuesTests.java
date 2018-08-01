@@ -4,7 +4,6 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
-import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
@@ -27,14 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
@@ -43,24 +40,12 @@ import static org.junit.Assert.*;
  * This file tests the PlatformRepository and ResourceRepository
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {CoreResourceAccessMonitorApplication.class})
-@SpringBootTest(properties = {"eureka.client.enabled=false",
-        "spring.sleuth.enabled=false",
-        "subIntervalDuration=P0-0-0T1:0:0",
-        "intervalDuration=P0-0-0T2:0:0",
-        "informSearchInterval=P0-0-0T1:0:0",
-        "symbiote.core.cram.databaseHost=localhost",
-        "symbiote.core.cram.database=symbiote-core-cram-database-mqt",
-        "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-mqt",
-        "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-mqt",
-        "rabbit.queueName.cram.accessNotifications=accessNotifications-mqt",
-        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-mqt",
-        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-mqt"})
+@SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class MessageQueuesTests {
 
-    private static Logger log = LoggerFactory
-            .getLogger(MessageQueuesTests.class);
+    private static Logger log = LoggerFactory.getLogger(MessageQueuesTests.class);
 
     @Autowired
     private ResourceRepository resourceRepo;
@@ -104,8 +89,8 @@ public class MessageQueuesTests {
     private String platformUrl = "http://www.symbIoTe.com/";
 
     @Before
-    public void setup() throws IOException, TimeoutException {
-        resourceAccessStatsUpdater.cancelTimer();
+    public void setup() {
+        clearSetup();
         rand = new Random();
     }
 
@@ -168,7 +153,7 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(1);
 
         Platform result = platformRepo.findOne(platform.getId());
-        assertEquals(null, result);
+        assertNull(result);
 
     }
 
@@ -316,9 +301,9 @@ public class MessageQueuesTests {
         TimeUnit.SECONDS.sleep(1);
 
         CramResource result = resourceRepo.findOne(resource1.getId());
-        assertEquals(null, result);
+        assertNull(result);
         result = resourceRepo.findOne(resource2.getId());
-        assertEquals(null, result);
+        assertNull(result);
 
     }
 
@@ -368,8 +353,7 @@ public class MessageQueuesTests {
         return resource;
     }
 
-    private void sendPlatformMessage(String exchange, String key, Platform platform) throws Exception {
-
+    private void sendPlatformMessage (String exchange, String key, Platform platform) {
         rabbitTemplate.convertAndSend(exchange, key, platform,
                 m -> {
                     m.getMessageProperties().setContentType("application/json");
@@ -378,8 +362,7 @@ public class MessageQueuesTests {
                 });
     }
 
-    private void sendResourceMessage(String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) throws Exception {
-
+    private void sendResourceMessage (String exchange, String key, CoreResourceRegisteredOrModifiedEventPayload resources) {
         rabbitTemplate.convertAndSend(exchange, key, resources,
                 m -> {
                     m.getMessageProperties().setContentType("application/json");
@@ -388,8 +371,7 @@ public class MessageQueuesTests {
                 });
     }
 
-    private void sendResourceDeleteMessage(String exchange, String key, List<String> resources) throws Exception {
-
+    private void sendResourceDeleteMessage (String exchange, String key, List<String> resources) {
         rabbitTemplate.convertAndSend(exchange, key, resources,
                 m -> {
                     m.getMessageProperties().setContentType("application/json");

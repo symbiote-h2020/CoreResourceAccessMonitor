@@ -3,11 +3,8 @@ package eu.h2020.symbiote.cram;
 import eu.h2020.symbiote.cram.model.NextPopularityUpdate;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.util.IntervalFormatter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -170,18 +167,6 @@ public class CoreResourceAccessMonitorApplication {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter);
         return rabbitTemplate;
-    }
-
-    @Bean
-    public AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate) {
-
-       /**
-        * The following AsyncRabbitTemplate constructor uses "Direct replyTo" for replies.
-        */
-        AsyncRabbitTemplate asyncRabbitTemplate = new AsyncRabbitTemplate(rabbitTemplate);
-        asyncRabbitTemplate.setReceiveTimeout(5000);
-
-        return asyncRabbitTemplate;
     }
 
 }

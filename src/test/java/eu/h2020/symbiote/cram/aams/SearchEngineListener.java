@@ -2,13 +2,10 @@ package eu.h2020.symbiote.cram.aams;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import eu.h2020.symbiote.core.internal.popularity.PopularityUpdate;
 import eu.h2020.symbiote.core.internal.popularity.PopularityUpdatesMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;

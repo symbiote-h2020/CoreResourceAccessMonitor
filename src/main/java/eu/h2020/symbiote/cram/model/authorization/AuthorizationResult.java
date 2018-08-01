@@ -5,8 +5,8 @@ package eu.h2020.symbiote.cram.model.authorization;
  */
 public class AuthorizationResult {
 
-    private String message;
-    private boolean validated;
+    private final String message;
+    private final boolean validated;
 
     public AuthorizationResult(String message, boolean validated) {
         this.message = message;
@@ -14,8 +14,5 @@ public class AuthorizationResult {
     }
 
     public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-
     public boolean isValidated() { return validated; }
-    public void setValidated(boolean validated) { this.validated = validated; }
 }

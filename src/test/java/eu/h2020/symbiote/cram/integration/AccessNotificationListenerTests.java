@@ -5,7 +5,6 @@ import eu.h2020.symbiote.core.cci.accessNotificationMessages.NotificationMessage
 import eu.h2020.symbiote.core.cci.accessNotificationMessages.SuccessfulAccessMessageInfo;
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageResponseSecured;
 import eu.h2020.symbiote.core.internal.cram.NotificationMessageSecured;
-import eu.h2020.symbiote.cram.CoreResourceAccessMonitorApplication;
 import eu.h2020.symbiote.cram.managers.AuthorizationManager;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
@@ -14,21 +13,16 @@ import eu.h2020.symbiote.cram.model.authorization.AuthorizationResult;
 import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
@@ -43,25 +37,14 @@ import static org.mockito.Mockito.doReturn;
  * Created by vasgl on 7/7/2017.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes={CoreResourceAccessMonitorApplication.class})
-@SpringBootTest(properties = {
-        "eureka.client.enabled=false",
-        "spring.sleuth.enabled=false",
-        "subIntervalDuration=P0-0-0T1:0:0",
-        "intervalDuration=P0-0-0T3:0:0",
-        "informSearchInterval=P0-0-0T1:0:0",
-        "symbiote.core.cram.databaseHost=localhost",
-        "symbiote.core.cram.database=symbiote-core-cram-database-anlt",
-        "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-anlt",
-        "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-anlt",
-        "rabbit.queueName.cram.accessNotifications=accessNotifications-anlt",
-        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-anlt",
-        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-anlt"})
+@SpringBootTest(
+        properties = {
+                "subIntervalDuration=P0-0-0T1:0:0",
+                "intervalDuration=P0-0-0T3:0:0"
+        })
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class AccessNotificationListenerTests {
-
-    private static Logger log = LoggerFactory
-            .getLogger(AccessNotificationListenerTests.class);
 
     @Autowired
     private ResourceRepository resourceRepo;
@@ -88,7 +71,7 @@ public class AccessNotificationListenerTests {
 
     @Before
     public void setup() {
-        resourceAccessStatsUpdater.cancelTimer();
+        clearSetup();
 
         CramResource resource1 = new CramResource();
         resource1.setId("sensor_id");

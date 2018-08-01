@@ -1,6 +1,5 @@
 package eu.h2020.symbiote.cram.util;
 
-import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,8 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 
 /**
@@ -27,7 +24,7 @@ public class PopularityUpdater {
     private ScheduledPopularityUpdate scheduledPopularityUpdate;
     private RabbitTemplate rabbitTemplate;
     private Long informSearchInterval;
-    private static ResourceRepository resourceRepository;
+    private ResourceRepository resourceRepository;
     private String searchExchange;
     private String searchPopularityUpdatesRoutingKey;
 

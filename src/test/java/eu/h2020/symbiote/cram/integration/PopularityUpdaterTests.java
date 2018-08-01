@@ -23,14 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
@@ -46,33 +42,18 @@ import static org.mockito.Mockito.doReturn;
  * Created by vasgl on 7/3/2017.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(properties = {
-        "eureka.client.enabled=false",
-        "spring.sleuth.enabled=false",
-        "symbiote.testaam" + ".url=http://localhost:8080",
-        "aam.environment.coreInterfaceAddress=http://localhost:8080",
-        "platform.aam.url=http://localhost:8080",
-        "subIntervalDuration=P0-0-0T1:0:0",
-        "intervalDuration=P0-0-0T2:0:0",
-        "informSearchInterval=P0-0-0T0:0:0.5",
-        "symbiote.core.cram.databaseHost=localhost",
-        "symbiote.core.cram.database=symbiote-core-cram-database-put",
-        "rabbit.queueName.cram.getResourceUrls=cramGetResourceUrls-put",
-        "rabbit.routingKey.cram.getResourceUrls=symbIoTe.CoreResourceAccessMonitor.coreAPI.get_resource_urls-put",
-        "rabbit.queueName.cram.accessNotifications=accessNotifications-put",
-        "rabbit.routingKey.cram.accessNotifications=symbIoTe.CoreResourceAccessMonitor.coreAPI.accessNotifications-put",
-        "rabbit.queueName.search.popularityUpdates=symbIoTe-search-popularityUpdatesReceived-put",
-        "authManager.name=authManager-put"})
-@ContextConfiguration
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootTest(
+        properties = {
+                "subIntervalDuration=P0-0-0T1:0:0",
+                "intervalDuration=P0-0-0T2:0:0",
+                "informSearchInterval=P0-0-0T0:0:0.5"
+        })
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class PopularityUpdaterTests {
 
 
-    private static final Logger log = LoggerFactory
-            .getLogger(PopularityUpdaterTests.class);
+    private static final Logger log = LoggerFactory.getLogger(PopularityUpdaterTests.class);
 
     @Autowired
     private ResourceRepository resourceRepo;
@@ -82,10 +63,6 @@ public class PopularityUpdaterTests {
 
     @Autowired
     private SearchEngineListener searchEngineListener;
-
-    @Autowired
-    @Qualifier("informSearchInterval")
-    private Long informSearchInterval;
 
     @Autowired
     private PopularityUpdater popularityUpdater;
@@ -105,14 +82,14 @@ public class PopularityUpdaterTests {
     @Value("${platform.aam.url}")
     private String platformAAMUrl;
 
-    private String resourceUrl;
     private String serviceResponse = "exampleServiceResponse";
 
     // Execute the Setup method before the test.
     @Before
     public void setUp() {
-        resourceAccessStatsUpdater.cancelTimer();
-        resourceUrl = platformAAMUrl + "/rap";
+        clearSetup();
+
+        String resourceUrl = platformAAMUrl + "/rap";
 
         CramResource resource1 = new CramResource();
         resource1.setId("sensor_id_put");
