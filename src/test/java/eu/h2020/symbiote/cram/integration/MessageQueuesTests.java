@@ -4,7 +4,6 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
-import eu.h2020.symbiote.core.internal.CoreSspResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
@@ -57,7 +56,7 @@ public class MessageQueuesTests {
     private PlatformRepository platformRepo;
 
     @Autowired
-    private SmartSpaceRepository smartSpaceRepository;
+    private SmartSpaceRepository smartSpaceRepo;
 
     @Autowired
     private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
@@ -95,18 +94,11 @@ public class MessageQueuesTests {
     @Value("${rabbit.exchange.resource.name}")
     private String resourceExchangeName;
     @Value("${rabbit.routingKey.resource.created}")
-    private String platformResourceCreatedRoutingKey;
+    private String resourceCreatedRoutingKey;
     @Value("${rabbit.routingKey.resource.modified}")
-    private String platformResourceUpdatedRoutingKey;
+    private String resourceUpdatedRoutingKey;
     @Value("${rabbit.routingKey.resource.removed}")
-    private String platformResourceRemovedRoutingKey;
-
-    @Value("${rabbit.routingKey.ssp.sdev.resource.created}")
-    private String sspResourceCreatedRoutingKey;
-    @Value("${rabbit.routingKey.ssp.sdev.resource.modified}")
-    private String sspResourceUpdatedRoutingKey;
-    @Value("${rabbit.routingKey.ssp.sdev.resource.removed}")
-    private String sspResourceRemovedRoutingKey;
+    private String resourceRemovedRoutingKey;
 
     private String platformUrl = "http://www.platform.com/";
     private String sspUrl = "http://www.ssp.com/";
@@ -120,6 +112,7 @@ public class MessageQueuesTests {
     @After
     public void clearSetup() {
         platformRepo.deleteAll();
+        smartSpaceRepo.deleteAll();
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getNotificationMessageList().clear();
@@ -191,7 +184,7 @@ public class MessageQueuesTests {
         // Sleep to make sure that the SmartSpace has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        SmartSpace result = smartSpaceRepository.findOne(smartSpace.getId());
+        SmartSpace result = smartSpaceRepo.findOne(smartSpace.getId());
         log.info("smartSpace.id = " + smartSpace.getId());
         assertEquals(smartSpace.getName(), result.getName());
     }
@@ -202,7 +195,7 @@ public class MessageQueuesTests {
         log.info("smartSpaceUpdatedTest started!!!");
         SmartSpace smartSpace = createSmartSpace();
 
-        smartSpaceRepository.save(smartSpace);
+        smartSpaceRepo.save(smartSpace);
 
         String newName = "smartSpace" + rand.nextInt(50000);
         smartSpace.setName(newName);
@@ -212,7 +205,7 @@ public class MessageQueuesTests {
         // Sleep to make sure that the Smart Space has been updated in the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        SmartSpace result = smartSpaceRepository.findOne(smartSpace.getId());
+        SmartSpace result = smartSpaceRepo.findOne(smartSpace.getId());
         assertEquals(newName, result.getName());
     }
 
@@ -222,14 +215,14 @@ public class MessageQueuesTests {
         log.info("smartSpaceDeletedTest started!!!");
         SmartSpace smartSpace = createSmartSpace();
 
-        smartSpaceRepository.save(smartSpace);
+        smartSpaceRepo.save(smartSpace);
 
         sendSSPMessage(sspExchangeName, sspRemovedRoutingKey, smartSpace);
 
         // Sleep to make sure that the Smart Space has been removed from the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        SmartSpace result = smartSpaceRepository.findOne(smartSpace.getId());
+        SmartSpace result = smartSpaceRepo.findOne(smartSpace.getId());
         assertNull(result);
     }
 
@@ -245,7 +238,7 @@ public class MessageQueuesTests {
         regMessage.setPlatformId(platform.getId());
         regMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, platformResourceCreatedRoutingKey, regMessage);
+        sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
 
         // Sleep to make sure that the resource has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(1);
@@ -321,7 +314,7 @@ public class MessageQueuesTests {
         updMessage.setPlatformId(platform.getId());
         updMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, platformResourceUpdatedRoutingKey, updMessage);
+        sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, updMessage);
 
 
         // Sleep to make sure that the resource has been updated in the repo before querying
@@ -354,7 +347,7 @@ public class MessageQueuesTests {
         resources.add(resource1.getId());
         resources.add(resource2.getId());
 
-        sendResourceDeleteMessage(resourceExchangeName, platformResourceRemovedRoutingKey, resources);
+        sendResourceDeleteMessage(resourceExchangeName, resourceRemovedRoutingKey, resources);
 
         // Sleep to make sure that the resource has been deleted from the repo before querying
         TimeUnit.SECONDS.sleep(1);
@@ -371,14 +364,14 @@ public class MessageQueuesTests {
 
         log.info("sspSensorCreatedTest started!!!");
         SmartSpace smartSpace = createSmartSpace();
-        smartSpaceRepository.save(smartSpace);
+        smartSpaceRepo.save(smartSpace);
 
         List<CoreResource> resources = createCoreResources(sspUrl);
-        CoreSspResourceRegisteredOrModifiedEventPayload regMessage = new CoreSspResourceRegisteredOrModifiedEventPayload();
+        CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         regMessage.setPlatformId(smartSpace.getId());
         regMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, sspResourceCreatedRoutingKey, regMessage);
+        sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
 
         // Sleep to make sure that the resource has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(1);
@@ -424,7 +417,7 @@ public class MessageQueuesTests {
 
         log.info("sspSensorUpdatedTest started!!!");
         SmartSpace smartSpace = createSmartSpace();
-        smartSpaceRepository.save(smartSpace);
+        smartSpaceRepo.save(smartSpace);
 
         CoreResource coreResource1 = createResource(sspUrl);
         CramResource cramResource1 = new CramResource(coreResource1);
@@ -447,14 +440,14 @@ public class MessageQueuesTests {
         newCoreResource2.setInterworkingServiceURL(coreResource2.getInterworkingServiceURL());
         newCoreResource2.setType(CoreResourceType.ACTUATOR);
 
-        CoreSspResourceRegisteredOrModifiedEventPayload updMessage = new CoreSspResourceRegisteredOrModifiedEventPayload();
+        CoreResourceRegisteredOrModifiedEventPayload updMessage = new CoreResourceRegisteredOrModifiedEventPayload();
         ArrayList<CoreResource> resources = new ArrayList<>();
         resources.add(newCoreResource1);
         resources.add(newCoreResource2);
         updMessage.setPlatformId(smartSpace.getId());
         updMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, sspResourceUpdatedRoutingKey, updMessage);
+        sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, updMessage);
 
         // Sleep to make sure that the resource has been updated in the repo before querying
         TimeUnit.SECONDS.sleep(1);
@@ -474,7 +467,7 @@ public class MessageQueuesTests {
 
         log.info("sspSensorDeletedTest started!!!");
         SmartSpace smartSpace = createSmartSpace();
-        smartSpaceRepository.save(smartSpace);
+        smartSpaceRepo.save(smartSpace);
 
         CoreResource coreResource1 = createResource(sspUrl);
         CramResource resource1 = new CramResource(coreResource1);
@@ -486,7 +479,7 @@ public class MessageQueuesTests {
         resources.add(resource1.getId());
         resources.add(resource2.getId());
 
-        sendResourceDeleteMessage(resourceExchangeName, sspResourceRemovedRoutingKey, resources);
+        sendResourceDeleteMessage(resourceExchangeName, resourceRemovedRoutingKey, resources);
 
         // Sleep to make sure that the resource has been deleted from the repo before querying
         TimeUnit.SECONDS.sleep(1);

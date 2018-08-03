@@ -3,7 +3,6 @@ package eu.h2020.symbiote.cram.managers;
 import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
-import eu.h2020.symbiote.core.internal.CoreSspResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.cram.exception.EntityNotFoundException;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.model.SubIntervalViews;
@@ -21,7 +20,6 @@ import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -297,73 +295,12 @@ public class RepositoryManager {
         deleteResource(resourcesIds);
     }
 
-    /**
-     * Spring AMQP Listener for Smart Space resource registration requests. This method is invoked when a resource
-     * registration is verified and advertised by the Registry. The resource object is then
-     * saved to the CoreResourceAccessMonitor local Mongo database.
-     *
-     * @param message The message of the newly registered resources
-     */
-    @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "sspResourceRegistration", durable = "${rabbit.exchange.resource.durable}",
-                    autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
-            exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
-                    durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
-                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
-            key = "${rabbit.routingKey.ssp.sdev.resource.created}")
-    )
-    public void saveSSPResource(CoreSspResourceRegisteredOrModifiedEventPayload message)
-            throws AmqpRejectAndDontRequeueException {
-        saveResource(message);
-    }
-
-    /**
-     * Spring AMQP Listener for Smart Space resource update requests. This method is invoked when a resource
-     * update request is verified and advertised by the Registry. The resource object is then
-     * updated in the CoreResourceAccessMonitor local Mongo database.
-     *
-     * @param message The message of the newly updated resources
-     */
-    @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "sspResourceUpdated", durable = "${rabbit.exchange.resource.durable}",
-                    autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
-            exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
-                    durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
-                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
-            key = "${rabbit.routingKey.ssp.sdev.resource.modified}")
-    )
-    public void updatedSSPResource(CoreSspResourceRegisteredOrModifiedEventPayload message)
-            throws AmqpRejectAndDontRequeueException {
-        updatedResource(message);
-    }
-
-    /**
-     * Spring AMQP Listener for Smart Space resource unregistration requests. This method is invoked when a resource
-     * unregistration request is verified and advertised by the Registry. The resource object is then
-     * deleted from the CoreResourceAccessMonitor local Mongo database.
-     *
-     * @param resourcesIds List of resource Ids of the newly deleted resources
-     */
-    @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "sspResourceUnregistration", durable = "${rabbit.exchange.resource.durable}",
-                    autoDelete = "${rabbit.exchange.resource.autodelete}", exclusive = "false"),
-            exchange = @Exchange(value = "${rabbit.exchange.resource.name}", ignoreDeclarationExceptions = "true",
-                    durable = "${rabbit.exchange.resource.durable}", autoDelete  = "${rabbit.exchange.resource.autodelete}",
-                    internal = "${rabbit.exchange.resource.internal}", type = "${rabbit.exchange.resource.type}"),
-            key = "${rabbit.routingKey.ssp.sdev.resource.removed}")
-    )
-    public void deleteSSPResource(List<String> resourcesIds) {
-        deleteResource(resourcesIds);
-    }
-
     private void saveResource(CoreResourceRegisteredOrModifiedEventPayload message)
             throws AmqpRejectAndDontRequeueException {
 
-        MongoRepository repository = message instanceof CoreSspResourceRegisteredOrModifiedEventPayload ?
-                smartSpaceRepository : platformRepository;
-
         try {
-            if (repository.findOne(message.getPlatformId()) == null)
+            if (platformRepository.findOne(message.getPlatformId()) == null
+                    && smartSpaceRepository.findOne(message.getPlatformId()) == null)
                 throw new EntityNotFoundException ("Received a registration message"
                         + ", but the entity " + "with id = " + message.getPlatformId()
                         + " which owns the resources does not exist.");
@@ -396,10 +333,9 @@ public class RepositoryManager {
     private void updatedResource(CoreResourceRegisteredOrModifiedEventPayload message)
             throws AmqpRejectAndDontRequeueException {
 
-        MongoRepository repository = message instanceof CoreSspResourceRegisteredOrModifiedEventPayload ?
-                smartSpaceRepository : platformRepository;
         try {
-            if (repository.findOne(message.getPlatformId()) == null)
+            if (platformRepository.findOne(message.getPlatformId()) == null
+                    && smartSpaceRepository.findOne(message.getPlatformId()) == null)
                 throw new EntityNotFoundException ("Received an update message"
                         + ", but the entity " + "with id = " + message.getPlatformId()
                         + " which owns the resources does not exist.");

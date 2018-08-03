@@ -12,6 +12,7 @@ import eu.h2020.symbiote.cram.model.authorization.ServiceResponseResult;
 import eu.h2020.symbiote.cram.repository.CramPersistentVariablesRepository;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
+import eu.h2020.symbiote.cram.repository.SmartSpaceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import eu.h2020.symbiote.model.mim.InterworkingService;
 import eu.h2020.symbiote.model.mim.Platform;
@@ -55,6 +56,9 @@ public class CoreResourceAccessMonitorApplicationTests {
 
     @Autowired
     private PlatformRepository platformRepo;
+
+    @Autowired
+    private SmartSpaceRepository smartSpaceRepo;
 
     @Autowired
     private CramPersistentVariablesRepository cramPersistentVariablesRepository;
@@ -129,6 +133,7 @@ public class CoreResourceAccessMonitorApplicationTests {
     @After
     public void clearSetup() {
         platformRepo.deleteAll();
+        smartSpaceRepo.deleteAll();
         resourceRepo.deleteAll();
         accessNotificationListener.setScheduledUpdateOngoing(false);
         accessNotificationListener.getNotificationMessageList().clear();
