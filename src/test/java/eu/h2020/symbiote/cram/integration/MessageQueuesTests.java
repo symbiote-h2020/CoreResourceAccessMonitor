@@ -4,13 +4,16 @@ package eu.h2020.symbiote.cram.integration;
 import eu.h2020.symbiote.core.internal.CoreResource;
 import eu.h2020.symbiote.core.internal.CoreResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.core.internal.CoreResourceType;
+import eu.h2020.symbiote.core.internal.CoreSspResourceRegisteredOrModifiedEventPayload;
 import eu.h2020.symbiote.cram.messaging.AccessNotificationListener;
 import eu.h2020.symbiote.cram.model.CramResource;
 import eu.h2020.symbiote.cram.repository.PlatformRepository;
 import eu.h2020.symbiote.cram.repository.ResourceRepository;
+import eu.h2020.symbiote.cram.repository.SmartSpaceRepository;
 import eu.h2020.symbiote.cram.util.ResourceAccessStatsUpdater;
 import eu.h2020.symbiote.model.mim.InterworkingService;
 import eu.h2020.symbiote.model.mim.Platform;
+import eu.h2020.symbiote.model.mim.SmartSpace;
 import eu.h2020.symbiote.security.accesspolicies.common.AccessPolicyType;
 import eu.h2020.symbiote.security.accesspolicies.common.singletoken.SingleTokenAccessPolicySpecifier;
 import eu.h2020.symbiote.security.commons.exceptions.custom.InvalidArgumentsException;
@@ -54,6 +57,9 @@ public class MessageQueuesTests {
     private PlatformRepository platformRepo;
 
     @Autowired
+    private SmartSpaceRepository smartSpaceRepository;
+
+    @Autowired
     private ResourceAccessStatsUpdater resourceAccessStatsUpdater;
 
     @Autowired
@@ -77,16 +83,33 @@ public class MessageQueuesTests {
     @Value("${rabbit.routingKey.platform.removed}")
     private String platformRemovedRoutingKey;
 
+    @Value("${rabbit.exchange.ssp.name}")
+    private String sspExchangeName;
+    @Value("${rabbit.routingKey.ssp.created}")
+    private String sspCreatedRoutingKey;
+    @Value("${rabbit.routingKey.ssp.modified}")
+    private String sspUpdatedRoutingKey;
+    @Value("${rabbit.routingKey.ssp.removed}")
+    private String sspRemovedRoutingKey;
+
     @Value("${rabbit.exchange.resource.name}")
     private String resourceExchangeName;
     @Value("${rabbit.routingKey.resource.created}")
-    private String resourceCreatedRoutingKey;
+    private String platformResourceCreatedRoutingKey;
     @Value("${rabbit.routingKey.resource.modified}")
-    private String resourceUpdatedRoutingKey;
+    private String platformResourceUpdatedRoutingKey;
     @Value("${rabbit.routingKey.resource.removed}")
-    private String resourceRemovedRoutingKey;
+    private String platformResourceRemovedRoutingKey;
 
-    private String platformUrl = "http://www.symbIoTe.com/";
+    @Value("${rabbit.routingKey.ssp.sdev.resource.created}")
+    private String sspResourceCreatedRoutingKey;
+    @Value("${rabbit.routingKey.ssp.sdev.resource.modified}")
+    private String sspResourceUpdatedRoutingKey;
+    @Value("${rabbit.routingKey.ssp.sdev.resource.removed}")
+    private String sspResourceRemovedRoutingKey;
+
+    private String platformUrl = "http://www.platform.com/";
+    private String sspUrl = "http://www.ssp.com/";
 
     @Before
     public void setup() {
@@ -104,9 +127,9 @@ public class MessageQueuesTests {
     }
 
     @Test
-    public void PlatformCreatedTest() throws Exception {
+    public void platformCreatedTest() throws Exception {
 
-        log.info("PlatformCreatedTest started!!!");
+        log.info("platformCreatedTest started!!!");
         Platform platform = createPlatform();
 
         sendPlatformMessage(platformExchangeName, platformCreatedRoutingKey, platform);
@@ -120,9 +143,9 @@ public class MessageQueuesTests {
     }
 
     @Test
-    public void PlatformUpdatedTest() throws Exception {
+    public void platformUpdatedTest() throws Exception {
 
-        log.info("PlatformUpdatedTest started!!!");
+        log.info("platformUpdatedTest started!!!");
         Platform platform = createPlatform();
 
         platformRepo.save(platform);
@@ -140,9 +163,9 @@ public class MessageQueuesTests {
     }
 
     @Test
-    public void PlatformDeletedTest() throws Exception {
+    public void platformDeletedTest() throws Exception {
 
-        log.info("PlatformDeletedTest started!!!");
+        log.info("platformDeletedTest started!!!");
         Platform platform = createPlatform();
 
         platformRepo.save(platform);
@@ -158,41 +181,77 @@ public class MessageQueuesTests {
     }
 
     @Test
-    public void SensorCreatedTest() throws Exception {
+    public void smartSpaceCreatedTest() throws Exception {
 
-        log.info("SensorCreatedTest started!!!");
+        log.info("smartSpaceCreatedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+
+        sendSSPMessage(sspExchangeName, sspCreatedRoutingKey, smartSpace);
+
+        // Sleep to make sure that the SmartSpace has been saved to the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        SmartSpace result = smartSpaceRepository.findOne(smartSpace.getId());
+        log.info("smartSpace.id = " + smartSpace.getId());
+        assertEquals(smartSpace.getName(), result.getName());
+    }
+
+    @Test
+    public void smartSpaceUpdatedTest() throws Exception {
+
+        log.info("smartSpaceUpdatedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+
+        smartSpaceRepository.save(smartSpace);
+
+        String newName = "smartSpace" + rand.nextInt(50000);
+        smartSpace.setName(newName);
+
+        sendSSPMessage(sspExchangeName, sspCreatedRoutingKey, smartSpace);
+
+        // Sleep to make sure that the Smart Space has been updated in the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        SmartSpace result = smartSpaceRepository.findOne(smartSpace.getId());
+        assertEquals(newName, result.getName());
+    }
+
+    @Test
+    public void smartSpaceDeletedTest() throws Exception {
+
+        log.info("smartSpaceDeletedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+
+        smartSpaceRepository.save(smartSpace);
+
+        sendSSPMessage(sspExchangeName, sspRemovedRoutingKey, smartSpace);
+
+        // Sleep to make sure that the Smart Space has been removed from the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        SmartSpace result = smartSpaceRepository.findOne(smartSpace.getId());
+        assertNull(result);
+    }
+
+    @Test
+    public void platformSensorCreatedTest() throws Exception {
+
+        log.info("platformSensorCreatedTest started!!!");
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        CoreResource resource1 = createResource();
-        CoreResource resource2 = createResource();
-        CoreResource resource3 = createResource();
-        CoreResource resource4 = createResource();
-        CoreResource resource5 = createResource();
-
-        resource1.setType(CoreResourceType.ACTUATOR);
-        resource2.setType(CoreResourceType.SERVICE);
-        resource3.setType(CoreResourceType.DEVICE);
-        resource4.setType(CoreResourceType.STATIONARY_SENSOR);
-        resource5.setType(CoreResourceType.MOBILE_SENSOR);
-
+        List<CoreResource> resources = createCoreResources(platformUrl);
         CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
-        ArrayList<CoreResource> resources = new ArrayList<>();
-        resources.add(resource1);
-        resources.add(resource2);
-        resources.add(resource3);
-        resources.add(resource4);
-        resources.add(resource5);
         regMessage.setPlatformId(platform.getId());
         regMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
+        sendResourceMessage(resourceExchangeName, platformResourceCreatedRoutingKey, regMessage);
 
         // Sleep to make sure that the resource has been saved to the repo before querying
         TimeUnit.SECONDS.sleep(1);
 
-        CramResource result = resourceRepo.findOne(resource1.getId());
-        assertEquals(platformUrl + "rap/Actuators('" + resource1.getId()
+        CramResource result = resourceRepo.findOne(resources.get(0).getId());
+        assertEquals(platformUrl + "rap/Actuators('" + resources.get(0).getId()
                 + "')", result.getResourceUrl());
         assertEquals(0, (long) result.getViewsInDefinedInterval());
         assertEquals((long) subIntervalDuration, result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
@@ -200,27 +259,27 @@ public class MessageQueuesTests {
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
-        result = resourceRepo.findOne(resource2.getId());
-        assertEquals(platformUrl + "rap/Services('" + resource2.getId()
+        result = resourceRepo.findOne(resources.get(1).getId());
+        assertEquals(platformUrl + "rap/Services('" + resources.get(1).getId()
                 + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
-        result = resourceRepo.findOne(resource3.getId());
-        assertEquals(platformUrl + "rap/Sensors('" + resource3.getId()
+        result = resourceRepo.findOne(resources.get(2).getId());
+        assertEquals(platformUrl + "rap/Sensors('" + resources.get(2).getId()
                 + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
 
-        result = resourceRepo.findOne(resource4.getId());
-        assertEquals(platformUrl + "rap/Sensors('" + resource4.getId()
+        result = resourceRepo.findOne(resources.get(3).getId());
+        assertEquals(platformUrl + "rap/Sensors('" + resources.get(3).getId()
                 + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
 
-        result = resourceRepo.findOne(resource5.getId());
-        assertEquals(platformUrl + "rap/Sensors('" + resource5.getId()
+        result = resourceRepo.findOne(resources.get(4).getId());
+        assertEquals(platformUrl + "rap/Sensors('" + resources.get(4).getId()
                 + "')", result.getResourceUrl());
         assertEquals(platform.getId(), result.getPlatformId());
         assertNotNull(result.getPolicySpecifier());
@@ -228,16 +287,16 @@ public class MessageQueuesTests {
     }
 
     @Test
-    public void SensorUpdatedTest() throws Exception {
+    public void platformSensorUpdatedTest() throws Exception {
 
-        log.info("SensorUpdatedTest started!!!");
+        log.info("platformSensorUpdatedTest started!!!");
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        CoreResource coreResource1 = createResource();
+        CoreResource coreResource1 = createResource(platformUrl);
         CramResource cramResource1 = new CramResource(coreResource1);
         resourceRepo.save(cramResource1);
-        CoreResource coreResource2 = createResource();
+        CoreResource coreResource2 = createResource(platformUrl);
         CramResource cramResource2 = new CramResource(coreResource2);
         resourceRepo.save(cramResource2);
 
@@ -262,7 +321,7 @@ public class MessageQueuesTests {
         updMessage.setPlatformId(platform.getId());
         updMessage.setResources(resources);
 
-        sendResourceMessage(resourceExchangeName, resourceUpdatedRoutingKey, updMessage);
+        sendResourceMessage(resourceExchangeName, platformResourceUpdatedRoutingKey, updMessage);
 
 
         // Sleep to make sure that the resource has been updated in the repo before querying
@@ -279,23 +338,23 @@ public class MessageQueuesTests {
     }
 
     @Test
-    public void SensorDeletedTest() throws Exception {
+    public void platformSensorDeletedTest() throws Exception {
 
-        log.info("SensorDeletedTest started!!!");
+        log.info("platformSensorDeletedTest started!!!");
         Platform platform = createPlatform();
         platformRepo.save(platform);
 
-        CoreResource coreResource1 = createResource();
+        CoreResource coreResource1 = createResource(platformUrl);
         CramResource resource1 = new CramResource(coreResource1);
         resourceRepo.save(resource1);
-        CoreResource coreResource2 = createResource();
+        CoreResource coreResource2 = createResource(platformUrl);
         CramResource resource2 = new CramResource(coreResource2);
         resourceRepo.save(resource2);
         ArrayList<String> resources = new ArrayList<>();
         resources.add(resource1.getId());
         resources.add(resource2.getId());
 
-        sendResourceDeleteMessage(resourceExchangeName, resourceRemovedRoutingKey, resources);
+        sendResourceDeleteMessage(resourceExchangeName, platformResourceRemovedRoutingKey, resources);
 
         // Sleep to make sure that the resource has been deleted from the repo before querying
         TimeUnit.SECONDS.sleep(1);
@@ -307,6 +366,137 @@ public class MessageQueuesTests {
 
     }
 
+    @Test
+    public void sspSensorCreatedTest() throws Exception {
+
+        log.info("sspSensorCreatedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+        smartSpaceRepository.save(smartSpace);
+
+        List<CoreResource> resources = createCoreResources(sspUrl);
+        CoreSspResourceRegisteredOrModifiedEventPayload regMessage = new CoreSspResourceRegisteredOrModifiedEventPayload();
+        regMessage.setPlatformId(smartSpace.getId());
+        regMessage.setResources(resources);
+
+        sendResourceMessage(resourceExchangeName, sspResourceCreatedRoutingKey, regMessage);
+
+        // Sleep to make sure that the resource has been saved to the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        CramResource result = resourceRepo.findOne(resources.get(0).getId());
+        assertEquals(sspUrl + "rap/Actuators('" + resources.get(0).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(0, (long) result.getViewsInDefinedInterval());
+        assertEquals((long) subIntervalDuration, result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
+                result.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+        result = resourceRepo.findOne(resources.get(1).getId());
+        assertEquals(sspUrl + "rap/Services('" + resources.get(1).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+        result = resourceRepo.findOne(resources.get(2).getId());
+        assertEquals(sspUrl + "rap/Sensors('" + resources.get(2).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+
+        result = resourceRepo.findOne(resources.get(3).getId());
+        assertEquals(sspUrl + "rap/Sensors('" + resources.get(3).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+        result = resourceRepo.findOne(resources.get(4).getId());
+        assertEquals(sspUrl + "rap/Sensors('" + resources.get(4).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+    }
+
+    @Test
+    public void sspSensorUpdatedTest() throws Exception {
+
+        log.info("sspSensorUpdatedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+        smartSpaceRepository.save(smartSpace);
+
+        CoreResource coreResource1 = createResource(sspUrl);
+        CramResource cramResource1 = new CramResource(coreResource1);
+        resourceRepo.save(cramResource1);
+        CoreResource coreResource2 = createResource(sspUrl);
+        CramResource cramResource2 = new CramResource(coreResource2);
+        resourceRepo.save(cramResource2);
+
+        String resourceNewName = "name3";
+
+        CoreResource newCoreResource1 = new CoreResource();
+        newCoreResource1.setId(coreResource1.getId());
+        newCoreResource1.setName(resourceNewName);
+        newCoreResource1.setInterworkingServiceURL(coreResource1.getInterworkingServiceURL());
+        newCoreResource1.setType(CoreResourceType.ACTUATOR);
+
+        CoreResource newCoreResource2 = new CoreResource();
+        newCoreResource2.setId(coreResource2.getId());
+        newCoreResource2.setName(resourceNewName);
+        newCoreResource2.setInterworkingServiceURL(coreResource2.getInterworkingServiceURL());
+        newCoreResource2.setType(CoreResourceType.ACTUATOR);
+
+        CoreSspResourceRegisteredOrModifiedEventPayload updMessage = new CoreSspResourceRegisteredOrModifiedEventPayload();
+        ArrayList<CoreResource> resources = new ArrayList<>();
+        resources.add(newCoreResource1);
+        resources.add(newCoreResource2);
+        updMessage.setPlatformId(smartSpace.getId());
+        updMessage.setResources(resources);
+
+        sendResourceMessage(resourceExchangeName, sspResourceUpdatedRoutingKey, updMessage);
+
+        // Sleep to make sure that the resource has been updated in the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        CramResource result = resourceRepo.findOne(coreResource1.getId());
+        assertEquals(resourceNewName, result.getName());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+
+        result = resourceRepo.findOne(coreResource2.getId());
+        assertEquals(resourceNewName, result.getName());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+
+    }
+
+    @Test
+    public void sspSensorDeletedTest() throws Exception {
+
+        log.info("sspSensorDeletedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+        smartSpaceRepository.save(smartSpace);
+
+        CoreResource coreResource1 = createResource(sspUrl);
+        CramResource resource1 = new CramResource(coreResource1);
+        resourceRepo.save(resource1);
+        CoreResource coreResource2 = createResource(sspUrl);
+        CramResource resource2 = new CramResource(coreResource2);
+        resourceRepo.save(resource2);
+        ArrayList<String> resources = new ArrayList<>();
+        resources.add(resource1.getId());
+        resources.add(resource2.getId());
+
+        sendResourceDeleteMessage(resourceExchangeName, sspResourceRemovedRoutingKey, resources);
+
+        // Sleep to make sure that the resource has been deleted from the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        CramResource result = resourceRepo.findOne(resource1.getId());
+        assertNull(result);
+        result = resourceRepo.findOne(resource2.getId());
+        assertNull(result);
+
+    }
 
     private Platform createPlatform() {
 
@@ -330,7 +520,29 @@ public class MessageQueuesTests {
         return platform;
     }
 
-    private CoreResource createResource() {
+    private SmartSpace createSmartSpace() {
+
+        SmartSpace smartSpace = new SmartSpace();
+        String smartSpaceId = Integer.toString(rand.nextInt(50));
+        String name = "smartSpace" + rand.nextInt(50000);
+        List<String> descriptions = new ArrayList<>();
+        List<InterworkingService> interworkingServices = new ArrayList<>();
+        InterworkingService interworkingService = new InterworkingService();
+
+        descriptions.add("ssp_description");
+        interworkingService.setUrl(sspUrl);
+        interworkingService.setInformationModelId("ssp_description");
+        interworkingServices.add(interworkingService);
+
+        smartSpace.setId(smartSpaceId);
+        smartSpace.setName(name);
+        smartSpace.setDescription(descriptions);
+        smartSpace.setInterworkingServices(interworkingServices);
+
+        return smartSpace;
+    }
+
+    private CoreResource createResource(String url) {
 
         CoreResource resource = new CoreResource();
         String resourceId = Integer.toString(rand.nextInt(50000));
@@ -339,7 +551,7 @@ public class MessageQueuesTests {
 
         List<String> descriptions = Arrays.asList("comment1", "comment2");
         resource.setDescription(descriptions);
-        resource.setInterworkingServiceURL(platformUrl);
+        resource.setInterworkingServiceURL(url);
 
         try {
             resource.setPolicySpecifier(new SingleTokenAccessPolicySpecifier(
@@ -353,8 +565,33 @@ public class MessageQueuesTests {
         return resource;
     }
 
+    private List<CoreResource> createCoreResources(String url) {
+        CoreResource resource1 = createResource(url);
+        CoreResource resource2 = createResource(url);
+        CoreResource resource3 = createResource(url);
+        CoreResource resource4 = createResource(url);
+        CoreResource resource5 = createResource(url);
+
+        resource1.setType(CoreResourceType.ACTUATOR);
+        resource2.setType(CoreResourceType.SERVICE);
+        resource3.setType(CoreResourceType.DEVICE);
+        resource4.setType(CoreResourceType.STATIONARY_SENSOR);
+        resource5.setType(CoreResourceType.MOBILE_SENSOR);
+
+        return new ArrayList<>(Arrays.asList(resource1, resource2, resource3, resource4, resource5));
+    }
+    
     private void sendPlatformMessage (String exchange, String key, Platform platform) {
         rabbitTemplate.convertAndSend(exchange, key, platform,
+                m -> {
+                    m.getMessageProperties().setContentType("application/json");
+                    m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                    return m;
+                });
+    }
+
+    private void sendSSPMessage (String exchange, String key, SmartSpace smartSpace) {
+        rabbitTemplate.convertAndSend(exchange, key, smartSpace,
                 m -> {
                     m.getMessageProperties().setContentType("application/json");
                     m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
