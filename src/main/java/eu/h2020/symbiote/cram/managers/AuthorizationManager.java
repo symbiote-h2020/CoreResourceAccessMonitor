@@ -87,6 +87,8 @@ public class AuthorizationManager {
                 return new AuthorizationResult("SecurityRequest is null", false);
             }
 
+            if (resource.getPolicySpecifier() == null)
+                return new AuthorizationResult("Filtering policy is null; applying default policy (PUBLIC)", true);
 
             Set<String> checkedPolicies;
             try {
