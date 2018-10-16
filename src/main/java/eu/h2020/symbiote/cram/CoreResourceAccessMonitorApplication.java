@@ -61,7 +61,9 @@ public class CoreResourceAccessMonitorApplication {
     private String searchPopularityUpdatesRoutingKey;
 
 	public static void main(String[] args) {
-		SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
+
+        WaitForPort.waitForServices(WaitForPort.findProperty("SPRING_BOOT_WAIT_FOR_SERVICES"));
+        SpringApplication.run(CoreResourceAccessMonitorApplication.class, args);
     }
 
     @Bean
