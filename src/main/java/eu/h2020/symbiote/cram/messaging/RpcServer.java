@@ -10,10 +10,7 @@ import eu.h2020.symbiote.cram.repository.ResourceRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -65,7 +62,8 @@ public class RpcServer {
      */
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "${rabbit.queueName.cram.getResourceUrls}", durable = "${rabbit.exchange.cram.durable}",
-                    autoDelete = "${rabbit.exchange.cram.autodelete}", exclusive = "false"),
+                    autoDelete = "${rabbit.exchange.cram.autodelete}", exclusive = "false",
+                    arguments= {@Argument(name = "x-message-ttl", value="${spring.rabbitmq.template.reply-timeout}", type="java.lang.Integer")}),
             exchange = @Exchange(value = "${rabbit.exchange.cram.name}", ignoreDeclarationExceptions = "true",
                     durable = "${rabbit.exchange.cram.durable}", autoDelete  = "${rabbit.exchange.cram.autodelete}",
                     internal = "${rabbit.exchange.cram.internal}", type = "${rabbit.exchange.cram.type}"),
