@@ -413,6 +413,60 @@ public class MessageQueuesTests {
     }
 
     @Test
+    public void sspSensorCreatedNullDescriptionsTest() throws Exception {
+
+        log.info("sspSensorCreatedTest started!!!");
+        SmartSpace smartSpace = createSmartSpace();
+        smartSpaceRepo.save(smartSpace);
+
+        List<CoreResource> resources = createCoreResources(sspUrl);
+        resources.forEach(r -> r.setDescription(null));
+        CoreResourceRegisteredOrModifiedEventPayload regMessage = new CoreResourceRegisteredOrModifiedEventPayload();
+        regMessage.setPlatformId(smartSpace.getId());
+        regMessage.setResources(resources);
+
+        sendResourceMessage(resourceExchangeName, resourceCreatedRoutingKey, regMessage);
+
+        // Sleep to make sure that the resource has been saved to the repo before querying
+        TimeUnit.SECONDS.sleep(1);
+
+        CramResource result = resourceRepo.findOne(resources.get(0).getId());
+        assertEquals(sspUrl + "rap/Actuators('" + resources.get(0).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(0, (long) result.getViewsInDefinedInterval());
+        assertEquals((long) subIntervalDuration, result.getViewsInSubIntervals().get(0).getEndOfInterval().getTime() -
+                result.getViewsInSubIntervals().get(0).getStartOfInterval().getTime());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+        result = resourceRepo.findOne(resources.get(1).getId());
+        assertEquals(sspUrl + "rap/Services('" + resources.get(1).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+        result = resourceRepo.findOne(resources.get(2).getId());
+        assertEquals(sspUrl + "rap/Sensors('" + resources.get(2).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+
+        result = resourceRepo.findOne(resources.get(3).getId());
+        assertEquals(sspUrl + "rap/Sensors('" + resources.get(3).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+        result = resourceRepo.findOne(resources.get(4).getId());
+        assertEquals(sspUrl + "rap/Sensors('" + resources.get(4).getId()
+                + "')", result.getResourceUrl());
+        assertEquals(smartSpace.getId(), result.getPlatformId());
+        assertNotNull(result.getPolicySpecifier());
+
+    }
+
+    @Test
     public void sspSensorUpdatedTest() throws Exception {
 
         log.info("sspSensorUpdatedTest started!!!");

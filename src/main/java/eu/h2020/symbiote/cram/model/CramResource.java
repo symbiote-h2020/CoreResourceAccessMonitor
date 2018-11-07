@@ -40,7 +40,7 @@ public class CramResource extends Resource {
     public CramResource(CoreResource coreResource) {
         setId(coreResource.getId());
         setName(coreResource.getName());
-        setDescription(new ArrayList<>(coreResource.getDescription()));
+        setDescription(coreResource.getDescription() == null ? new ArrayList<>() : new ArrayList<>(coreResource.getDescription()));
         setInterworkingServiceURL(coreResource.getInterworkingServiceURL());
         setType(coreResource.getType());
         setPolicySpecifier(coreResource.getPolicySpecifier());
