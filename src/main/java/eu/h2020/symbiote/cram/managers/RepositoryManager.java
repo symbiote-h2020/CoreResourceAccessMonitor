@@ -114,10 +114,10 @@ public class RepositoryManager {
             platformRepository.save(platform);
             log.info("CRAM updated platform with id: " + platform.getId());
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during updating with id: " + platform.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
@@ -146,10 +146,10 @@ public class RepositoryManager {
             platformRepository.delete(platform.getId());
             log.info("CRAM deleted platform with id: " + platform.getId());
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during deleting with id: " + platform.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
@@ -197,10 +197,10 @@ public class RepositoryManager {
             smartSpaceRepository.save(smartSpace);
             log.info("CRAM updated Smart Space with id: " + smartSpace.getId());
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during updating Smart Space with id: " + smartSpace.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
@@ -229,10 +229,10 @@ public class RepositoryManager {
             smartSpaceRepository.delete(smartSpace.getId());
             log.info("CRAM deleted Smart Space with id: " + smartSpace.getId());
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during deleting Smart Space with id: " + smartSpace.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
@@ -323,10 +323,10 @@ public class RepositoryManager {
                 log.info("CRAM saved resource with id: " + cramResource.getId());
             }
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during saving resource", e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
@@ -357,10 +357,10 @@ public class RepositoryManager {
                 log.info("CRAM updated resource with id: " + cramResource.getId());
             }
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during updating resource", e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
@@ -377,10 +377,10 @@ public class RepositoryManager {
                 log.info("CRAM deleted resource with id: " + id);
             }
         } catch (EntityNotFoundException e) {
-            log.info(e);
+            log.warn("Exception thrown during deleting resource", e);
             throw e;
         } catch (Exception e) {
-            log.info(e);
+            log.warn(e);
         }
     }
     private String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
