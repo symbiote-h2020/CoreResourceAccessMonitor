@@ -114,10 +114,10 @@ public class RepositoryManager {
             platformRepository.save(platform);
             log.info("CRAM updated platform with id: " + platform.getId());
         } catch (EntityNotFoundException e) {
-            log.warn("Exception thrown during updating with id: " + platform.getId(), e);
+            log.warn("Exception thrown during updating platform with id: " + platform.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during updating platform with id: " + platform.getId(), e);
         }
     }
 
@@ -146,10 +146,10 @@ public class RepositoryManager {
             platformRepository.delete(platform.getId());
             log.info("CRAM deleted platform with id: " + platform.getId());
         } catch (EntityNotFoundException e) {
-            log.warn("Exception thrown during deleting with id: " + platform.getId(), e);
+            log.warn("Exception thrown during deleting platform with id: " + platform.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during deleting platform with id: " + platform.getId(), e);
         }
     }
 
@@ -200,7 +200,7 @@ public class RepositoryManager {
             log.warn("Exception thrown during updating Smart Space with id: " + smartSpace.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during updating Smart Space with id: " + smartSpace.getId(), e);
         }
     }
 
@@ -232,7 +232,7 @@ public class RepositoryManager {
             log.warn("Exception thrown during deleting Smart Space with id: " + smartSpace.getId(), e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during deleting Smart Space with id: " + smartSpace.getId(), e);
         }
     }
 
@@ -326,7 +326,7 @@ public class RepositoryManager {
             log.warn("Exception thrown during saving resource", e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during saving resource", e);
         }
     }
 
@@ -360,7 +360,7 @@ public class RepositoryManager {
             log.warn("Exception thrown during updating resource", e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during updating resource", e);
         }
     }
 
@@ -380,7 +380,7 @@ public class RepositoryManager {
             log.warn("Exception thrown during deleting resource", e);
             throw e;
         } catch (Exception e) {
-            log.warn(e);
+            log.warn("Exception thrown during deleting resource", e);
         }
     }
     private String generateResourceURL (CramResource resource) throws AmqpRejectAndDontRequeueException {
